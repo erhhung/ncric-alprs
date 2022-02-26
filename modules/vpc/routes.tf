@@ -9,7 +9,7 @@ resource "aws_route_table" "tables" {
   vpc_id = aws_vpc.main.id
 
   tags = {
-    Name = "${var.vpc_name} ${each.key} routes"
+    Name = "${var.vpc_name} ${each.value} routes"
   }
 }
 

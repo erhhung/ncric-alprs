@@ -1,5 +1,5 @@
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document
-data "aws_iam_policy_document" "ssm_role_trust" {
+data "aws_iam_policy_document" "ec2_trust" {
   statement {
     effect = "Allow"
 
@@ -13,28 +13,63 @@ data "aws_iam_policy_document" "ssm_role_trust" {
 }
 
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role
-resource "aws_iam_role" "ssm_role" {
-  name               = "AmazonSSMRoleForInstances"
-  assume_role_policy = data.aws_iam_policy_document.ssm_role_trust.json
+resource "aws_iam_role" "ssm_instance" {
+  name               = "AmazonSSMInstanceRole"
+  assume_role_policy = data.aws_iam_policy_document.ec2_trust.json
 }
 
 locals {
-  policy_arns = [
+  ssm_policy_arns = [
     "arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy",
     "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore",
   ]
 }
 
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy_attachment
-resource "aws_iam_role_policy_attachment" "ssm_role" {
-  for_each = toset(local.policy_arns)
+resource "aws_iam_role_policy_attachment" "ssm_instance" {
+  for_each = toset(local.ssm_policy_arns)
 
-  role       = aws_iam_role.ssm_role.name
+  role       = aws_iam_role.ssm_instance.name
   policy_arn = each.value
 }
 
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_instance_profile
-resource "aws_iam_instance_profile" "ssm" {
-  name = "ssm-instance-profile"
-  role = aws_iam_role.ssm_role.name
+resource "aws_iam_instance_profile" "ssm_instance" {
+  name = "AmazonSSMInstanceProfile"
+  role = aws_iam_role.ssm_instance.name
+}
+
+data "aws_iam_policy_document" "config_bucket" {
+  statement {
+    effect    = "Allow"
+    actions   = ["s3:ListBucket"]
+    resources = ["arn:aws:s3:::${local.config_bucket}"]
+  }
+  statement {
+    effect    = "Allow"
+    actions   = ["s3:GetObject"]
+    resources = ["arn:aws:s3:::${local.config_bucket}/*"]
+  }
+}
+
+resource "aws_iam_role" "alprs_config" {
+  name               = "ALPRSConfigAccessRole"
+  assume_role_policy = data.aws_iam_policy_document.ec2_trust.json
+
+  inline_policy {
+    name   = "config-bucket-access-policy"
+    policy = data.aws_iam_policy_document.config_bucket.json
+  }
+}
+
+resource "aws_iam_role_policy_attachment" "alprs_config" {
+  for_each = toset(local.ssm_policy_arns)
+
+  role       = aws_iam_role.alprs_config.name
+  policy_arn = each.value
+}
+
+resource "aws_iam_instance_profile" "alprs_config" {
+  name = "ALPRSConfigInstanceProfile"
+  role = aws_iam_role.alprs_config.name
 }
