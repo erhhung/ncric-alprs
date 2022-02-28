@@ -1,3 +1,5 @@
+# t3.micro: x86, 2 vCPUs, 1 GiB, EBS only, 5 Gb/s, $.0104/hr
+
 module "bastion" {
   source     = "./modules/instance"
   depends_on = [module.main_vpc]
@@ -16,6 +18,7 @@ ${templatefile("${path.module}/bastion/boot.tftpl", {
   ENV = var.env
 })}
 ${file("${path.module}/bastion/boot.sh")}
+${file("${path.module}/bastion/install.sh")}
 EOT
 }
 

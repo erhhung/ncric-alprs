@@ -1,3 +1,5 @@
+# t4g.2xlarge: ARM, 8 vCPUs, 32 GiB, EBS only, 5 Gb/s, $.2688/hr
+
 module "indexer" {
   source     = "./modules/instance"
   depends_on = [module.main_vpc]
@@ -15,6 +17,7 @@ ${templatefile("${path.module}/indexer/boot.tftpl", {
   ENV = var.env
 })}
 ${file("${path.module}/shared/boot.sh")}
+${file("${path.module}/shared/install.sh")}
 EOT
 }
 

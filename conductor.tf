@@ -1,3 +1,6 @@
+# r6g.2xlarge: ARM,  8 vCPUs,  64 GiB, EBS only, 10 Gb/s, $.4032/hr
+# r6g.4xlarge: ARM, 16 vCPUs, 128 GiB, EBS only, 10 Gb/s, $.8064/hr
+
 module "conductor" {
   source     = "./modules/instance"
   depends_on = [module.main_vpc]
@@ -15,6 +18,7 @@ ${templatefile("${path.module}/conductor/boot.tftpl", {
   ENV = var.env
 })}
 ${file("${path.module}/shared/boot.sh")}
+${file("${path.module}/shared/install.sh")}
 EOT
 }
 

@@ -1,32 +1,20 @@
 # This user-data cloud-init script is a continuation
-# of a host-specific "boot.sh" script.
+# of the bastion host's "boot.sh" script.
 
-create_user() (
-  cd /home/$USER
-  egrep -q '^openlattice:' /etc/passwd && exit
-  cp .bash_aliases .emacs /etc/skel
-  adduser --disabled-login --gecos "" openlattice
-  cat <<'EOF' >> .bash_aliases
-
-alias ol='sudo su -l openlattice'
-EOF
-)
-
-install_java() (
-  hash java 2> /dev/null && exit
-  apt-get install -y openjdk-11-jdk
-  java --version
-  cat <<'EOF' >> /etc/environment
-JAVA_HOME="/usr/lib/jvm/java-11-openjdk-arm64"
-EOF
+install_node() (
+  hash node 2> /dev/null && exit
+  yum install -y gcc-c++ make
+  curl -sL https://rpm.nodesource.com/setup_14.x | bash -
+  yum install -y nodejs
+  node -v && npm -v
 )
 
 install_delta() (
   cd /tmp
   hash delta 2> /dev/null && exit
-  wget -q https://github.com/dandavison/delta/releases/download/0.12.0/git-delta_0.12.0_arm64.deb
-  dpkg -i git-delta_0.12.0_arm64.deb
-  rm git-delta*
+  wget -q https://github.com/dandavison/delta/releases/download/0.12.0/delta-0.12.0-x86_64-unknown-linux-gnu.tar.gz
+  tar xzvf delta-0.12.0-x86_64-unknown-linux-gnu.tar.gz -C /usr/bin --strip 1 delta-0.12.0-x86_64-unknown-linux-gnu/delta
+  rm -f delta-*.tar.gz
 )
 
 add_gitconfig() (
@@ -151,27 +139,20 @@ colorMoved = default
 EOF
 )
 
-clone_repos() (
-  git clone https://github.com/openlattice/ncric-transfer.git
-  pushd ncric-transfer
-  git co main
+clone_repo() (
+  git clone https://github.com/openlattice/astrometrics.git
+  cd astrometrics
+  git co master
   git up
-  popd
-  git clone https://github.com/openlattice/openlattice.git
-  pushd openlattice
-  git co main
-  git up
-  popd
 )
 
-build_service() {
-  cd ncric-transfer/scripts/${HOST,,}
-  ./build-latest.sh
+build_webapp() {
+  cd astrometrics
+  npm i && npm run build:prod
 }
 
-run create_user
-run install_java
+run install_node
 run install_delta
-run add_gitconfig openlattice
-run clone_repos   openlattice
-run build_service openlattice
+run add_gitconfig $USER
+run clone_repo    $USER
+run build_webapp  $USER

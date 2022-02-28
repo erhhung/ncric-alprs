@@ -1,0 +1,29 @@
+Host *
+  TCPKeepAlive yes
+  ForwardAgent yes
+  IdentitiesOnly yes
+  IgnoreUnknown UseKeychain
+  UseKeychain yes
+
+Host alprsdev*
+  ProxyCommand aws --profile alprscom --region us-west-2 ssm start-session --target %h --document-name AWS-StartSSHSession --parameters "portNumber=%p"
+Host alprsprod*
+  ProxyCommand aws --profile alprsgov --region us-gov-west-1 ssm start-session --target %h --document-name AWS-StartSSHSession --parameters "portNumber=%p"
+
+Host alprsdevbast
+  HostName i-08471acc04c8b472c
+Host alprsdevpg
+  HostName i-0875e4892a4b98c63
+Host alprsdeves
+  HostName i-0bcf2469bd2b887c5
+Host alprsdevcond
+  HostName i-0f88780f986f4a476
+
+Host alprs*bast
+  User ec2-user
+Host alprs*
+  User ubuntu
+Host alprsdev*
+  IdentityFile ~/.ssh/alprscom
+Host alprsprod*
+  IdentityFile ~/.ssh/alprsgov

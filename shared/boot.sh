@@ -1,4 +1,5 @@
-# this cloud-init script bootstraps a Ubuntu 20.04 server
+# This user-data cloud-init script bootstraps a Ubuntu 20.04 server.
+# It is appended to the host-specific "boot.tftpl" script template.
 
 script="user-data"
 exec > >(tee /var/log/$script.log | logger -t $script ) 2>&1
@@ -24,9 +25,9 @@ set_hostname() (
 )
 
 apt_install() {
-  apt update
-  apt dist-upgrade -y
-  apt install -y figlet emacs-nox most
+  apt-get update
+  apt-get dist-upgrade -y
+  apt-get install -y figlet emacs-nox most unzip net-tools
 }
 
 motd_banner() (
@@ -48,6 +49,19 @@ custom_prompt() (
 export PROMPT_COMMAND='PS1="\[\033[1;36m\]\u\[\033[1;31m\]@\[\033[1;32m\]\h:\[\033[1;35m\]\w\[\033[1;31m\]$\[\033[0m\] "'
 EOF
   chmod +x custom_prompt.sh
+)
+
+root_dotfiles() {
+  cd /home/$USER
+  /usr/bin/cp -f .bash_aliases .bashrc .emacs $HOME/
+}
+
+install_awscli() (
+  cd /tmp
+  curl -so awscliv2.zip https://awscli.amazonaws.com/awscli-exe-linux-aarch64.zip
+  unzip -q awscliv2.zip
+  ./aws/install
+  rm -rf /tmp/aws*
 )
 
 bash_aliases() (
@@ -72,19 +86,26 @@ alias du0='_diskusage . 0'
 alias du1='_diskusage . 1'
 alias sudo='sudo -E '
 alias l=less
+alias mud='most /var/log/user-data.log'
+
+alias ag='sudo apt-get '
+alias agu='ag update'
+alias agi='ag install'
+alias agd='ag dist-upgrade -y'
+alias agr='ag autoremove -y --purge'
 
 alias myip='printf "public: %s\n local: %s\n" "$(_instmeta public-ipv4)" "$(_instmeta local-ipv4)"'
 alias myid='_instmeta instance-id'
 alias myaz='_instmeta placement/availability-zone'
 alias mytype='_instmeta instance-type'
+alias myhost='_instmeta local-hostname'
 
 # my instance metadata
 # _instmeta <rel_path>
 _instmeta() {
-  echo $(curl -s "http://instance-data/latest/meta-data/$1")
+  echo $(curl -s "http://169.254.169.254/latest/meta-data/$1")
 }
 
-# helper for _touch and touchall
 __touch_date() {
   local d=$(date '+%Y%m%d%H%M.00')
   if [ "$1" != '-t' ]; then
@@ -105,9 +126,6 @@ __touch_date() {
   fi
 }
 
-# usage: _touch [-t time] <files...>
-# -t: digits in multiples of 2 replacing right-most
-#     digits of current time in yyyyMMddHHmm format
 _touch() {
   local d; d=$(__touch_date "$@") || return $?
   [ "$1" == '-t' ] && shift 2
@@ -115,11 +133,6 @@ _touch() {
 }
 alias t='_touch'
 
-# recursively touch files & directories
-# usage: touchall [-d] [-t time] [path]
-# -d: touch directories only
-# -t: digits in multiples of 2 replacing right-most
-#     digits of current time in yyyyMMddHHmm format
 touchall() {
   local d fargs=()
   if [ "$1" == '-d' ]; then
@@ -327,17 +340,37 @@ add_dotemacs() (
 EOF
 )
 
-install_java() (
-  [ "$install_java" == true ] || exit
-  apt install -y openjdk-11-jdk
-)
+install_certbot() {
+  snap install core
+  snap refresh core
+  snap install --classic certbot
+  ln -s /snap/bin/certbot /usr/bin/certbot
+}
 
-openlattice_user() (
-  cd /home/$USER
-  cp -a .bash_aliases .emacs /etc/skel
-  chown root:root /etc/skel/.*
-  [ "$create_openlattice_user" == true ] || exit
-  adduser --disabled-login --gecos "" openlattice
+generate_cert() (
+  cd /tmp
+  curl -sLo cert.sh http://exampleconfig.com/static/raw/openssl/centos7/etc/pki/tls/certs/make-dummy-cert
+  myFQDN=$(curl -s http://169.254.169.254/latest/meta-data/local-hostname)
+  ed -s cert.sh <<EOF
+6,11d
+6i
+	echo California
+	echo Walnut Creek
+	echo MaiVERIC, Inc.
+	echo ALPR
+	echo $myFQDN
+	echo root@$myFQDN
+.
+22d
+w
+q
+EOF
+  chmod +x cert.sh
+  ./cert.sh server.pem
+  openssl storeutl -keys  server.pem | sed '1d;$d' > server.key
+  openssl storeutl -certs server.pem | sed '1d;$d' > server.crt
+  rm server.pem cert.sh
+  chmod 400 server.key
 )
 
 run bash_aliases $USER
@@ -346,5 +379,5 @@ run set_hostname
 run apt_install
 run motd_banner
 run custom_prompt
-run install_java
-run openlattice_user
+run root_dotfiles
+run install_awscli

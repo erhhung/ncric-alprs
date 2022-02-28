@@ -1,4 +1,5 @@
-# this cloud-init script bootstraps an Amazon Linux2 server
+# This user-data cloud-init script bootstraps an Amazon Linux2 server.
+# It is appended to the bastion host's "boot.tftpl" script template.
 
 script="user-data"
 exec > >(tee /var/log/$script.log | logger -t $script ) 2>&1
@@ -49,7 +50,7 @@ END
 
 yum_install() {
   yum update  -y
-  yum install -y emacs-nox htop jq
+  yum install -y emacs-nox htop jq certbot
   yum install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
   yum --enablerepo epel install -y figlet most
 }
@@ -76,6 +77,11 @@ EOF
   chmod +x custom_prompt.sh
 )
 
+root_dotfiles() {
+  cd /home/$USER
+  /usr/bin/cp -f .bash_aliases .bashrc .emacs $HOME/
+}
+
 upgrade_awscli() (
   cd /tmp
   curl -so awscliv2.zip https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip
@@ -93,29 +99,18 @@ export LSCOLORS=GxFxCxDxBxegedabagaced
 export EDITOR="/usr/bin/emacs"
 export PAGER="/usr/bin/most"
 
-# Black        0;30     Dark Gray     1;30
-# Blue         0;34     Light Blue    1;34
-# Green        0;32     Light Green   1;32
-# Cyan         0;36     Light Cyan    1;36
-# Red          0;31     Light Red     1;31
-# Magenta      0;35     Light Magenta 1;35
-# Brown/Orange 0;33     Yellow        1;33
-# Light Gray   0;37     White         1;37
+export LESSQUIET=1 \
+LESS='-RKMi -x4 -z-4' \
+LESS_ADVANCED_PREPROCESSOR=1 \
+LESS_TERMCAP_mb=$'\E[1;31m' \
+LESS_TERMCAP_md=$'\E[1;36m' \
+LESS_TERMCAP_me=$'\E[0m' \
+LESS_TERMCAP_so=$'\E[01;44;33m' \
+LESS_TERMCAP_se=$'\E[0m' \
+LESS_TERMCAP_us=$'\E[1;32m' \
+LESS_TERMCAP_ue=$'\E[0m'
 
-export   BLACK='\033[0;30m'
-export   WHITE='\033[1;37m'
-export    GRAY='\033[0;37m'
-export    BLUE='\033[0;34m'
-export   GREEN='\033[0;32m'
-export    CYAN='\033[0;36m'
-export     RED='\033[0;31m'
-export MAGENTA='\033[0;35m'
-export  YELLOW='\033[1;33m'
-export   NOCLR='\033[0m'
-
-# cd $OLDPWD only works in Bash
 alias cdd='cd - > /dev/null'
-# print cwd in shell escaped form
 alias pwd='printf "%q\n" "$(builtin pwd)/"'
 alias ls='ls --color=auto'
 alias ll='ls -alF'
@@ -126,10 +121,23 @@ alias du0='_diskusage . 0'
 alias du1='_diskusage . 1'
 alias sudo='sudo -E '
 alias l=less
+alias mud='most /var/log/user-data.log'
 
-# require given commands
-# to be $PATH accessible
-# example: _reqcmds aws jq || return 1
+alias yu='sudo yum update -y'
+alias yi='sudo yum install'
+
+alias myip='printf "public: %s\n local: %s\n" "$(_instmeta public-ipv4)" "$(_instmeta local-ipv4)"'
+alias myid='_instmeta instance-id'
+alias myaz='_instmeta placement/availability-zone'
+alias mytype='_instmeta instance-type'
+alias myhost='_instmeta local-hostname'
+
+# my instance metadata
+# _instmeta <rel_path>
+_instmeta() {
+  echo $(curl -s "http://instance-data/latest/meta-data/$1")
+}
+
 _reqcmds() {
   local cmd
   for cmd in "$@"; do
@@ -140,18 +148,6 @@ _reqcmds() {
   done
 }
 
-alias myip='printf "public: %s\n local: %s\n" "$(_instmeta public-ipv4)" "$(_instmeta local-ipv4)"'
-alias myid='_instmeta instance-id'
-alias myaz='_instmeta placement/availability-zone'
-alias mytype='_instmeta instance-type'
-
-# my instance metadata
-# _instmeta <rel_path>
-_instmeta() {
-  echo $(curl -s "http://instance-data/latest/meta-data/$1")
-}
-
-# helper for _touch and touchall
 __touch_date() {
   local d=$(date '+%Y%m%d%H%M.00')
   if [ "$1" != '-t' ]; then
@@ -172,9 +168,6 @@ __touch_date() {
   fi
 }
 
-# usage: _touch [-t time] <files...>
-# -t: digits in multiples of 2 replacing right-most
-#     digits of current time in yyyyMMddHHmm format
 _touch() {
   local d; d=$(__touch_date "$@") || return $?
   [ "$1" == '-t' ] && shift 2
@@ -182,11 +175,6 @@ _touch() {
 }
 alias t='_touch'
 
-# recursively touch files & directories
-# usage: touchall [-d] [-t time] [path]
-# -d: touch directories only
-# -t: digits in multiples of 2 replacing right-most
-#     digits of current time in yyyyMMddHHmm format
 touchall() {
   local d fargs=()
   if [ "$1" == '-d' ]; then
@@ -199,20 +187,16 @@ touchall() {
 alias ta='touchall'
 alias tad='touchall -d'
 
-# get IP addresses from specified nslookup host
 dnsips() {
   nslookup "$1" | grep 'Address: ' | colrm 1 9 | sort -V
 }
-# see SSL certificate information for a website
 sslcert() {
   # openssl s_client -connect {HOSTNAME}:{PORT} -showcerts
   nmap -p ${2:-443} --script ssl-cert "$1"
 }
-# show TCP4 ports currently in LISTENING state
 listening() {
   netstat -ant | grep LISTEN | grep -E 'tcp4?' | sort -V
 }
-# show disk usage (please use du0/du1 aliases)
 _diskusage() {
   local path="${1:-.}" depth=${2:-1}
   du -d $depth -x -h "$path" 2> >(grep -v 'Permission denied') | sort -h
@@ -280,7 +264,6 @@ bsize() (
     exit 1
   fi
 
-  # https://docs.aws.amazon.com/AmazonS3/latest/userguide/metrics-dimensions.html
   stypes=(
     StandardStorage
     IntelligentTieringFAStorage
@@ -310,17 +293,17 @@ bsize() (
     period=$((60*60*24*2))
     metric=$1 stype=$2
 
-    aws cloudwatch get-metric-statistics  \
-      --start-time  $(($utnow - $period)) \
-      --end-time    $utnow  \
-      --period      $period \
-      --region      $region \
-      --namespace   AWS/S3  \
-      --metric-name $metric \
-      --dimensions  Name=BucketName,Value=$bucket \
-                    Name=StorageType,Value=$stype \
-      --statistics  Average 2> /dev/null | \
-      jq -r '.Datapoints[].Average // 0'
+aws cloudwatch get-metric-statistics  \
+  --start-time  $(($utnow - $period)) \
+  --end-time    $utnow  \
+  --period      $period \
+  --region      $region \
+  --namespace   AWS/S3  \
+  --metric-name $metric \
+  --dimensions  Name=BucketName,Value=$bucket \
+                Name=StorageType,Value=$stype \
+  --statistics  Average 2> /dev/null | \
+  jq -r '.Datapoints[].Average // 0'
   }
 
   total=$(
@@ -333,14 +316,14 @@ bsize() (
 
   # _print <label> <number> <units> <format> [suffix]
   _print() {
-    read label number units format suffix <<< "$@"
-    echo "$label"
+read label number units format suffix <<< "$@"
+echo "$label"
 
-    numfmt $number \
-      --to="$units" \
-      --suffix="$suffix" \
-      --format="$format" | \
-      sed -En 's/([^0-9]+)$/ \1/p'
+numfmt $number \
+  --to="$units" \
+  --suffix="$suffix" \
+  --format="$format" | \
+  sed -En 's/([^0-9]+)$/ \1/p'
   }
 
   cols=($(
@@ -372,26 +355,27 @@ emptyb() (
     type=$1 label=$2 token
     opts=() page objs count
 
-    while [ "$token" != null ]; do
-      page="$(aws s3api list-object-versions \
-                --bucket $bucket "${opts[@]}" \
-                --query="[{Objects: ${type}[].{Key:Key,VersionId:VersionId}}, NextToken]" \
-                --page-size $PAGE_SIZE \
-                --max-items $PAGE_SIZE \
-                --output json)" || exit $?
+while [ "$token" != null ]; do
+  page="$(
+aws s3api list-object-versions \
+  --bucket $bucket "${opts[@]}" \
+  --query="[{Objects: ${type}[].{Key:Key,VersionId:VersionId}}, NextToken]" \
+  --page-size $PAGE_SIZE \
+  --max-items $PAGE_SIZE \
+  --output json)" || exit $?
 
-       objs="$(jq '.[0] | .+={Quiet:true}' <<< "$page")"
-      count="$(jq '.Objects | length' <<< "$objs")"
-      token="$(jq -r '.[1]' <<< "$page")"
-       opts=(--starting-token "$token")
+  objs="$(jq '.[0] | .+={Quiet:true}' <<< "$page")"
+count="$(jq '.Objects | length' <<< "$objs")"
+token="$(jq -r '.[1]' <<< "$page")"
+  opts=(--starting-token "$token")
 
-      if [ $count -gt 0 ]; then
-        aws s3api delete-objects \
-          --bucket $bucket \
-          --delete "$objs"
-        jq -r '.Objects[].Key | "['$label'] "+.' <<< "$objs"
-      fi
-    done
+  if [ $count -gt 0 ]; then
+    aws s3api delete-objects \
+      --bucket $bucket \
+      --delete "$objs"
+    jq -r '.Objects[].Key | "['$label'] "+.' <<< "$objs"
+  fi
+done
   }
   _delobjs Versions      VER
   _delobjs DeleteMarkers DEL
@@ -422,10 +406,6 @@ add_dotemacs() (
 ;; ===== Disable Startup Message =====
 (setq inhibit-startup-message t)
 
-;; Added by Package.el. This must come before configurations of
-;; installed packages. Don't delete this line. If you don't want
-;; it, just comment it out by adding a semicolon to the start of
-;; the line. You may delete these explanatory comments.
 (package-initialize)
 
 ;; ===== Hide Menu and Tool Bars =====
@@ -438,16 +418,9 @@ add_dotemacs() (
   (interactive)
   (if window-system
   (progn
-    ;; use 120 char wide window for largeish displays,
-    ;; smaller 80 column windows for smaller displays.
-    ;; pick whatever numbers make sense for you
     (if (> (x-display-pixel-width) 1280)
            (add-to-list 'default-frame-alist (cons 'width 140))
            (add-to-list 'default-frame-alist (cons 'width 80)))
-    ;; for the height, subtract a couple hundred pixels
-    ;; from the screen height (for panels, menubars and
-    ;; whatnot), then divide by the height of a char to
-    ;; get the height we want
     (add-to-list 'default-frame-alist
          (cons 'height (/ (- (x-display-pixel-height) 220)
                              (frame-char-height))))
@@ -464,9 +437,10 @@ add_dotemacs() (
 (add-to-list 'load-path "/usr/local/share/emacs/24.5/site-lisp")
 
 ;; ===== Set ELPA archives =====
-(setq package-archives '(("gnu"   . "http://elpa.gnu.org/packages/")
-                         ("melpa" . "http://melpa.org/packages/")
-                        ))
+(setq package-archives
+  '(("gnu"   . "http://elpa.gnu.org/packages/")
+     ("melpa" . "http://melpa.org/packages/")
+   ))
 
 ;; ===== Load Theme =====
 (if (boundp 'custom-theme-load-path)
@@ -474,52 +448,23 @@ add_dotemacs() (
     (add-to-list 'custom-theme-load-path "~/.emacs.d/elpa/dracula-theme-20200124.1953")
   ))
 
-;(if (display-graphic-p)
-;; https://draculatheme.com/emacs/
-;  (load-theme 'dracula t)
-;)
-
 ;; ===== Set Fonts =====
 (modify-frame-parameters
   (selected-frame)
   '((font . "-*-monaco-*-*-*-*-16-*-*-*-*-*-*")))
 
-(add-hook 'after-make-frame-functions
-          (lambda (frame)
-            (modify-frame-parameters
-              frame
-              '((font . "-*-monaco-*-*-*-*-16-*-*-*-*-*-*"))
-              )))
-
-;; ===== Set Colors =====
-;; Set cursor and mouse-pointer colors
-;(set-cursor-color "red")
-;(set-mouse-color "goldenrod")
-;; Set region background color
-;(set-face-background 'region "blue")
-;; Set Emacs background color
-;(set-background-color "black")
-
-;; ===== Set Highlight Current Line Minor Mode =====
-;; In every buffer, the line which contains the cursor
-;; will be fully highlighted
-;(global-hl-line-mode t)
+(add-hook
+  'after-make-frame-functions
+    (lambda (frame)
+      (modify-frame-parameters
+        frame
+        '((font . "-*-monaco-*-*-*-*-16-*-*-*-*-*-*"))
+      )))
 
 ;; ===== Line By Line Scrolling =====
-;; This makes the buffer scroll by only a single line when the up
-;; or down cursor keys push the cursor (tool-bar-mode) outside the
-;; buffer. The standard emacs behaviour is to reposition the cursor
-;; in the center of screen, but this can make scrolling confusing
 (setq scroll-step 1)
 
 ;; ===== Turn Off Tab Character =====
-;; Emacs normally uses both tabs and spaces to indent lines. If you
-;; prefer, all indentation can be made from spaces only. To request
-;; this, set `indent-tabs-mode' to `nil'. This is a per-buffer variable;
-;; altering the variable affects only the current buffer, but it can be
-;; disabled for all buffers.
-;; Use (setq ...) to set value locally to a buffer
-;; Use (setq-default ...) to set value globally
 (setq-default indent-tabs-mode nil)
 
 ;; ===== Disable Auto-Indentation of New Lines =====
@@ -540,14 +485,6 @@ add_dotemacs() (
 
 ;; ===== Prevent Emacs From Making Backup Files =====
 (setq make-backup-files nil)
-
-;; ===== Write Backup Files in Designated Folder =====
-;; Enable backup files
-;(setq make-backup-files t)
-;; Enable versioning with default values
-;(setq version-control t)
-;; Save all backup file in this directory
-;(setq backup-directory-alist (quote ((".*" . "~/.emacs.d/backups/"))))
 
 ;; ===== Show Line+Column Numbers on Mode Line =====
   (line-number-mode t)
@@ -589,4 +526,5 @@ run set_hostname
 run yum_install
 run motd_banner
 run custom_prompt
+run root_dotfiles
 run upgrade_awscli
