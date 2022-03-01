@@ -164,14 +164,25 @@ clone_repos() (
   popd
 )
 
-build_service() {
+init_destdir() (
+  mkdir -p /opt/openlattice
+  chown -Rh openlattice:openlattice /opt/openlattice
+)
+
+build_service() (
   cd ncric-transfer/scripts/${HOST,,}
-  ./build-latest.sh
-}
+  ./build-latest.sh # also installs
+)
+
+launch_service() (
+  cd /opt/openlattice/${HOST,,}
+)
 
 run create_user
 run install_java
 run install_delta
-run add_gitconfig openlattice
-run clone_repos   openlattice
-run build_service openlattice
+run add_gitconfig  openlattice
+run clone_repos    openlattice
+run init_destdir
+run build_service  openlattice
+run launch_service openlattice

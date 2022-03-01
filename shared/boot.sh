@@ -1,9 +1,11 @@
 # This user-data cloud-init script bootstraps a Ubuntu 20.04 server.
-# It is appended to the host-specific "boot.tftpl" script template.
+# It is appended to the host-specific "boot.tftpl" template script.
 
 script="user-data"
 exec > >(tee /var/log/$script.log | logger -t $script ) 2>&1
 echo "[$(date '+%Y-%m-%d %H:%M:%S')] ===== BEGIN ${script^^} ====="
+printf "COMMAND: %q" "$0"; (($#)) && printf ' %q' "$@"
+echo "Bash version: ${BASH_VERSINFO[@]}"
 set -xeo pipefail
 
 # run <func> [user]
@@ -24,11 +26,11 @@ set_hostname() (
   hostname $hostname
 )
 
-apt_install() {
+apt_install() (
   apt-get update
   apt-get dist-upgrade -y
-  apt-get install -y figlet emacs-nox most unzip net-tools
-}
+  apt-get install -y figlet emacs-nox moreutils most unzip net-tools
+)
 
 motd_banner() (
   cd /etc/update-motd.d
@@ -51,10 +53,10 @@ EOF
   chmod +x custom_prompt.sh
 )
 
-root_dotfiles() {
+root_dotfiles() (
   cd /home/$USER
   /usr/bin/cp -f .bash_aliases .bashrc .emacs $HOME/
-}
+)
 
 install_awscli() (
   cd /tmp
@@ -352,8 +354,9 @@ generate_cert() (
   curl -sLo cert.sh http://exampleconfig.com/static/raw/openssl/centos7/etc/pki/tls/certs/make-dummy-cert
   myFQDN=$(curl -s http://169.254.169.254/latest/meta-data/local-hostname)
   ed -s cert.sh <<EOF
-6,11d
-6i
+5,11d
+5i
+	echo US
 	echo California
 	echo Walnut Creek
 	echo MaiVERIC, Inc.

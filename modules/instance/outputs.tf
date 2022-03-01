@@ -2,8 +2,12 @@ output "instance_id" {
   value = aws_instance.host.id
 }
 
-output "data_volume_id" {
-  value = length(aws_ebs_volume.data) > 0 ? one(aws_ebs_volume.data).id : null
+output "local_hostname" {
+  value = aws_instance.host.private_dns
+}
+
+output "private_ip" {
+  value = aws_instance.host.private_ip
 }
 
 output "public_ip" {

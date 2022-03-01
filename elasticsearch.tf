@@ -1,3 +1,18 @@
+data "external" "elasticsearch_yml" {
+  program = [
+    "${path.module}/shared/minconf.sh",
+    "${path.module}/elasticsearch/elasticsearch.yml",
+    "ENV=${var.env}",
+  ]
+}
+data "external" "kibana_yml" {
+  program = [
+    "${path.module}/shared/minconf.sh",
+    "${path.module}/elasticsearch/kibana.yml",
+    "ENV=${var.env}",
+  ]
+}
+
 # r6g.2xlarge: ARM, 8 vCPUs, 64 GiB, EBS only, 10 Gb/s, $.4032/hr
 
 module "elasticsearch" {
@@ -15,7 +30,9 @@ module "elasticsearch" {
 
   user_data = <<EOT
 ${templatefile("${path.module}/elasticsearch/boot.tftpl", {
-  ENV = var.env
+  ENV    = var.env
+  ES_YML = data.external.elasticsearch_yml.result.text
+  KB_YML = data.external.kibana_yml.result.text
 })}
 ${file("${path.module}/shared/boot.sh")}
 ${file("${path.module}/elasticsearch/install.sh")}
@@ -24,4 +41,10 @@ EOT
 
 output "elasticsearch_instance_id" {
   value = module.elasticsearch.instance_id
+}
+output "elasticsearch_hostname" {
+  value = module.elasticsearch.local_hostname
+}
+output "elasticsearch_local_ip" {
+  value = module.elasticsearch.private_ip
 }

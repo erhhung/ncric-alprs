@@ -20,6 +20,12 @@ deb https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main
 EOF
   apt-get update
   apt-get install -y postgresql-14 postgresql-contrib
+  cat <<'EOF' >> /home/$USER/.bash_aliases
+
+psql() {
+  sudo su postgres -c "psql $@"
+}
+EOF
 )
 
 config_postgresql() (
@@ -49,6 +55,7 @@ EOF
   mkdir -p data
   chown -Rh postgres:postgres .
   su postgres -c 'bin/initdb data'
+
   cd conf
   mv postgresql.conf postgresql-default.conf
   cat <<EOF > postgresql.conf

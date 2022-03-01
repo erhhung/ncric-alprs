@@ -40,3 +40,9 @@ EOT
 output "postgresql_instance_id" {
   value = module.postgresql.instance_id
 }
+output "postgresql_hostname" {
+  value = module.postgresql.local_hostname
+}
+output "postgresql_local_ip" {
+  value = module.postgresql.private_ip
+}

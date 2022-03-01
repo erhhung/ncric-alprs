@@ -1,9 +1,11 @@
 # This user-data cloud-init script bootstraps an Amazon Linux2 server.
-# It is appended to the bastion host's "boot.tftpl" script template.
+# It is appended to the bastion host's "boot.tftpl" template script.
 
 script="user-data"
 exec > >(tee /var/log/$script.log | logger -t $script ) 2>&1
 echo "[$(date '+%Y-%m-%d %H:%M:%S')] ===== BEGIN ${script^^} ====="
+printf "COMMAND: %q" "$0"; (($#)) && printf ' %q' "$@"
+echo "Bash version: ${BASH_VERSINFO[@]}"
 set -xeo pipefail
 
 # run <func> [user]
@@ -18,18 +20,21 @@ run() {
   fi
 }
 
-upgrade_bash() (
-  [ ${BASH_VERSINFO[0]} -eq 4 -a \
-    ${BASH_VERSINFO[1]} -eq 4 ] && exit
+upgrade_bash() {
+  [ ${BASH_VERSINFO[0]} -eq 5 -a \
+    ${BASH_VERSINFO[1]} -eq 1 ] && return
   yum groupinstall -y "Development Tools"
   cd /tmp
-  wget -q http://ftp.gnu.org/gnu/bash/bash-4.4.tar.gz
-  tar xzf bash-4.4.tar.gz
-  cd bash-4.4
+  wget -q https://ftp.gnu.org/gnu/bash/bash-5.1.16.tar.gz
+  tar xzf bash-5.1.16.tar.gz
+  cd bash-5.1.16
   ./configure --prefix=/
   make && make install
-  rm -rf /tmp/bash-4.4*
-)
+  rm -rf /tmp/bash-5.1.16*
+  self=$(realpath "$0")
+  echo "RESTARTING..."
+  exec "$self" "$@"
+}
 
 set_hostname() (
   cd /etc/cloud
@@ -37,7 +42,6 @@ set_hostname() (
   ed cloud.cfg <<END
 9i
 
-# This will cause the set+update hostname module to not operate (if true)
 preserve_hostname: true
 .
 w
@@ -48,12 +52,11 @@ END
   hostname $hostname
 )
 
-yum_install() {
-  yum update  -y
-  yum install -y emacs-nox htop jq certbot
+yum_install() (
+  yum update -y
   yum install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
-  yum --enablerepo epel install -y figlet most
-}
+  yum --enablerepo epel install -y figlet emacs-nox moreutils most jq htop certbot
+)
 
 motd_banner() (
   cd /etc/update-motd.d
@@ -77,10 +80,10 @@ EOF
   chmod +x custom_prompt.sh
 )
 
-root_dotfiles() {
+root_dotfiles() (
   cd /home/$USER
   /usr/bin/cp -f .bash_aliases .bashrc .emacs $HOME/
-}
+)
 
 upgrade_awscli() (
   cd /tmp
@@ -191,7 +194,6 @@ dnsips() {
   nslookup "$1" | grep 'Address: ' | colrm 1 9 | sort -V
 }
 sslcert() {
-  # openssl s_client -connect {HOSTNAME}:{PORT} -showcerts
   nmap -p ${2:-443} --script ssl-cert "$1"
 }
 listening() {
@@ -235,14 +237,11 @@ rmold() {
   fi
 }
 
-# show JSON from stdin in color
 jql() {
   _jql() { jq -C . | less -R; }
   (($#)) && (cat "$@" | _jql) || _jql
 }
 
-# show S3 bucket size/count
-# usage: bsize <bucket>
 bsize() (
   bucket=$1
 
@@ -334,8 +333,6 @@ numfmt $number \
   printf "%5s: %6s %s\n" "${cols[@]}"
 )
 
-# empty entire S3 bucket
-# usage: emptyb <bucket>
 emptyb() (
   bucket=$1
 
@@ -518,13 +515,13 @@ select 1
 EOF
 )
 
-run bashrc_aliases $USER
-run add_dotemacs   $USER
-run add_screenrc   $USER
 run upgrade_bash
 run set_hostname
 run yum_install
 run motd_banner
-run custom_prompt
+run bashrc_aliases $USER
+run add_dotemacs   $USER
+run add_screenrc   $USER
 run root_dotfiles
+run custom_prompt
 run upgrade_awscli

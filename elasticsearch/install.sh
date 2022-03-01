@@ -33,8 +33,9 @@ deb https://artifacts.elastic.co/packages/7.x/apt stable main
 EOF
   apt-get update
   . /etc/environment
-  apt-get install -y elasticsearch
+  apt-get install -y elasticsearch kibana nginx
   /usr/share/elasticsearch/bin/elasticsearch-plugin install analysis-phonetic
+  sed -Ei '/^PATH=/s/(.*)"$/\1:\/usr\/share\/elasticsearch\/bin"/' /etc/environment
 )
 
 config_elasticsearch() (
@@ -62,18 +63,11 @@ EOF
   ln -s /etc/elasticsearch conf
   ln -s /usr/share/elasticsearch/bin
   ln -s /usr/share/elasticsearch/plugins
+
   cd conf
   mv elasticsearch.yml elasticsearch-default.yml
   cat <<EOF > elasticsearch.yml
-cluster.name: alprs
-node.name: ${ENV}-data-1
-node.roles: [data, master, ingest]
-path.data: /opt/elasticsearch/data
-path.logs: /opt/elasticsearch/logs
-bootstrap.memory_lock: true
-network.host: 0.0.0.0
-discovery.seed_hosts: ["localhost"]
-cluster.initial_master_nodes: ["localhost"]
+$(sed 's/[[:blank:]]*$//' <<< "$ES_YML")
 EOF
   cat <<'EOF' > jvm.options.d/heap.options
 -Xms30g
@@ -81,13 +75,50 @@ EOF
 EOF
   chown -Rh elasticsearch:elasticsearch \
     /opt/elasticsearch /etc/elasticsearch
+
+  cd /etc/kibana
+  mv kibana.yml kibana-default.yml
+  cat <<EOF > kibana.yml
+$(sed 's/[[:blank:]]*$//' <<< "$KB_YML")
+EOF
+  chmod 660 kibana.yml
+  chown root:kibana *
+
+  cd /etc/nginx
+  run generate_cert
+  mv /tmp/server.* .
+  rm -f sites-enabled/default
+  while read service listen port; do
+    cat <<EOF > conf.d/$service.conf
+server {
+  listen              $listen ssl default_server;
+  ssl_certificate     /etc/nginx/server.crt;
+  ssl_certificate_key /etc/nginx/server.key;
+  server_name         $(curl -s http://169.254.169.254/latest/meta-data/local-hostname);
+
+  location / {
+    proxy_pass http://localhost:$port;
+    proxy_http_version 1.1;
+    proxy_set_header Upgrade \$http_upgrade;
+    proxy_set_header Connection 'upgrade';
+    proxy_set_header Host \$host;
+    proxy_cache_bypass \$http_upgrade;
+  }
+}
+EOF
+  done <<'EOT'
+elasticsearch 9200 9100
+kibana        443  5601
+EOT
 )
 
 start_elasticsearch() {
   systemctl daemon-reload
-  systemctl restart elasticsearch
-  systemctl enable  elasticsearch
-  systemctl status  elasticsearch --no-pager
+  for service in elasticsearch kibana nginx; do
+    systemctl restart $service
+    systemctl enable  $service
+    systemctl status  $service --no-pager
+  done
 }
 
 run install_java

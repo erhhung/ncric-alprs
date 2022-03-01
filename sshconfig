@@ -10,20 +10,32 @@ Host alprsdev*
 Host alprsprod*
   ProxyCommand aws --profile alprsgov --region us-gov-west-1 ssm start-session --target %h --document-name AWS-StartSSHSession --parameters "portNumber=%p"
 
-Host alprsdevbast
-  HostName i-08471acc04c8b472c
-Host alprsdevpg
-  HostName i-0875e4892a4b98c63
-Host alprsdeves
-  HostName i-0bcf2469bd2b887c5
-Host alprsdevcond
-  HostName i-0f88780f986f4a476
+Host alprsdevbast*
+  HostName i-0326769f0ecfbffbd
+Host alprsdevpg*
+  HostName i-074dc0bb9ee5656bc
+Host alprsdeves*
+  HostName i-07d034865839aeaf4
+Host alprsdevcond*
+  HostName i-0f84f9d08f3dc5440
 
-Host alprs*bast
+Host alprs*bast*
   User ec2-user
 Host alprs*
   User ubuntu
+  StrictHostKeyChecking = no
 Host alprsdev*
   IdentityFile ~/.ssh/alprscom
 Host alprsprod*
   IdentityFile ~/.ssh/alprsgov
+
+Host alprs*tun
+  ExitOnForwardFailure yes
+  RemoteCommand none
+  RequestTTY no
+
+Host alprs*pgtun
+  LocalForward 5433 localhost:5432
+Host alprs*estun
+  LocalForward 9201 localhost:9200
+  LocalForward 9202 localhost:443
