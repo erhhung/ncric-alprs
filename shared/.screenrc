@@ -1,0 +1,9 @@
+startup_message off
+caption always "%{= kc}%H (load: %l)%-21=%{= .m}%D %m/%d/%Y %0c"
+termcapinfo xterm* ti@:te@
+defscrollback 5000
+
+screen -t task  1 bash --login
+screen -t shell 2 bash --login
+screen -t htop  3 htop
+select 1

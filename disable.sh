@@ -8,8 +8,8 @@ HOSTS=(
   postgresql
   elasticsearch
   conductor
-#  datastore
-#  indexer
+  datastore
+  indexer
 )
 [ "$1" ] && HOSTS=("$@")
 

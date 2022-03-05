@@ -66,9 +66,7 @@ EOF
 
   cd conf
   mv elasticsearch.yml elasticsearch-default.yml
-  cat <<EOF > elasticsearch.yml
-$(sed 's/[[:blank:]]*$//' <<< "$ES_YML")
-EOF
+  aws s3 cp $ES_YML elasticsearch.yml
   cat <<'EOF' > jvm.options.d/heap.options
 -Xms30g
 -Xmx30g
@@ -78,9 +76,7 @@ EOF
 
   cd /etc/kibana
   mv kibana.yml kibana-default.yml
-  cat <<EOF > kibana.yml
-$(sed 's/[[:blank:]]*$//' <<< "$KB_YML")
-EOF
+  aws s3 cp $KB_YML kibana.yml
   chmod 660 kibana.yml
   chown root:kibana *
 

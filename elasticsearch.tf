@@ -13,12 +13,49 @@ data "external" "kibana_yml" {
   ]
 }
 
+locals {
+  es_user_data = [{
+    path = "elasticsearch/elasticsearch.yml"
+    data = data.external.elasticsearch_yml.result.text
+    }, {
+    path = "elasticsearch/kibana.yml"
+    data = data.external.kibana_yml.result.text
+    }, {
+    path = "elasticsearch/bootstrap.sh"
+    data = <<EOT
+${templatefile("${path.module}/elasticsearch/boot.tftpl", {
+    ENV    = var.env
+    S3_URL = "${local.user_data_s3_url}/userdata"
+    ES_YML = "${local.user_data_s3_url}/userdata/elasticsearch/elasticsearch.yml"
+    KB_YML = "${local.user_data_s3_url}/userdata/elasticsearch/kibana.yml"
+})}
+${file("${path.module}/shared/boot.sh")}
+${file("${path.module}/elasticsearch/install.sh")}
+EOT
+}]
+}
+
+# https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_object
+resource "aws_s3_object" "es_user_data" {
+  for_each = { for object in local.es_user_data : basename(object.path) => object }
+
+  bucket       = data.aws_s3_bucket.user_data.id
+  key          = "userdata/${each.value.path}"
+  content_type = "text/plain"
+  content      = chomp(each.value.data)
+  etag         = md5(each.value.data)
+}
+
 # r6g.2xlarge: ARM, 8 vCPUs, 64 GiB, EBS only, 10 Gb/s, $.4032/hr
 
 module "elasticsearch" {
-  source     = "./modules/instance"
-  depends_on = [module.main_vpc]
+  source = "./modules/instance"
 
+  depends_on = [
+    module.main_vpc,
+    aws_s3_object.shared_user_data,
+    aws_s3_object.es_user_data,
+  ]
   ami_id           = data.aws_ami.ubuntu_20arm.id
   instance_type    = "r6g.2xlarge"
   instance_name    = "Elasticsearch"
@@ -27,16 +64,7 @@ module "elasticsearch" {
   subnet_id        = module.main_vpc.private_subnet_id
   instance_profile = aws_iam_instance_profile.ssm_instance.name
   key_name         = aws_key_pair.admin.key_name
-
-  user_data = <<EOT
-${templatefile("${path.module}/elasticsearch/boot.tftpl", {
-  ENV    = var.env
-  ES_YML = data.external.elasticsearch_yml.result.text
-  KB_YML = data.external.kibana_yml.result.text
-})}
-${file("${path.module}/shared/boot.sh")}
-${file("${path.module}/elasticsearch/install.sh")}
-EOT
+  user_data        = aws_s3_object.es_user_data["bootstrap.sh"].content
 }
 
 output "elasticsearch_instance_id" {

@@ -23,7 +23,7 @@ EOF
   cat <<'EOF' >> /home/$USER/.bash_aliases
 
 psql() {
-  sudo su postgres -c "psql $@"
+  sudo su postgres -c "psql $*"
 }
 EOF
 )
@@ -47,6 +47,19 @@ EOF
 LimitMEMLOCK=infinity
 LimitNOFILE=300000
 EOF
+  cd /etc/sysctl.d
+  hugepages=$(
+    # shared_buffers = 32GB of 64GB total,
+    # so set hugepages to accommodate 32GB
+    awk '/MemTotal.*kB/ {mt=$2} /Hugepagesize.*kB/ {
+      hps=$2; print int(mt / hps * .55)
+    }' /proc/meminfo
+  )
+  cat <<EOF > 90-hugepages.conf
+vm.nr_hugepages = $hugepages
+EOF
+  service procps force-reload
+
   cd /opt/postgresql
   [ -d data ] && exit
   ln -s /etc/postgresql/14/main conf
@@ -58,20 +71,9 @@ EOF
 
   cd conf
   mv postgresql.conf postgresql-default.conf
-  cat <<EOF > postgresql.conf
-$(sed 's/[[:blank:]]*$//' <<< "$PG_CONF")
-EOF
+  aws s3 cp $PG_CONF postgresql.conf
   mv pg_hba.conf pg_hba-default.conf
-  cat <<EOF > pg_hba.conf
-$(sed 's/[[:blank:]]*$//' <<< "$PG_HBA")
-EOF
-  # shared_buffers = 32GB of 64GB total,
-  # so set hugepages to accommodate 32GB
-  sysctl -w vm.nr_hugepages=$(
-    awk '/MemTotal.*kB/ {mt=$2} /Hugepagesize.*kB/ {
-      hps=$2; print int(mt / hps * .55)
-    }' /proc/meminfo
-  )
+  aws s3 cp $PG_HBA pg_hba.conf
   run generate_cert
   mv /tmp/server.* .
   chown -h postgres:postgres *
@@ -84,7 +86,26 @@ start_postgresql() {
   systemctl status  postgresql --no-pager
 }
 
+create_databases() (
+  cd /opt/postgresql
+  mkdir -p users
+  cd users
+  for db in alprs atlas; do
+    user="${db}_user"
+    pass=$(pwgen 10 1)
+    echo $pass > $user
+    psql <<EOT
+CREATE USER $user WITH PASSWORD '$pass';
+CREATE DATABASE $db WITH OWNER = $user;
+REVOKE ALL ON DATABASE $db FROM PUBLIC;
+GRANT  ALL ON DATABASE $db TO   $user;
+EOT
+  done
+  chmod 400 *
+)
+
 run create_xfs_volume
 run install_postgresql
 run config_postgresql
 run start_postgresql
+run create_databases postgres
