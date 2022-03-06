@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 
+# convert key=value pairs in given .tfvars/.conf
+# file to YAML, and then to JSON for Terraform's
+# "external" data source
+
 _reqcmds() {
   local cmd
   for cmd in "$@"; do
@@ -9,6 +13,6 @@ _reqcmds() {
     fi
   done
 }
-_reqcmds yq || exit 1
+_reqcmds yq || exit $?
 
 sed -E 's/^ *([a-z0-9]+) *= */\1: /' "$1" | yq r -j -

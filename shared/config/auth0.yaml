@@ -1,0 +1,10 @@
+clientId: F9O0xcFUslwZ4HXEEdh12EfejElyLOXh
+clientSecret: 7inkyb7hVzk5PuQVlC9BzrLzH0phROpiBHBuc1I0g9mGJpr9aGE7l3FAAqY2T-iV
+configurations:
+  - issuer: https://maiveric.us.auth0.com/
+    audience: {{spa-client-id}}
+    secret: {{spa-client-secret}}
+    base64EncodedSecret: false
+    signingAlgorithm: HS256
+domain: maiveric.us.auth0.com
+managementApiUrl: https://maiveric.us.auth0.com/api/v2/

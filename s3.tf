@@ -1,33 +1,24 @@
-# local.xxx_bucket variables are defined in variables.tf
-# to accept overrides from var.xxx_bucket with var.env a
-# part of the default bucket names.
-locals {
-  buckets = [{
-    type = "webapp"
-    name = local.webapp_bucket
-    }, {
-    type = "config"
-    name = local.config_bucket
-    }, {
-    type = "audit"
-    name = local.audit_bucket
-    }, {
-    type = "media"
-    name = local.media_bucket
-    }, {
-    type = "sftp"
-    name = local.sftp_bucket
-  }]
-  user_data_bucket = data.external.backend_config.result.bucket
-  user_data_s3_url = "s3://${local.user_data_bucket}"
-}
-
 # https://registry.terraform.io/providers/hashicorp/external/latest/docs/data-sources/data_source
 data "external" "backend_config" {
   program = [
     "${path.module}/shared/tfvars.sh",
     "${path.module}/config/${var.env}.conf",
   ]
+}
+
+# local.xxx_bucket variables are defined in variables.tf
+# to accept overrides from var.xxx_bucket with var.env a
+# part of the default bucket names.
+locals {
+  buckets = {
+    webapp = local.webapp_bucket
+    config = local.config_bucket
+    audit  = local.audit_bucket
+    media  = local.media_bucket
+    sftp   = local.sftp_bucket
+  }
+  user_data_bucket = data.external.backend_config.result.bucket
+  user_data_s3_url = "s3://${local.user_data_bucket}/userdata"
 }
 
 # also use the Terraform state bucket to store instance
@@ -39,13 +30,14 @@ data "aws_s3_bucket" "user_data" {
 
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket
 resource "aws_s3_bucket" "buckets" {
-  for_each = { for bucket in local.buckets : bucket.type => bucket.name }
-  bucket   = each.value # created in same region as provider
+  for_each = local.buckets
+  # in provider region
+  bucket = each.value
 }
 
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket_server_side_encryption_configuration
 resource "aws_s3_bucket_server_side_encryption_configuration" "buckets" {
-  for_each = { for bucket in local.buckets : bucket.type => bucket.name }
+  for_each = local.buckets
   bucket   = each.value
 
   rule {
@@ -57,7 +49,7 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "buckets" {
 
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket_public_access_block
 resource "aws_s3_bucket_public_access_block" "buckets" {
-  for_each = { for bucket in local.buckets : bucket.type => bucket.name }
+  for_each = local.buckets
   bucket   = each.value
 
   block_public_acls       = true

@@ -2,7 +2,7 @@ locals {
   indexer_bootstrap = <<EOT
 ${templatefile("${path.module}/indexer/boot.tftpl", {
   ENV    = var.env
-  S3_URL = "${local.user_data_s3_url}/userdata"
+  S3_URL = local.user_data_s3_url
 })}
 ${file("${path.module}/shared/boot.sh")}
 ${file("${path.module}/shared/install.sh")}

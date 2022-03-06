@@ -1,0 +1,6 @@
+reportEmailAddress: eyuan@maiveric.com
+searchConfiguration:
+  elasticsearchUrl: ${ELASTICSEARCH_HOST}
+  elasticsearchCluster: alprs
+  elasticsearchPort: 9300
+  elasticsearchRestPort: 9200

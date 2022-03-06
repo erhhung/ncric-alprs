@@ -92,10 +92,10 @@ create_databases() (
   cd users
   for db in alprs atlas; do
     user="${db}_user"
-    pass=$(pwgen 10 1)
-    echo $pass > $user
+    pass="${db}_pass"
+    echo "${!pass}" > $user
     psql <<EOT
-CREATE USER $user WITH PASSWORD '$pass';
+CREATE USER $user WITH PASSWORD '${!pass}';
 CREATE DATABASE $db WITH OWNER = $user;
 REVOKE ALL ON DATABASE $db FROM PUBLIC;
 GRANT  ALL ON DATABASE $db TO   $user;

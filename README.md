@@ -29,7 +29,7 @@ aws s3api put-public-access-block \
 ## Terraform Init
 
 ```bash
-terraform init -backend-config config/dev.conf
+terraform init -backend-config config/dev.conf -upgrade
 ```
 
 ## Terraform Apply

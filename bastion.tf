@@ -17,7 +17,7 @@ locals {
     data = <<EOT
 ${templatefile("${path.module}/bastion/boot.tftpl", {
     ENV      = var.env
-    S3_URL   = "${local.user_data_s3_url}/userdata"
+    S3_URL   = local.user_data_s3_url
     FA_TOKEN = data.external.fontawesome_npm_token.result.text
 })}
 ${file("${path.module}/bastion/boot.sh")}

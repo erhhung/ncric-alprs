@@ -1,0 +1,11 @@
+error-reporting-email: eyuan@maiveric.com
+background-indexing-enabled: true
+background-linking-indexing-enabled: false
+background-deletion-enabled: true
+background-expired-data-deletion-enabled: true
+background-external-database-syncing-enabled: true
+search:
+  elasticsearchUrl: ${ELASTICSEARCH_HOST}
+  elasticsearchCluster: alprs
+  elasticsearchPort: 9300
+  elasticsearchRestPort: 9200

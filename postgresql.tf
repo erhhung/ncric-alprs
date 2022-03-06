@@ -1,3 +1,9 @@
+data "external" "pg_passwords" {
+  program = [
+    "${path.module}/shared/pwgen.sh",
+    "10", "2",
+  ]
+}
 data "external" "postgresql_conf" {
   program = [
     "${path.module}/shared/minconf.sh",
@@ -12,6 +18,9 @@ data "external" "pg_hba_conf" {
 }
 
 locals {
+  alprs_pass = data.external.pg_passwords.result.secret1
+  atlas_pass = data.external.pg_passwords.result.secret2
+
   pg_user_data = [{
     path = "postgresql/postgresql.conf"
     data = data.external.postgresql_conf.result.text
@@ -23,9 +32,12 @@ locals {
     data = <<EOT
 ${templatefile("${path.module}/postgresql/boot.tftpl", {
     ENV     = var.env
-    S3_URL  = "${local.user_data_s3_url}/userdata"
-    PG_CONF = "${local.user_data_s3_url}/userdata/postgresql/postgresql.conf"
-    PG_HBA  = "${local.user_data_s3_url}/userdata/postgresql/pg_hba.conf"
+    PG_CONF = "${local.user_data_s3_url}/postgresql/postgresql.conf"
+    PG_HBA  = "${local.user_data_s3_url}/postgresql/pg_hba.conf"
+    S3_URL  = local.user_data_s3_url
+
+    alprs_pass = local.alprs_pass
+    atlas_pass = local.atlas_pass
 })}
 ${file("${path.module}/shared/boot.sh")}
 ${file("${path.module}/postgresql/install.sh")}

@@ -86,25 +86,41 @@ EOF
   rm -f sites-enabled/default
   while read service listen port; do
     cat <<EOF > conf.d/$service.conf
-server {
-  listen              $listen ssl default_server;
-  ssl_certificate     /etc/nginx/server.crt;
-  ssl_certificate_key /etc/nginx/server.key;
-  server_name         $(curl -s http://169.254.169.254/latest/meta-data/local-hostname);
+# https://docs.nginx.com/nginx/admin-guide/load-balancer/http-load-balancer/
+http {
+  server {
+    listen              $listen ssl default_server;
+    ssl_certificate     /etc/nginx/server.crt;
+    ssl_certificate_key /etc/nginx/server.key;
+    server_name         $(curl -s http://169.254.169.254/latest/meta-data/local-hostname);
 
-  location / {
-    proxy_pass http://localhost:$port;
-    proxy_http_version 1.1;
-    proxy_set_header Upgrade \$http_upgrade;
-    proxy_set_header Connection 'upgrade';
-    proxy_set_header Host \$host;
-    proxy_cache_bypass \$http_upgrade;
+    location / {
+      proxy_pass http://localhost:$port;
+      proxy_http_version 1.1;
+      proxy_set_header Upgrade \$http_upgrade;
+      proxy_set_header Connection 'upgrade';
+      proxy_set_header Host \$host;
+      proxy_cache_bypass \$http_upgrade;
+    }
   }
 }
 EOF
   done <<'EOT'
-elasticsearch 9200 9100
-kibana        443  5601
+es_rest_api 9200 9201
+kibana_http 443  5601
+EOT
+  while read service listen port; do
+    cat <<EOF > conf.d/$service.conf
+# https://docs.nginx.com/nginx/admin-guide/load-balancer/tcp-udp-load-balancer/
+stream {
+  server {
+    listen     $listen;
+    proxy_pass localhost:$port;
+  }
+}
+EOF
+  done <<'EOT'
+es_transport 9300 9301
 EOT
 )
 

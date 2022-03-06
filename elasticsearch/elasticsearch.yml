@@ -60,7 +60,11 @@ network.host: 127.0.0.1
 # By default Elasticsearch listens for HTTP traffic on the first free port
 # it finds starting at 9200. Set a specific HTTP port here:
 #
-http.port: 9100
+http.port: 9201
+#
+# Node-to-node TCP transport port:
+#
+transport.port: 9301
 #
 # For more information, consult the network module documentation.
 #

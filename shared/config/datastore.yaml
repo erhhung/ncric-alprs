@@ -1,0 +1,11 @@
+timeToLive: 300000
+bucketName: ${MEDIA_BUCKET}
+regionName: ${AWS_REGION}
+# IAM user access key and secret to read/write media bucket
+accessKeyId: ${MEDIA_ACCESS_KEY}
+secretAccessKey: ${MEDIA_SECRET_KEY}
+searchConfiguration:
+  elasticsearchUrl: ${ELASTICSEARCH_HOST}
+  elasticsearchCluster: alprs
+  elasticsearchPort: 9300
+  elasticsearchRestPort: 9200

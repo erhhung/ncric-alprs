@@ -2,7 +2,7 @@ locals {
   datastore_bootstrap = <<EOT
 ${templatefile("${path.module}/datastore/boot.tftpl", {
   ENV    = var.env
-  S3_URL = "${local.user_data_s3_url}/userdata"
+  S3_URL = local.user_data_s3_url
 })}
 ${file("${path.module}/shared/boot.sh")}
 ${file("${path.module}/shared/install.sh")}
@@ -21,7 +21,7 @@ resource "aws_s3_object" "datastore_bootstrap" {
 # r6g.4xlarge: ARM, 16 vCPUs, 128 GiB, EBS only, 10 Gb/s, $.8064/hr
 
 module "datastore" {
-  source     = "./modules/instance"
+  source = "./modules/instance"
 
   depends_on = [
     module.main_vpc,

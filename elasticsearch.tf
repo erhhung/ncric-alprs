@@ -25,9 +25,9 @@ locals {
     data = <<EOT
 ${templatefile("${path.module}/elasticsearch/boot.tftpl", {
     ENV    = var.env
-    S3_URL = "${local.user_data_s3_url}/userdata"
-    ES_YML = "${local.user_data_s3_url}/userdata/elasticsearch/elasticsearch.yml"
-    KB_YML = "${local.user_data_s3_url}/userdata/elasticsearch/kibana.yml"
+    ES_YML = "${local.user_data_s3_url}/elasticsearch/elasticsearch.yml"
+    KB_YML = "${local.user_data_s3_url}/elasticsearch/kibana.yml"
+    S3_URL = local.user_data_s3_url
 })}
 ${file("${path.module}/shared/boot.sh")}
 ${file("${path.module}/elasticsearch/install.sh")}

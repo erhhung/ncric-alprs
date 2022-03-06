@@ -22,3 +22,11 @@ provider "aws" {
     }
   }
 }
+
+provider "aws" {
+  alias   = "dns"
+  region  = "us-west-2"
+  profile = "alprscom"
+}
+
+data "aws_region" "current" {}
