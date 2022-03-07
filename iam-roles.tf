@@ -23,7 +23,7 @@ data "aws_iam_policy_document" "user_data_bucket" {
   statement {
     effect    = "Allow"
     actions   = ["s3:ListBucket"]
-    resources = ["arn:aws:s3:::${local.user_data_bucket}"]
+    resources = [data.aws_s3_bucket.user_data.arn]
 
     condition {
       test     = "StringLike"
@@ -34,7 +34,7 @@ data "aws_iam_policy_document" "user_data_bucket" {
   statement {
     effect    = "Allow"
     actions   = ["s3:GetObject"]
-    resources = ["arn:aws:s3:::${local.user_data_bucket}/userdata/*"]
+    resources = ["${data.aws_s3_bucket.user_data.arn}/userdata/*"]
   }
 }
 
@@ -67,12 +67,12 @@ data "aws_iam_policy_document" "config_bucket" {
   statement {
     effect    = "Allow"
     actions   = ["s3:ListBucket"]
-    resources = ["arn:aws:s3:::${local.config_bucket}"]
+    resources = [aws_s3_bucket.buckets["config"].arn]
   }
   statement {
     effect    = "Allow"
     actions   = ["s3:GetObject"]
-    resources = ["arn:aws:s3:::${local.config_bucket}/*"]
+    resources = ["${aws_s3_bucket.buckets["config"].arn}/*"]
   }
 }
 

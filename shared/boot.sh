@@ -39,7 +39,9 @@ EOF
 
 apt_install() (
   apt-get update
+  sleep 1
   apt-get dist-upgrade -y
+  sleep 1
   apt-get install -y figlet emacs-nox moreutils most unzip net-tools pwgen
 )
 

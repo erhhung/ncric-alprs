@@ -28,25 +28,21 @@ variable "webapp_bucket" {
   type        = string
   default     = null
 }
-
 variable "config_bucket" {
   description = "Config bucket name"
   type        = string
   default     = null
 }
-
 variable "audit_bucket" {
   description = "Audit bucket name"
   type        = string
   default     = null
 }
-
 variable "media_bucket" {
   description = "Media bucket name"
   type        = string
   default     = null
 }
-
 variable "sftp_bucket" {
   description = "SFTP bucket name"
   type        = string
@@ -60,4 +56,17 @@ locals {
   audit_bucket  = var.audit_bucket == null ? "alprs-audit-${var.env}" : var.audit_bucket
   media_bucket  = var.media_bucket == null ? "alprs-media-${var.env}" : var.media_bucket
   sftp_bucket   = var.sftp_bucket == null ? "alprs-sftp-${var.env}" : var.sftp_bucket
+}
+
+variable "AUTH0_CLIENT_ID" {
+  description = "Auth0 client ID"
+  type        = string
+}
+variable "AUTH0_CLIENT_SECRET" {
+  description = "Auth0 client secret"
+  type        = string
+}
+variable "MAPBOX_PUBLIC_TOKEN" {
+  description = "Mapbox public token"
+  type        = string
 }

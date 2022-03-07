@@ -6,10 +6,10 @@ locals {
         name = "${name}-bucket-access-policy"
         statements = [{
           actions   = ["s3:ListBucket"],
-          resources = ["arn:aws:s3:::${local.buckets[name]}"],
+          resources = [aws_s3_bucket.buckets[name].arn],
           }, {
           actions   = ["s3:GetObject", "s3:PutObject"],
-          resources = ["arn:aws:s3:::${local.buckets[name]}/*"],
+          resources = ["${aws_s3_bucket.buckets[name].arn}/*"],
         }]
       }
     }

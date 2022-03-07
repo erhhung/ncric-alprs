@@ -1,1 +1,1 @@
-mapboxToken: ${MAPBOX_TOKEN}
+mapboxToken: ${MAPBOX_PUBLIC_TOKEN}

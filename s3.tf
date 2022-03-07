@@ -58,18 +58,6 @@ resource "aws_s3_bucket_public_access_block" "buckets" {
   restrict_public_buckets = true
 }
 
-# https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket_website_configuration
-resource "aws_s3_bucket_website_configuration" "webapp" {
-  bucket = aws_s3_bucket.buckets["webapp"].id
-
-  index_document {
-    suffix = "index.html"
-  }
-  error_document {
-    key = "error.html"
-  }
-}
-
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket_lifecycle_configuration
 resource "aws_s3_bucket_lifecycle_configuration" "audit" {
   bucket = aws_s3_bucket.buckets["audit"].id
@@ -82,4 +70,61 @@ resource "aws_s3_bucket_lifecycle_configuration" "audit" {
       days = 30
     }
   }
+}
+
+# https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document
+data "aws_iam_policy_document" "https_only" {
+  for_each = local.buckets
+
+  statement {
+    sid     = "OnlyAllowAccessViaTLS"
+    effect  = "Deny"
+    actions = ["s3:*"]
+
+    resources = [
+      aws_s3_bucket.buckets[each.key].arn,
+      "${aws_s3_bucket.buckets[each.key].arn}/*",
+    ]
+    principals {
+      identifiers = ["*"]
+      type        = "*"
+    }
+    condition {
+      test     = "Bool"
+      variable = "aws:SecureTransport"
+      values   = [false]
+    }
+  }
+}
+
+data "aws_iam_policy_document" "webapp_oai" {
+  source_policy_documents = [data.aws_iam_policy_document.https_only["webapp"].json]
+
+  statement {
+    sid       = "AllowCloudFrontAccess"
+    effect    = "Allow"
+    actions   = ["s3:GetObject"]
+    resources = ["${aws_s3_bucket.buckets["webapp"].arn}/*"]
+
+    principals {
+      identifiers = [aws_cloudfront_origin_access_identity.webapp.iam_arn]
+      type        = "AWS"
+    }
+  }
+}
+
+locals {
+  bucket_policies = {
+    webapp = data.aws_iam_policy_document.webapp_oai
+  }
+}
+
+# https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket_policy
+resource "aws_s3_bucket_policy" "buckets" {
+  for_each = local.buckets
+
+  bucket = each.value
+  policy = lookup(local.bucket_policies, each.key,
+    data.aws_iam_policy_document.https_only[each.key]
+  ).json
 }

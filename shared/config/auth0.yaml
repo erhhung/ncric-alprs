@@ -1,5 +1,5 @@
-clientId: F9O0xcFUslwZ4HXEEdh12EfejElyLOXh
-clientSecret: 7inkyb7hVzk5PuQVlC9BzrLzH0phROpiBHBuc1I0g9mGJpr9aGE7l3FAAqY2T-iV
+clientId: ${AUTH0_CLIENT_ID}
+clientSecret: ${AUTH0_CLIENT_SECRET}
 configurations:
   - issuer: https://maiveric.us.auth0.com/
     audience: {{spa-client-id}}
