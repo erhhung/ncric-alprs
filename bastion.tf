@@ -1,10 +1,3 @@
-data "external" "fontawesome_npm_token" {
-  program = [
-    "bash", "-c",
-    "printf $FONTAWESOME_NPM_AUTH_TOKEN | jq -sR '{\"text\":.}'",
-  ]
-}
-
 locals {
   bastion_user_data = [{
     path = "bastion/.bash_aliases"
@@ -18,7 +11,7 @@ locals {
 ${templatefile("${path.module}/bastion/boot.tftpl", {
     ENV      = var.env
     S3_URL   = local.user_data_s3_url
-    FA_TOKEN = data.external.fontawesome_npm_token.result.text
+    FA_TOKEN = var.FONTAWESOME_NPM_TOKEN
 })}
 ${file("${path.module}/bastion/boot.sh")}
 ${file("${path.module}/bastion/install.sh")}

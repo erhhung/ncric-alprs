@@ -19,7 +19,7 @@ resource "aws_s3_object" "indexer_bootstrap" {
 
 # t4g.2xlarge: ARM, 8 vCPUs, 32 GiB, EBS only, 5 Gb/s, $.2688/hr
 
-module "indexer" {
+module "indexer_server" {
   source = "./modules/instance"
 
   depends_on = [
@@ -37,6 +37,15 @@ module "indexer" {
   user_data        = aws_s3_object.indexer_bootstrap.content
 }
 
+module "indexer_config" {
+  source = "./modules/config"
+
+  service = "indexer"
+  path    = "${path.module}/indexer/config"
+  bucket  = aws_s3_bucket.buckets["config"].id
+  values  = local.config_values
+}
+
 output "indexer_instance_id" {
-  value = module.indexer.instance_id
+  value = module.indexer_server.instance_id
 }

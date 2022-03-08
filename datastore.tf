@@ -20,7 +20,7 @@ resource "aws_s3_object" "datastore_bootstrap" {
 # r6g.2xlarge: ARM,  8 vCPUs,  64 GiB, EBS only, 10 Gb/s, $.4032/hr
 # r6g.4xlarge: ARM, 16 vCPUs, 128 GiB, EBS only, 10 Gb/s, $.8064/hr
 
-module "datastore" {
+module "datastore_server" {
   source = "./modules/instance"
 
   depends_on = [
@@ -39,9 +39,18 @@ module "datastore" {
   user_data        = aws_s3_object.datastore_bootstrap.content
 }
 
+module "datastore_config" {
+  source = "./modules/config"
+
+  service = "datastore"
+  path    = "${path.module}/datastore/config"
+  bucket  = aws_s3_bucket.buckets["config"].id
+  values  = local.config_values
+}
+
 output "datastore_instance_id" {
-  value = module.datastore.instance_id
+  value = module.datastore_server.instance_id
 }
 output "datastore_public_ip" {
-  value = module.datastore.public_ip
+  value = module.datastore_server.public_ip
 }

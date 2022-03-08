@@ -10,6 +10,7 @@ HOSTS=(
   conductor
   datastore
   indexer
+  shared
 )
 [ "$1" ] && HOSTS=("$@")
 

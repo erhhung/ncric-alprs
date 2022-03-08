@@ -37,7 +37,7 @@ EOT
 
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_object
 resource "aws_s3_object" "es_user_data" {
-  for_each = { for object in local.es_user_data : basename(object.path) => object }
+  for_each = { for obj in local.es_user_data : basename(obj.path) => obj }
 
   bucket       = data.aws_s3_bucket.user_data.id
   key          = "userdata/${each.value.path}"
@@ -48,7 +48,7 @@ resource "aws_s3_object" "es_user_data" {
 
 # r6g.2xlarge: ARM, 8 vCPUs, 64 GiB, EBS only, 10 Gb/s, $.4032/hr
 
-module "elasticsearch" {
+module "elasticsearch_server" {
   source = "./modules/instance"
 
   depends_on = [
@@ -68,11 +68,11 @@ module "elasticsearch" {
 }
 
 output "elasticsearch_instance_id" {
-  value = module.elasticsearch.instance_id
+  value = module.elasticsearch_server.instance_id
 }
 output "elasticsearch_hostname" {
-  value = module.elasticsearch.local_hostname
+  value = module.elasticsearch_server.local_hostname
 }
 output "elasticsearch_local_ip" {
-  value = module.elasticsearch.private_ip
+  value = module.elasticsearch_server.private_ip
 }

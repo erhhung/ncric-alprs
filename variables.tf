@@ -1,5 +1,6 @@
 variable "env" {
   description = "Deployment environment: dev/prod"
+  type        = string
 
   validation {
     condition     = contains(["dev", "prod"], var.env)
@@ -51,11 +52,11 @@ variable "sftp_bucket" {
 
 locals {
   # work around variable not allowed in variable default value
-  webapp_bucket = var.webapp_bucket == null ? "alprs-webapp-${var.env}" : var.webapp_bucket
-  config_bucket = var.config_bucket == null ? "alprs-config-${var.env}" : var.config_bucket
-  audit_bucket  = var.audit_bucket == null ? "alprs-audit-${var.env}" : var.audit_bucket
-  media_bucket  = var.media_bucket == null ? "alprs-media-${var.env}" : var.media_bucket
-  sftp_bucket   = var.sftp_bucket == null ? "alprs-sftp-${var.env}" : var.sftp_bucket
+  webapp_bucket = coalesce(var.webapp_bucket, "alprs-webapp-${var.env}")
+  config_bucket = coalesce(var.config_bucket, "alprs-config-${var.env}")
+  audit_bucket  = coalesce(var.audit_bucket, "alprs-audit-${var.env}")
+  media_bucket  = coalesce(var.media_bucket, "alprs-media-${var.env}")
+  sftp_bucket   = coalesce(var.sftp_bucket, "alprs-sftp-${var.env}")
 }
 
 variable "AUTH0_CLIENT_ID" {
@@ -68,5 +69,10 @@ variable "AUTH0_CLIENT_SECRET" {
 }
 variable "MAPBOX_PUBLIC_TOKEN" {
   description = "Mapbox public token"
+  type        = string
+}
+
+variable "FONTAWESOME_NPM_TOKEN" {
+  description = "Font Awesome NPM auth token"
   type        = string
 }

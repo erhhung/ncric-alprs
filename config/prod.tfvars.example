@@ -1,0 +1,28 @@
+# .tfvars FILE CONTAINS SENSITIVE DATA AND
+# MUST NOT BE CHECKED INTO SOURCE CONTROL!
+#
+# Copy the .tfvars.example file to .tfvars
+# and set the necessary environment values.
+
+env = "prod"
+
+aws_provider = {
+  profile = "alprsgov"
+  region  = "us-gov-west-1"
+}
+
+webapp_bucket = "alprs-webapp-prod"
+config_bucket = "alprs-config-prod"
+audit_bucket  = "alprs-audit-prod"
+media_bucket  = "alprs-media-prod"
+sftp_bucket   = "alprs-sftp-prod"
+
+ssh_key = {
+  key_name   = "alprsgov-admin"
+  public_key = "ssh-ed25519 ... alprsgov-admin"
+}
+
+AUTH0_CLIENT_ID       = ""
+AUTH0_CLIENT_SECRET   = ""
+FONTAWESOME_NPM_TOKEN = ""
+MAPBOX_PUBLIC_TOKEN   = "pk..."

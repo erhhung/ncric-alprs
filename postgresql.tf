@@ -47,7 +47,7 @@ EOT
 
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_object
 resource "aws_s3_object" "pg_user_data" {
-  for_each = { for object in local.pg_user_data : basename(object.path) => object }
+  for_each = { for obj in local.pg_user_data : basename(obj.path) => obj }
 
   bucket       = data.aws_s3_bucket.user_data.id
   key          = "userdata/${each.value.path}"
@@ -58,7 +58,7 @@ resource "aws_s3_object" "pg_user_data" {
 
 # r6g.2xlarge: ARM, 8 vCPUs, 64 GiB, EBS only, 10 Gb/s, $.4032/hr
 
-module "postgresql" {
+module "postgresql_server" {
   source = "./modules/instance"
 
   depends_on = [
@@ -78,11 +78,11 @@ module "postgresql" {
 }
 
 output "postgresql_instance_id" {
-  value = module.postgresql.instance_id
+  value = module.postgresql_server.instance_id
 }
 output "postgresql_hostname" {
-  value = module.postgresql.local_hostname
+  value = module.postgresql_server.local_hostname
 }
 output "postgresql_local_ip" {
-  value = module.postgresql.private_ip
+  value = module.postgresql_server.private_ip
 }

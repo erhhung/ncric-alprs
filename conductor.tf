@@ -20,7 +20,7 @@ resource "aws_s3_object" "conductor_bootstrap" {
 # r6g.2xlarge: ARM,  8 vCPUs,  64 GiB, EBS only, 10 Gb/s, $.4032/hr
 # r6g.4xlarge: ARM, 16 vCPUs, 128 GiB, EBS only, 10 Gb/s, $.8064/hr
 
-module "conductor" {
+module "conductor_server" {
   source = "./modules/instance"
 
   depends_on = [
@@ -38,6 +38,15 @@ module "conductor" {
   user_data        = aws_s3_object.conductor_bootstrap.content
 }
 
+module "conductor_config" {
+  source = "./modules/config"
+
+  service = "conductor"
+  path    = "${path.module}/conductor/config"
+  bucket  = aws_s3_bucket.buckets["config"].id
+  values  = local.config_values
+}
+
 output "conductor_instance_id" {
-  value = module.conductor.instance_id
+  value = module.conductor_server.instance_id
 }
