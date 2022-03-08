@@ -28,13 +28,13 @@ alias du0='_diskusage . 0'
 alias du1='_diskusage . 1'
 alias sudo='sudo -E '
 alias l=less
-alias mud='most /var/log/user-data.log'
 
 alias ag='sudo apt-get '
 alias agu='ag update'
 alias agi='ag install'
 alias agd='ag dist-upgrade -y'
 alias agr='ag autoremove -y --purge'
+alias mud='most /bootstrap.log'
 
 alias myip='printf "public: %s\n local: %s\n" "$(_instmeta public-ipv4)" "$(_instmeta local-ipv4)"'
 alias myid='_instmeta instance-id'

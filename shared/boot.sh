@@ -1,11 +1,10 @@
 # This user-data cloud-init script bootstraps a Ubuntu 20.04 server.
-# It is appended to the host-specific "boot.tftpl" template script.
+# It is appended onto the host-specific "boot.tftpl" template script.
 
 cd /root
-script="user-data"
-exec > >(tee /var/log/$script.log | logger -t $script ) 2>&1
-echo "[$(date '+%Y-%m-%d %H:%M:%S')] ===== BEGIN ${script^^} ====="
-printf "COMMAND: %q" "$0"; (($#)) && printf ' %q' "$@"
+script=$(basename "$0" .sh)
+exec > >(tee /$script.log | logger -t $script ) 2>&1
+echo "[$(date -R)] ===== BEGIN ${script^^} ====="
 echo -e "\nBash version: ${BASH_VERSINFO[@]}"
 set -xeo pipefail
 
@@ -37,13 +36,20 @@ EOF
   chmod +x custom_prompt.sh
 )
 
-apt_install() (
+wait_apt_get() {
+  while [ "$(pgrep apt-get)" ]; do
+    echo "Waiting on apt-get..."
+    sleep 10
+  done
+}
+
+apt_install() {
   apt-get update
-  sleep 1
+  wait_apt_get
   apt-get dist-upgrade -y
-  sleep 1
+  wait_apt_get
   apt-get install -y figlet emacs-nox moreutils most unzip net-tools pwgen
-)
+}
 
 motd_banner() (
   cd /etc/update-motd.d
@@ -59,13 +65,14 @@ EOF
 install_awscli() (
   cd /tmp
   curl -so awscliv2.zip https://awscli.amazonaws.com/awscli-exe-linux-aarch64.zip
-  unzip -q awscliv2.zip
+  unzip -oq awscliv2.zip
   ./aws/install
   rm -rf /tmp/aws*
 )
 
 user_dotfiles() {
   aws s3 sync $S3_URL/shared . --exclude '*' --include '.*'
+  touch .sudo_as_admin_successful
 }
 
 root_dotfiles() (
@@ -87,13 +94,13 @@ generate_cert() (
   ed -s cert.sh <<EOF
 5,11d
 5i
-	echo US
-	echo California
-	echo Walnut Creek
-	echo MaiVERIC, Inc.
-	echo ALPR
-	echo $myFQDN
-	echo root@$myFQDN
+  echo US
+  echo California
+  echo Walnut Creek
+  echo MaiVERIC, Inc.
+  echo ALPR
+  echo $myFQDN
+  echo root@$myFQDN
 .
 22d
 w

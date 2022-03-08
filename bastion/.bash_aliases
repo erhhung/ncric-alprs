@@ -28,10 +28,10 @@ alias du0='_diskusage . 0'
 alias du1='_diskusage . 1'
 alias sudo='sudo -E '
 alias l=less
-alias mud='most /var/log/user-data.log'
 
-alias yu='sudo yum update -y'
 alias yi='sudo yum install'
+alias yu='sudo yum update -y'
+alias mud='most /bootstrap.log'
 
 alias myip='printf "public: %s\n local: %s\n" "$(_instmeta public-ipv4)" "$(_instmeta local-ipv4)"'
 alias myid='_instmeta instance-id'

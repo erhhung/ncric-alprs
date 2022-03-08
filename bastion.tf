@@ -27,7 +27,17 @@ resource "aws_s3_object" "bastion_user_data" {
   key          = "userdata/${each.value.path}"
   content_type = "text/plain"
   content      = chomp(each.value.data)
-  etag         = md5(each.value.data)
+  source_hash  = md5(each.value.data)
+}
+
+locals {
+  bastion_bootstrap = <<EOT
+${templatefile("${path.module}/shared/boot.tftpl", {
+  BUCKET = local.user_data_bucket
+  HOST   = "bastion"
+})}
+${file("${path.module}/shared/s3boot.sh")}
+EOT
 }
 
 # t3.micro: x86, 2 vCPUs, 1 GiB, EBS only, 5 Gb/s, $.0104/hr
@@ -49,7 +59,7 @@ module "bastion" {
   assign_public_ip = true
   instance_profile = aws_iam_instance_profile.ssm_instance.name
   key_name         = aws_key_pair.admin.key_name
-  user_data        = aws_s3_object.bastion_user_data["bootstrap.sh"].content
+  user_data        = chomp(local.bastion_bootstrap)
 }
 
 output "bastion_instance_id" {

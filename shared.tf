@@ -22,7 +22,7 @@ resource "aws_s3_object" "shared_user_data" {
   key          = "userdata/${each.value.path}"
   content_type = "text/plain"
   content      = chomp(each.value.data)
-  etag         = md5(each.value.data)
+  source_hash  = md5(each.value.data)
 }
 
 locals {

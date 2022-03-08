@@ -12,6 +12,12 @@ data "external" "kibana_yml" {
     "ENV=${var.env}",
   ]
 }
+data "external" "nginx_conf" {
+  program = [
+    "${path.module}/shared/minconf.sh",
+    "${path.module}/elasticsearch/nginx.conf",
+  ]
+}
 
 locals {
   es_user_data = [{
@@ -21,13 +27,17 @@ locals {
     path = "elasticsearch/kibana.yml"
     data = data.external.kibana_yml.result.text
     }, {
+    path = "elasticsearch/nginx.conf"
+    data = data.external.nginx_conf.result.text
+    }, {
     path = "elasticsearch/bootstrap.sh"
     data = <<EOT
 ${templatefile("${path.module}/elasticsearch/boot.tftpl", {
-    ENV    = var.env
-    ES_YML = "${local.user_data_s3_url}/elasticsearch/elasticsearch.yml"
-    KB_YML = "${local.user_data_s3_url}/elasticsearch/kibana.yml"
-    S3_URL = local.user_data_s3_url
+    ENV     = var.env
+    S3_URL  = local.user_data_s3_url
+    ES_YML  = "${local.user_data_s3_url}/elasticsearch/elasticsearch.yml"
+    KB_YML  = "${local.user_data_s3_url}/elasticsearch/kibana.yml"
+    NG_CONF = "${local.user_data_s3_url}/elasticsearch/nginx.conf"
 })}
 ${file("${path.module}/shared/boot.sh")}
 ${file("${path.module}/elasticsearch/install.sh")}
@@ -43,7 +53,17 @@ resource "aws_s3_object" "es_user_data" {
   key          = "userdata/${each.value.path}"
   content_type = "text/plain"
   content      = chomp(each.value.data)
-  etag         = md5(each.value.data)
+  source_hash  = md5(each.value.data)
+}
+
+locals {
+  es_bootstrap = <<EOT
+${templatefile("${path.module}/shared/boot.tftpl", {
+  BUCKET = local.user_data_bucket
+  HOST   = "elasticsearch"
+})}
+${file("${path.module}/shared/s3boot.sh")}
+EOT
 }
 
 # r6g.2xlarge: ARM, 8 vCPUs, 64 GiB, EBS only, 10 Gb/s, $.4032/hr
@@ -64,7 +84,7 @@ module "elasticsearch_server" {
   subnet_id        = module.main_vpc.private_subnet_id
   instance_profile = aws_iam_instance_profile.ssm_instance.name
   key_name         = aws_key_pair.admin.key_name
-  user_data        = aws_s3_object.es_user_data["bootstrap.sh"].content
+  user_data        = chomp(local.es_bootstrap)
 }
 
 output "elasticsearch_instance_id" {

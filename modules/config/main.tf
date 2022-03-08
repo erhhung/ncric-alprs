@@ -20,8 +20,8 @@ resource "aws_s3_object" "configs" {
 
   bucket       = var.bucket
   key          = "${var.service}/${each.value.rel}"
-  content_type = each.value.ext == ".yaml" ? "text/plain" : "application/octet-stream"
+  content_type = each.value.ext == ".yaml" ? "application/yaml" : "application/octet-stream"
   content      = each.value.data
   source       = each.value.data == null ? each.value.abs : null
-  etag         = each.value.data == null ? filemd5(each.value.abs) : md5(each.value.data)
+  source_hash  = each.value.data == null ? filemd5(each.value.abs) : md5(each.value.data)
 }

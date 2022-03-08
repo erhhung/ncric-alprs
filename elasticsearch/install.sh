@@ -79,44 +79,59 @@ EOF
   aws s3 cp $KB_YML kibana.yml
   chmod 660 kibana.yml
   chown root:kibana *
+)
 
+restart_service() {
+  systemctl restart $1
+  systemctl enable  $1
+  systemctl status  $1 --no-pager
+}
+
+start_elasticsearch() {
+  systemctl daemon-reload
+  restart_service elasticsearch
+  restart_service kibana
+}
+
+config_nginx() (
   cd /etc/nginx
   run generate_cert
   mv /tmp/server.* .
+  # disable unused modules and site
+  find modules-enabled/ -mindepth 1 | \
+    grep -v stream | xargs rm -f
   rm -f sites-enabled/default
-  while read service listen port; do
-    cat <<EOF > conf.d/$service.conf
-# https://docs.nginx.com/nginx/admin-guide/load-balancer/http-load-balancer/
-http {
-  server {
-    listen              $listen ssl default_server;
-    ssl_certificate     /etc/nginx/server.crt;
-    ssl_certificate_key /etc/nginx/server.key;
-    server_name         $(curl -s http://169.254.169.254/latest/meta-data/local-hostname);
 
-    location / {
-      proxy_pass http://localhost:$port;
-      proxy_http_version 1.1;
-      proxy_set_header Upgrade \$http_upgrade;
-      proxy_set_header Connection 'upgrade';
-      proxy_set_header Host \$host;
-      proxy_cache_bypass \$http_upgrade;
-    }
+  aws s3 cp $NG_CONF nginx.conf
+  while read service listen port; do
+    cat <<EOF > conf.d/http_$service.conf
+# https://docs.nginx.com/nginx/admin-guide/load-balancer/http-load-balancer/
+server {
+  listen              $listen ssl default_server;
+  ssl_certificate     /etc/nginx/server.crt;
+  ssl_certificate_key /etc/nginx/server.key;
+  server_name         $(curl -s http://169.254.169.254/latest/meta-data/local-hostname);
+
+  location / {
+    proxy_pass http://localhost:$port;
+    proxy_http_version 1.1;
+    proxy_set_header Upgrade \$http_upgrade;
+    proxy_set_header Connection 'upgrade';
+    proxy_set_header Host \$host;
+    proxy_cache_bypass \$http_upgrade;
   }
 }
 EOF
   done <<'EOT'
-es_rest_api 9200 9201
-kibana_http 443  5601
+es_rest 9200 9201
+kibana  443  5601
 EOT
   while read service listen port; do
-    cat <<EOF > conf.d/$service.conf
+    cat <<EOF > conf.d/stream_$service.conf
 # https://docs.nginx.com/nginx/admin-guide/load-balancer/tcp-udp-load-balancer/
-stream {
-  server {
-    listen     $listen;
-    proxy_pass localhost:$port;
-  }
+server {
+  listen     $listen;
+  proxy_pass localhost:$port;
 }
 EOF
   done <<'EOT'
@@ -124,13 +139,9 @@ es_transport 9300 9301
 EOT
 )
 
-start_elasticsearch() {
-  systemctl daemon-reload
-  for service in elasticsearch kibana nginx; do
-    systemctl restart $service
-    systemctl enable  $service
-    systemctl status  $service --no-pager
-  done
+start_nginx() {
+  sleep 1
+  restart_service nginx
 }
 
 run install_java
@@ -138,3 +149,7 @@ run create_xfs_volume
 run install_elasticsearch
 run config_elasticsearch
 run start_elasticsearch
+run config_nginx
+run start_nginx
+
+echo "[$(date -R)] ===== END ${script^^} ====="

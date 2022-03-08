@@ -32,9 +32,9 @@ locals {
     data = <<EOT
 ${templatefile("${path.module}/postgresql/boot.tftpl", {
     ENV     = var.env
+    S3_URL  = local.user_data_s3_url
     PG_CONF = "${local.user_data_s3_url}/postgresql/postgresql.conf"
     PG_HBA  = "${local.user_data_s3_url}/postgresql/pg_hba.conf"
-    S3_URL  = local.user_data_s3_url
 
     alprs_pass = local.alprs_pass
     atlas_pass = local.atlas_pass
@@ -53,7 +53,17 @@ resource "aws_s3_object" "pg_user_data" {
   key          = "userdata/${each.value.path}"
   content_type = "text/plain"
   content      = chomp(each.value.data)
-  etag         = md5(each.value.data)
+  source_hash  = md5(each.value.data)
+}
+
+locals {
+  pg_bootstrap = <<EOT
+${templatefile("${path.module}/shared/boot.tftpl", {
+  BUCKET = local.user_data_bucket
+  HOST   = "postgresql"
+})}
+${file("${path.module}/shared/s3boot.sh")}
+EOT
 }
 
 # r6g.2xlarge: ARM, 8 vCPUs, 64 GiB, EBS only, 10 Gb/s, $.4032/hr
@@ -74,7 +84,15 @@ module "postgresql_server" {
   subnet_id        = module.main_vpc.private_subnet_id
   instance_profile = aws_iam_instance_profile.ssm_instance.name
   key_name         = aws_key_pair.admin.key_name
-  user_data        = aws_s3_object.pg_user_data["bootstrap.sh"].content
+  user_data        = chomp(local.pg_bootstrap)
+}
+
+output "postgresql_user_logins" {
+  value = {
+    alprs_user = local.alprs_pass
+    atlas_user = local.atlas_pass
+  }
+  sensitive = true
 }
 
 output "postgresql_instance_id" {

@@ -1,8 +1,9 @@
 locals {
-  indexer_bootstrap = <<EOT
+  indexer_bootstrap_sh = <<EOT
 ${templatefile("${path.module}/indexer/boot.tftpl", {
-  ENV    = var.env
-  S3_URL = local.user_data_s3_url
+  ENV           = var.env
+  S3_URL        = local.user_data_s3_url
+  CONFIG_BUCKET = local.config_bucket
 })}
 ${file("${path.module}/shared/boot.sh")}
 ${file("${path.module}/shared/install.sh")}
@@ -13,8 +14,18 @@ resource "aws_s3_object" "indexer_bootstrap" {
   bucket       = data.aws_s3_bucket.user_data.id
   key          = "userdata/indexer/bootstrap.sh"
   content_type = "text/plain"
-  content      = chomp(local.indexer_bootstrap)
-  etag         = md5(local.indexer_bootstrap)
+  content      = chomp(local.indexer_bootstrap_sh)
+  source_hash  = md5(local.indexer_bootstrap_sh)
+}
+
+locals {
+  indexer_bootstrap = <<EOT
+${templatefile("${path.module}/shared/boot.tftpl", {
+  BUCKET = local.user_data_bucket
+  HOST   = "indexer"
+})}
+${file("${path.module}/shared/s3boot.sh")}
+EOT
 }
 
 # t4g.2xlarge: ARM, 8 vCPUs, 32 GiB, EBS only, 5 Gb/s, $.2688/hr
@@ -34,7 +45,7 @@ module "indexer_server" {
   subnet_id        = module.main_vpc.private_subnet_id
   instance_profile = aws_iam_instance_profile.alprs_config.name
   key_name         = aws_key_pair.admin.key_name
-  user_data        = aws_s3_object.indexer_bootstrap.content
+  user_data        = chomp(local.indexer_bootstrap)
 }
 
 module "indexer_config" {

@@ -1,11 +1,10 @@
 # This user-data cloud-init script bootstraps an Amazon Linux2 server.
-# It is appended to the bastion host's "boot.tftpl" template script.
+# It is appended onto the bastion host's "boot.tftpl" template script.
 
 cd /root
-script="user-data"
-exec > >(tee /var/log/$script.log | logger -t $script ) 2>&1
-echo "[$(date '+%Y-%m-%d %H:%M:%S')] ===== BEGIN ${script^^} ====="
-printf "COMMAND: %q" "$0"; (($#)) && printf ' %q' "$@"
+script=$(basename "$0" .sh)
+exec > >(tee /$script.log | logger -t $script ) 2>&1
+echo "[$(date -R)] ===== BEGIN ${script^^} ====="
 echo -e "\nBash version: ${BASH_VERSINFO[@]}"
 set -xeo pipefail
 
@@ -63,11 +62,16 @@ EOF
   chmod +x custom_prompt.sh
 )
 
-yum_install() (
+yum_update() {
   yum update -y
-  yum install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+}
+
+yum_install() {
+  yum_update
+  rpm -qa | grep -q epel-release-7 || \
+    yum install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
   yum --enablerepo epel install -y figlet emacs-nox moreutils most jq htop pwgen certbot
-)
+}
 
 motd_banner() (
   cd /etc/update-motd.d
@@ -84,7 +88,7 @@ EOF
 upgrade_awscli() (
   cd /tmp
   curl -so awscliv2.zip https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip
-  unzip -q awscliv2.zip
+  unzip -oq awscliv2.zip
   ./aws/install
   rm -rf /tmp/aws*
 )

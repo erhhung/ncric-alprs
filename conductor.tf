@@ -1,8 +1,9 @@
 locals {
-  conductor_bootstrap = <<EOT
+  conductor_bootstrap_sh = <<EOT
 ${templatefile("${path.module}/conductor/boot.tftpl", {
-  ENV    = var.env
-  S3_URL = local.user_data_s3_url
+  ENV           = var.env
+  S3_URL        = local.user_data_s3_url
+  CONFIG_BUCKET = local.config_bucket
 })}
 ${file("${path.module}/shared/boot.sh")}
 ${file("${path.module}/shared/install.sh")}
@@ -13,8 +14,18 @@ resource "aws_s3_object" "conductor_bootstrap" {
   bucket       = data.aws_s3_bucket.user_data.id
   key          = "userdata/conductor/bootstrap.sh"
   content_type = "text/plain"
-  content      = chomp(local.conductor_bootstrap)
-  etag         = md5(local.conductor_bootstrap)
+  content      = chomp(local.conductor_bootstrap_sh)
+  source_hash  = md5(local.conductor_bootstrap_sh)
+}
+
+locals {
+  conductor_bootstrap = <<EOT
+${templatefile("${path.module}/shared/boot.tftpl", {
+  BUCKET = local.user_data_bucket
+  HOST   = "conductor"
+})}
+${file("${path.module}/shared/s3boot.sh")}
+EOT
 }
 
 # r6g.2xlarge: ARM,  8 vCPUs,  64 GiB, EBS only, 10 Gb/s, $.4032/hr
@@ -35,7 +46,7 @@ module "conductor_server" {
   subnet_id        = module.main_vpc.private_subnet_id
   instance_profile = aws_iam_instance_profile.alprs_config.name
   key_name         = aws_key_pair.admin.key_name
-  user_data        = aws_s3_object.conductor_bootstrap.content
+  user_data        = chomp(local.conductor_bootstrap)
 }
 
 module "conductor_config" {

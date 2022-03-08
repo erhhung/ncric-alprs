@@ -4,11 +4,17 @@
 create_user() (
   cd /home/$USER
   egrep -q '^openlattice:' /etc/passwd && exit
-  cp .bash_aliases .emacs /etc/skel
+  cp .bash_aliases .gitconfig .emacs .screenrc \
+    .sudo_as_admin_successful /etc/skel
   adduser --disabled-login --gecos "" openlattice
   cat <<'EOF' >> .bash_aliases
 
 alias ol='sudo su -l openlattice'
+EOF
+  cd /etc/sudoers.d
+  usermod -aG sudo openlattice
+  cat <<'EOF' > 91-openlattice-user
+openlattice ALL=(ALL) NOPASSWD:ALL
 EOF
 )
 
@@ -33,6 +39,14 @@ init_destdir() (
   mkdir -p /opt/openlattice
   chown -Rh openlattice:openlattice /opt/openlattice
 )
+
+config_vars() {
+  cat <<EOF >> .bashrc
+
+export CONFIG_BUCKET="${CONFIG_BUCKET}"
+export CONFIG_PREFIX="${HOST,,}/"
+EOF
+}
 
 clone_repos() (
   git clone https://github.com/openlattice/ncric-transfer.git
@@ -60,6 +74,9 @@ run create_user
 run install_java
 run install_delta
 run init_destdir
+run config_vars    openlattice
 run clone_repos    openlattice
 run build_service  openlattice
 run launch_service openlattice
+
+echo "[$(date -R)] ===== END ${script^^} ====="

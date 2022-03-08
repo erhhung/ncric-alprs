@@ -42,5 +42,8 @@ EOF
 
 run install_node
 run install_delta
+run yum_update
 run clone_repo    $USER
 run build_webapp  $USER
+
+echo "[$(date -R)] ===== END ${script^^} ====="
