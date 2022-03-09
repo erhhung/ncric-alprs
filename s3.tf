@@ -6,17 +6,7 @@ data "external" "backend_config" {
   ]
 }
 
-# local.xxx_bucket variables are defined in variables.tf
-# to accept overrides from var.xxx_bucket with var.env a
-# part of the default bucket names.
 locals {
-  buckets = {
-    webapp = local.webapp_bucket
-    config = local.config_bucket
-    audit  = local.audit_bucket
-    media  = local.media_bucket
-    sftp   = local.sftp_bucket
-  }
   user_data_bucket = data.external.backend_config.result.bucket
   user_data_s3_url = "s3://${local.user_data_bucket}/userdata"
 }
@@ -30,14 +20,14 @@ data "aws_s3_bucket" "user_data" {
 
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket
 resource "aws_s3_bucket" "buckets" {
-  for_each = local.buckets
+  for_each = var.buckets
   # in provider region
   bucket = each.value
 }
 
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket_server_side_encryption_configuration
 resource "aws_s3_bucket_server_side_encryption_configuration" "buckets" {
-  for_each = local.buckets
+  for_each = var.buckets
   bucket   = each.value
 
   rule {
@@ -49,13 +39,32 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "buckets" {
 
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket_public_access_block
 resource "aws_s3_bucket_public_access_block" "buckets" {
-  for_each = local.buckets
+  for_each = var.buckets
   bucket   = each.value
 
   block_public_acls       = true
   block_public_policy     = true
   ignore_public_acls      = true
   restrict_public_buckets = true
+}
+
+# https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket_ownership_controls
+resource "aws_s3_bucket_ownership_controls" "buckets" {
+  for_each = var.buckets
+  bucket   = each.value
+
+  rule {
+    object_ownership = "BucketOwnerPreferred"
+  }
+}
+
+# https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket_acl
+resource "aws_s3_bucket_acl" "buckets" {
+  for_each = var.buckets
+  bucket   = each.value
+
+  # https://docs.aws.amazon.com/AmazonS3/latest/userguide/acl-overview.html#canned-acl
+  acl = each.key == "audit" ? "log-delivery-write" : "private"
 }
 
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket_lifecycle_configuration
@@ -74,7 +83,7 @@ resource "aws_s3_bucket_lifecycle_configuration" "audit" {
 
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document
 data "aws_iam_policy_document" "https_only" {
-  for_each = local.buckets
+  for_each = var.buckets
 
   statement {
     sid     = "OnlyAllowAccessViaTLS"
@@ -97,7 +106,51 @@ data "aws_iam_policy_document" "https_only" {
   }
 }
 
-data "aws_iam_policy_document" "webapp_oai" {
+data "aws_iam_policy_document" "elb_logs" {
+  source_policy_documents = [data.aws_iam_policy_document.https_only["audit"].json]
+
+  # https://docs.aws.amazon.com/elasticloadbalancing/latest/classic/enable-access-logs.html
+  statement {
+    sid       = "AllowELBAccountPutObject"
+    effect    = "Allow"
+    actions   = ["s3:PutObject"]
+    resources = ["${aws_s3_bucket.buckets["audit"].arn}/AWSLogs/${local.account}/*"]
+
+    principals {
+      identifiers = ["arn:aws:iam::${var.elb_account_id}:root"]
+      type        = "AWS"
+    }
+  }
+  statement {
+    sid       = "AllowLogDeliveryPutObject"
+    effect    = "Allow"
+    actions   = ["s3:PutObject"]
+    resources = ["${aws_s3_bucket.buckets["audit"].arn}/AWSLogs/${local.account}/*"]
+
+    principals {
+      identifiers = ["delivery.logs.amazonaws.com"]
+      type        = "Service"
+    }
+    condition {
+      test     = "StringEquals"
+      variable = "s3:x-amz-acl"
+      values   = ["bucket-owner-full-control"]
+    }
+  }
+  statement {
+    sid       = "AllowLogDeliveryGetBucketAcl"
+    effect    = "Allow"
+    actions   = ["s3:GetBucketAcl"]
+    resources = [aws_s3_bucket.buckets["audit"].arn]
+
+    principals {
+      identifiers = ["delivery.logs.amazonaws.com"]
+      type        = "Service"
+    }
+  }
+}
+
+data "aws_iam_policy_document" "app_oai" {
   source_policy_documents = [data.aws_iam_policy_document.https_only["webapp"].json]
 
   statement {
@@ -107,7 +160,7 @@ data "aws_iam_policy_document" "webapp_oai" {
     resources = ["${aws_s3_bucket.buckets["webapp"].arn}/*"]
 
     principals {
-      identifiers = [aws_cloudfront_origin_access_identity.webapp.iam_arn]
+      identifiers = [aws_cloudfront_origin_access_identity.app.iam_arn]
       type        = "AWS"
     }
   }
@@ -115,13 +168,14 @@ data "aws_iam_policy_document" "webapp_oai" {
 
 locals {
   bucket_policies = {
-    webapp = data.aws_iam_policy_document.webapp_oai
+    audit  = data.aws_iam_policy_document.elb_logs
+    webapp = data.aws_iam_policy_document.app_oai
   }
 }
 
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket_policy
 resource "aws_s3_bucket_policy" "buckets" {
-  for_each = local.buckets
+  for_each = var.buckets
 
   bucket = each.value
   policy = lookup(local.bucket_policies, each.key,

@@ -110,4 +110,5 @@ run config_postgresql
 run start_postgresql
 run create_databases postgres
 
+set +x
 echo "[$(date -R)] ===== END ${script^^} ====="

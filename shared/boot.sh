@@ -72,6 +72,7 @@ install_awscli() (
 
 user_dotfiles() {
   aws s3 sync $S3_URL/shared . --exclude '*' --include '.*'
+  mkdir -p .cache && touch .cache/motd.legal-displayed
   touch .sudo_as_admin_successful
 }
 

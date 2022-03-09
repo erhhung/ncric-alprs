@@ -1,18 +1,18 @@
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudfront_origin_access_identity
-resource "aws_cloudfront_origin_access_identity" "webapp" {
-  comment = "Identity allowed access to webapp S3 bucket"
+resource "aws_cloudfront_origin_access_identity" "app" {
+  comment = "Identity allowed access to app S3 bucket"
 }
 
 locals {
-  s3_origin_id   = "webapp_s3_origin"
+  s3_origin_id   = "app_s3_origin"
   cached_methods = ["GET", "HEAD"]
 }
 
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudfront_distribution
-resource "aws_cloudfront_distribution" "webapp" {
+resource "aws_cloudfront_distribution" "app" {
   enabled             = true
-  comment             = "Astrometrics webapp frontend"
-  aliases             = [data.aws_route53_zone.astrometrics.name]
+  comment             = "Astrometrics app frontend"
+  aliases             = [local.app_domain]
   default_root_object = "index.html"
   price_class         = "PriceClass_100" # US+EU
 
@@ -21,7 +21,7 @@ resource "aws_cloudfront_distribution" "webapp" {
     origin_id   = local.s3_origin_id
 
     s3_origin_config {
-      origin_access_identity = aws_cloudfront_origin_access_identity.webapp.cloudfront_access_identity_path
+      origin_access_identity = aws_cloudfront_origin_access_identity.app.cloudfront_access_identity_path
     }
   }
   default_cache_behavior {
@@ -41,13 +41,14 @@ resource "aws_cloudfront_distribution" "webapp" {
     }
   }
   viewer_certificate {
-    acm_certificate_arn      = aws_acm_certificate.webapp.arn
+    acm_certificate_arn      = aws_acm_certificate.app.arn
     minimum_protocol_version = "TLSv1.2_2018"
     ssl_support_method       = "sni-only"
   }
   logging_config {
-    bucket          = "${local.audit_bucket}.s3.amazonaws.com"
-    prefix          = "logs/cloudfront/"
+    # https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/AccessLogs.html
+    bucket          = "${var.buckets["audit"]}.s3.amazonaws.com"
+    prefix          = "AWSLogs/${local.account}/CloudFront"
     include_cookies = false
   }
   restrictions {
@@ -60,15 +61,15 @@ resource "aws_cloudfront_distribution" "webapp" {
 }
 
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/route53_record
-resource "aws_route53_record" "webapp" {
+resource "aws_route53_record" "app" {
   provider = aws.route53
-  zone_id  = data.aws_route53_zone.astrometrics.zone_id
-  name     = data.aws_route53_zone.astrometrics.name
+  zone_id  = local.zone_id
+  name     = local.app_domain
   type     = "A"
 
   alias {
-    name                   = aws_cloudfront_distribution.webapp.domain_name
-    zone_id                = aws_cloudfront_distribution.webapp.hosted_zone_id
+    name                   = aws_cloudfront_distribution.app.domain_name
+    zone_id                = aws_cloudfront_distribution.app.hosted_zone_id
     evaluate_target_health = true
   }
 }

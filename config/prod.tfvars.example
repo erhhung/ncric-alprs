@@ -11,11 +11,15 @@ aws_provider = {
   region  = "us-gov-west-1"
 }
 
-webapp_bucket = "alprs-webapp-prod"
-config_bucket = "alprs-config-prod"
-audit_bucket  = "alprs-audit-prod"
-media_bucket  = "alprs-media-prod"
-sftp_bucket   = "alprs-sftp-prod"
+buckets = {
+  webapp = "alprs-webapp-prod"
+  config = "alprs-config-prod"
+  audit  = "alprs-audit-prod"
+  media  = "alprs-media-prod"
+  sftp   = "alprs-sftp-prod"
+}
+
+elb_account_id = "048591011584"
 
 ssh_key = {
   key_name   = "alprsgov-admin"

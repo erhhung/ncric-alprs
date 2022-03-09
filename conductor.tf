@@ -3,7 +3,7 @@ locals {
 ${templatefile("${path.module}/conductor/boot.tftpl", {
   ENV           = var.env
   S3_URL        = local.user_data_s3_url
-  CONFIG_BUCKET = local.config_bucket
+  CONFIG_BUCKET = var.buckets["config"]
 })}
 ${file("${path.module}/shared/boot.sh")}
 ${file("${path.module}/shared/install.sh")}
@@ -43,7 +43,7 @@ module "conductor_server" {
   instance_type    = "r6g.2xlarge" # r6g.4xlarge
   instance_name    = "Conductor"
   root_volume_size = 32
-  subnet_id        = module.main_vpc.private_subnet_id
+  subnet_id        = module.main_vpc.subnet_ids["private1"]
   instance_profile = aws_iam_instance_profile.alprs_config.name
   key_name         = aws_key_pair.admin.key_name
   user_data        = chomp(local.conductor_bootstrap)
@@ -60,4 +60,10 @@ module "conductor_config" {
 
 output "conductor_instance_id" {
   value = module.conductor_server.instance_id
+}
+output "conductor_private_domain" {
+  value = module.conductor_server.private_domain
+}
+output "conductor_private_ip" {
+  value = module.conductor_server.private_ip
 }

@@ -13,7 +13,7 @@ variable "cidr_block" {
 variable "subnet_cidrs" {
   description = "VPC subnet CIDRs"
   type = object({
-    public  = string
-    private = string
+    public  = list(string)
+    private = list(string)
   })
 }

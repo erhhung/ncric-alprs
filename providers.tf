@@ -1,14 +1,3 @@
-terraform {
-  # https://www.terraform.io/language/providers/requirements
-  required_providers {
-    aws = {
-      source  = "hashicorp/aws"
-      version = "~> 4.2"
-    }
-  }
-  required_version = ">= 1.1"
-}
-
 locals {
   default_tags = {
     Environment = var.env
@@ -46,6 +35,3 @@ provider "aws" {
     tags = local.default_tags
   }
 }
-
-# https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/region
-data "aws_region" "current" {}

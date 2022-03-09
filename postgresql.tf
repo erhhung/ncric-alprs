@@ -81,7 +81,7 @@ module "postgresql_server" {
   instance_name    = "PostgreSQL"
   root_volume_size = 32
   data_volume_size = 256 # 1024*5
-  subnet_id        = module.main_vpc.private_subnet_id
+  subnet_id        = module.main_vpc.subnet_ids["private1"]
   instance_profile = aws_iam_instance_profile.ssm_instance.name
   key_name         = aws_key_pair.admin.key_name
   user_data        = chomp(local.pg_bootstrap)
@@ -98,9 +98,9 @@ output "postgresql_user_logins" {
 output "postgresql_instance_id" {
   value = module.postgresql_server.instance_id
 }
-output "postgresql_hostname" {
-  value = module.postgresql_server.local_hostname
+output "postgresql_private_domain" {
+  value = module.postgresql_server.private_domain
 }
-output "postgresql_local_ip" {
+output "postgresql_private_ip" {
   value = module.postgresql_server.private_ip
 }

@@ -79,4 +79,5 @@ run clone_repos    openlattice
 run build_service  openlattice
 run launch_service openlattice
 
+set +x
 echo "[$(date -R)] ===== END ${script^^} ====="

@@ -9,3 +9,11 @@ output "iam_user_access_keys" {
   } }
   sensitive = true
 }
+
+output "app_cf_domain" {
+  value = aws_cloudfront_distribution.app.domain_name
+}
+
+output "api_elb_domain" {
+  value = aws_lb.api.dns_name
+}

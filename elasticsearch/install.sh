@@ -152,4 +152,5 @@ run start_elasticsearch
 run config_nginx
 run start_nginx
 
+set +x
 echo "[$(date -R)] ===== END ${script^^} ====="

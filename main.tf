@@ -1,0 +1,26 @@
+terraform {
+  # terraform init -backend-config config/{ENV}.conf
+  backend "s3" {
+    key = "tfstates/terraform.tfstate"
+  }
+
+  # https://www.terraform.io/language/providers/requirements
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 4.2"
+    }
+  }
+  required_version = ">= 1.1"
+}
+
+# https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/caller_identity
+data "aws_caller_identity" "current" {}
+
+# https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/region
+data "aws_region" "current" {}
+
+locals {
+  account = data.aws_caller_identity.current.account_id
+  region  = data.aws_region.current.name
+}

@@ -10,6 +10,8 @@ locals {
     data = <<EOT
 ${templatefile("${path.module}/bastion/boot.tftpl", {
     ENV      = var.env
+    PG_IP    = module.postgresql_server.private_ip
+    ES_IP    = module.elasticsearch_server.private_ip
     S3_URL   = local.user_data_s3_url
     FA_TOKEN = var.FONTAWESOME_NPM_TOKEN
 })}
@@ -55,7 +57,7 @@ module "bastion" {
   instance_type    = "t3.small"
   instance_name    = "Bastion Host"
   root_volume_size = 32
-  subnet_id        = module.main_vpc.public_subnet_id
+  subnet_id        = module.main_vpc.subnet_ids["public1"]
   assign_public_ip = true
   instance_profile = aws_iam_instance_profile.ssm_instance.name
   key_name         = aws_key_pair.admin.key_name
@@ -65,6 +67,6 @@ module "bastion" {
 output "bastion_instance_id" {
   value = module.bastion.instance_id
 }
-output "bastion_public_ip" {
-  value = module.bastion.public_ip
+output "bastion_public_domain" {
+  value = module.bastion.public_domain
 }

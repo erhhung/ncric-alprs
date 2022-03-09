@@ -3,7 +3,7 @@ locals {
 ${templatefile("${path.module}/indexer/boot.tftpl", {
   ENV           = var.env
   S3_URL        = local.user_data_s3_url
-  CONFIG_BUCKET = local.config_bucket
+  CONFIG_BUCKET = var.buckets["config"]
 })}
 ${file("${path.module}/shared/boot.sh")}
 ${file("${path.module}/shared/install.sh")}
@@ -42,7 +42,7 @@ module "indexer_server" {
   instance_type    = "t4g.2xlarge"
   instance_name    = "Indexer"
   root_volume_size = 48
-  subnet_id        = module.main_vpc.private_subnet_id
+  subnet_id        = module.main_vpc.subnet_ids["private1"]
   instance_profile = aws_iam_instance_profile.alprs_config.name
   key_name         = aws_key_pair.admin.key_name
   user_data        = chomp(local.indexer_bootstrap)
@@ -59,4 +59,10 @@ module "indexer_config" {
 
 output "indexer_instance_id" {
   value = module.indexer_server.instance_id
+}
+output "indexer_private_domain" {
+  value = module.indexer_server.private_domain
+}
+output "indexer_private_ip" {
+  value = module.indexer_server.private_ip
 }

@@ -17,6 +17,16 @@ install_delta() (
   rm -f delta-*.tar.gz
 )
 
+etc_hosts() (
+  cd /etc
+  tab=$(printf "\t")
+  cat <<EOF >> hosts
+
+$PG_IP${tab}postgresql
+$ES_IP${tab}elasticsearch
+EOF
+)
+
 clone_repo() (
   git clone https://github.com/openlattice/astrometrics.git
   cd astrometrics
@@ -42,8 +52,10 @@ EOF
 
 run install_node
 run install_delta
+run etc_hosts
 run yum_update
 run clone_repo    $USER
 run build_webapp  $USER
 
+set +x
 echo "[$(date -R)] ===== END ${script^^} ====="

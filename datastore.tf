@@ -3,7 +3,7 @@ locals {
 ${templatefile("${path.module}/datastore/boot.tftpl", {
   ENV           = var.env
   S3_URL        = local.user_data_s3_url
-  CONFIG_BUCKET = local.config_bucket
+  CONFIG_BUCKET = var.buckets["config"]
 })}
 ${file("${path.module}/shared/boot.sh")}
 ${file("${path.module}/shared/install.sh")}
@@ -43,8 +43,7 @@ module "datastore_server" {
   instance_type    = "r6g.2xlarge" # r6g.4xlarge
   instance_name    = "Datastore"
   root_volume_size = 32
-  subnet_id        = module.main_vpc.public_subnet_id
-  assign_public_ip = true
+  subnet_id        = module.main_vpc.subnet_ids["private1"]
   instance_profile = aws_iam_instance_profile.alprs_config.name
   key_name         = aws_key_pair.admin.key_name
   user_data        = chomp(local.datastore_bootstrap)
@@ -62,6 +61,9 @@ module "datastore_config" {
 output "datastore_instance_id" {
   value = module.datastore_server.instance_id
 }
-output "datastore_public_ip" {
-  value = module.datastore_server.public_ip
+output "datastore_private_domain" {
+  value = module.datastore_server.private_domain
+}
+output "datastore_private_ip" {
+  value = module.datastore_server.private_ip
 }

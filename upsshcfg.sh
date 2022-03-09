@@ -88,7 +88,7 @@ script+=$(cat <<EOF
 while read host ip; do
   add_host \$host \$ip
 done <<'EOT'
-$(get_outputs local_ip)
+$(get_outputs private_ip)
 EOT
 EOF
 )
