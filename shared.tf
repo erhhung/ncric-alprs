@@ -29,6 +29,7 @@ locals {
   # sed -En 's/^.+\$\{([a-zA-Z0-9_]+)\}.*$/\1/p' *.yaml | sort | uniq
   config_values = {
     AWS_REGION          = local.region
+    APP_DOMAIN          = local.app_domain
     ALPRS_PASSWORD      = local.alprs_pass
     ATLAS_PASSWORD      = local.atlas_pass
     AUDIT_BUCKET        = var.buckets["audit"]

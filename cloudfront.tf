@@ -48,7 +48,7 @@ resource "aws_cloudfront_distribution" "app" {
   logging_config {
     # https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/AccessLogs.html
     bucket          = "${var.buckets["audit"]}.s3.amazonaws.com"
-    prefix          = "AWSLogs/${local.account}/CloudFront"
+    prefix          = "AWSLogs/${local.account}/cloudfront"
     include_cookies = false
   }
   restrictions {

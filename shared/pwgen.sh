@@ -1,12 +1,13 @@
 #!/usr/bin/env bash
 
-# generate x n-character passwords (n is an
-# optional parameter; default=10) and output
-# JSON for Terraform's "external" data source
+# generate n-character (default is 10) passwords and
+# output JSON for Terraform's "external" data source
 #
-#   usage: pwgen.sh [n=10] [x=1]
-# example: pwgen.sh 10 2
-#  output: {"secret1":"olaefie8Su","secret2":"Cie0ii0dee"}
+#   usage: pwgen.sh [n=10] [name1] ... [nameN]
+# example: pwgen.sh
+#          pwgen.sh 8 foo bar
+#  output: {"secret":"olaefie8Su"}
+#          {"foo":"iel4AhGh","bar":"aNoo3pha"}
 
 _reqcmds() {
   local cmd
@@ -19,7 +20,16 @@ _reqcmds() {
 }
 _reqcmds pwgen jq || exit $?
 
-pwgen ${1:-10} ${2:-1}  | jq -nRMc '
+n=$1
+# test whether $1 is an integer, and use 10 if not
+[ ${n-0} -eq ${n-1} 2> /dev/null ] && shift || n=10
+
+N=$#
+# if no names provided, use "secret"
+[ $N -eq 0 ] && N=1 && set -- secret
+
+pwgen $n $N  | jq -nRMc '
    [inputs] as $secrets |
   reduce range($secrets | length) as $i
-  ({}; . *= {"secret\($i + 1)": $secrets[$i]})'
+  ({}; . *= {($ARGS.positional[$i]): $secrets[$i]})' \
+  --args "$@"

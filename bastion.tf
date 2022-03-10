@@ -59,7 +59,7 @@ module "bastion" {
   root_volume_size = 32
   subnet_id        = module.main_vpc.subnet_ids["public1"]
   assign_public_ip = true
-  instance_profile = aws_iam_instance_profile.ssm_instance.name
+  instance_profile = aws_iam_instance_profile.alprs_buckets.name
   key_name         = aws_key_pair.admin.key_name
   user_data        = chomp(local.bastion_bootstrap)
 }

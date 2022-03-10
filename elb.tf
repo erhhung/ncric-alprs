@@ -3,22 +3,41 @@ resource "aws_security_group" "allow_http" {
   name        = "allow-http-sg"
   description = "Allow HTTP/S inbound traffic"
   vpc_id      = module.main_vpc.vpc_id
+}
 
-  ingress {
-    from_port = 443
-    to_port   = 443
-    protocol  = "tcp"
+locals {
+  sg_rules = {
+    ingress_443 = {
+      from_port   = 443
+      to_port     = 443
+      protocol    = "tcp"
+      cidr_blocks = ["0.0.0.0/0"]
+    }
+    ingress_80 = {
+      from_port   = 80
+      to_port     = 80
+      protocol    = "tcp"
+      cidr_blocks = ["0.0.0.0/0"]
+    }
+    egress_all = {
+      from_port   = 0
+      to_port     = 0
+      protocol    = -1
+      cidr_blocks = flatten(values(local.subnet_cidrs))
+    }
   }
-  ingress {
-    from_port = 80
-    to_port   = 80
-    protocol  = "tcp"
-  }
-  egress {
-    from_port = 0
-    to_port   = 0
-    protocol  = "-1"
-  }
+}
+
+# https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/security_group_rule
+resource "aws_security_group_rule" "allow_http" {
+  for_each = local.sg_rules
+
+  security_group_id = aws_security_group.allow_http.id
+  type              = regex("^[a-z]+", each.key)
+  cidr_blocks       = each.value.cidr_blocks
+  from_port         = each.value.from_port
+  to_port           = each.value.to_port
+  protocol          = each.value.protocol
 }
 
 locals {
@@ -57,11 +76,7 @@ resource "aws_lb_target_group" "api" {
   }
 }
 
-# https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/lb_target_group_attachment
-resource "aws_lb_target_group_attachment" "api" {
-  target_group_arn = aws_lb_target_group.api.arn
-  target_id        = module.datastore_server.instance_id
-}
+# see datastore.tf for the aws_lb_target_group_attachment.api resource.
 
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/lb_listener
 resource "aws_lb_listener" "api_https" {

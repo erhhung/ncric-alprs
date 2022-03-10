@@ -1,7 +1,14 @@
-data "external" "pg_passwords" {
+# https://registry.terraform.io/providers/hashicorp/external/latest/docs/data-sources/data_source
+data "external" "old_passwords" {
+  program = [
+    "bash", "-c",
+    "terraform output -json postgresql_user_logins 2> /dev/null || echo '{}'",
+  ]
+}
+data "external" "new_passwords" {
   program = [
     "${path.module}/shared/pwgen.sh",
-    "10", "2",
+    "alprs_user", "atlas_user",
   ]
 }
 data "external" "postgresql_conf" {
@@ -18,9 +25,17 @@ data "external" "pg_hba_conf" {
 }
 
 locals {
-  alprs_pass = data.external.pg_passwords.result.secret1
-  atlas_pass = data.external.pg_passwords.result.secret2
+  old_pass = data.external.old_passwords.result
+  new_pass = data.external.new_passwords.result
 
+  alprs_pass = coalesce(
+    lookup(local.old_pass, "alprs_user", null),
+    local.new_pass["alprs_user"]
+  )
+  atlas_pass = coalesce(
+    lookup(local.old_pass, "atlas_user", null),
+    local.new_pass["atlas_user"]
+  )
   pg_user_data = [{
     path = "postgresql/postgresql.conf"
     data = data.external.postgresql_conf.result.text

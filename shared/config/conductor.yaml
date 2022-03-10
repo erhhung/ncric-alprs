@@ -1,4 +1,4 @@
-reportEmailAddress: eyuan@maiveric.com
+reportEmailAddress: report@bounce.${APP_DOMAIN}
 searchConfiguration:
   elasticsearchUrl: ${ELASTICSEARCH_HOST}
   elasticsearchCluster: alprs

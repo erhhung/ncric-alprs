@@ -1,3 +1,4 @@
+# https://registry.terraform.io/providers/hashicorp/external/latest/docs/data-sources/data_source
 data "external" "elasticsearch_yml" {
   program = [
     "${path.module}/shared/minconf.sh",

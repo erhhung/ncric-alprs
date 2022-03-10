@@ -37,8 +37,8 @@ EOF
 )
 
 wait_apt_get() {
-  while [ "$(pgrep apt-get)" ]; do
-    echo "Waiting on apt-get..."
+  while [ "$(pgrep apt-get)$(pgrep dpkg)" ]; do
+    echo "Waiting on apt-get/dpkg..."
     sleep 10
   done
 }
