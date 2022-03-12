@@ -32,7 +32,8 @@ locals {
     data = data.external.nginx_conf.result.text
     }, {
     path = "elasticsearch/bootstrap.sh"
-    data = <<EOT
+    data = <<-EOT
+${file("${path.module}/shared/prolog.sh")}
 ${templatefile("${path.module}/elasticsearch/boot.tftpl", {
     ENV     = var.env
     S3_URL  = local.user_data_s3_url
@@ -42,6 +43,7 @@ ${templatefile("${path.module}/elasticsearch/boot.tftpl", {
 })}
 ${file("${path.module}/shared/boot.sh")}
 ${file("${path.module}/elasticsearch/install.sh")}
+${file("${path.module}/shared/epilog.sh")}
 EOT
 }]
 }

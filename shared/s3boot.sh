@@ -1,5 +1,9 @@
-# This user-data cloud-init script is appended
-# onto the "shared/boot.tftpl" template script.
+# This user data script is a continuation of the
+# "shared/boot.tftpl" template script:  download
+# and run the host-specific "bootstrap.sh" script
+# from S3. This script intentionally does not use
+# the AWS CLI because it may not be installed yet
+# on the host OS.
 
 meta() {
   local iam='curl -fsm .25 http://169.254.169.254/latest/meta-data/iam/security-credentials'

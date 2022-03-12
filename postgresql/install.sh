@@ -1,4 +1,4 @@
-# This user-data cloud-init script is a continuation
+# This user data script is a continuation
 # of PostgreSQL's "boot.sh" script.
 
 create_xfs_volume() (
@@ -86,7 +86,7 @@ start_postgresql() {
   systemctl status  postgresql --no-pager
 }
 
-create_databases() (
+create_databases() {
   cd /opt/postgresql
   mkdir -p users
   cd users
@@ -102,13 +102,10 @@ GRANT  ALL ON DATABASE $db TO   $user;
 EOT
   done
   chmod 400 *
-)
+}
 
 run create_xfs_volume
 run install_postgresql
 run config_postgresql
 run start_postgresql
 run create_databases postgres
-
-set +x
-echo "[$(date -R)] ===== END ${script^^} ====="

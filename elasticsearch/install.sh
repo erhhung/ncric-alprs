@@ -1,4 +1,4 @@
-# This user-data cloud-init script is a continuation
+# This user data script is a continuation
 # of Elasticsearch's "boot.sh" script.
 
 install_java() (
@@ -151,6 +151,3 @@ run config_elasticsearch
 run start_elasticsearch
 run config_nginx
 run start_nginx
-
-set +x
-echo "[$(date -R)] ===== END ${script^^} ====="

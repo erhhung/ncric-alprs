@@ -44,7 +44,8 @@ locals {
     data = data.external.pg_hba_conf.result.text
     }, {
     path = "postgresql/bootstrap.sh"
-    data = <<EOT
+    data = <<-EOT
+${file("${path.module}/shared/prolog.sh")}
 ${templatefile("${path.module}/postgresql/boot.tftpl", {
     ENV     = var.env
     S3_URL  = local.user_data_s3_url
@@ -56,6 +57,7 @@ ${templatefile("${path.module}/postgresql/boot.tftpl", {
 })}
 ${file("${path.module}/shared/boot.sh")}
 ${file("${path.module}/postgresql/install.sh")}
+${file("${path.module}/shared/epilog.sh")}
 EOT
 }]
 }

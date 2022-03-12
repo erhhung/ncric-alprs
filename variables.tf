@@ -39,12 +39,20 @@ variable "ssh_key" {
   })
 }
 
-variable "AUTH0_CLIENT_ID" {
-  description = "Auth0 client ID"
+variable "AUTH0_M2M_CLIENT_ID" {
+  description = "Auth0 Machine-to-Machine client ID"
   type        = string
 }
-variable "AUTH0_CLIENT_SECRET" {
-  description = "Auth0 client secret"
+variable "AUTH0_M2M_CLIENT_SECRET" {
+  description = "Auth0 Machine-to-Machine client secret"
+  type        = string
+}
+variable "AUTH0_SPA_CLIENT_ID" {
+  description = "Auth0 Single-Page App client ID"
+  type        = string
+}
+variable "AUTH0_SPA_CLIENT_SECRET" {
+  description = "Auth0 Single-Page App client secret"
   type        = string
 }
 variable "FONTAWESOME_NPM_TOKEN" {

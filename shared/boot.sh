@@ -1,25 +1,3 @@
-# This user-data cloud-init script bootstraps a Ubuntu 20.04 server.
-# It is appended onto the host-specific "boot.tftpl" template script.
-
-cd /root
-script=$(basename "$0" .sh)
-exec > >(tee /$script.log | logger -t $script ) 2>&1
-echo "[$(date -R)] ===== BEGIN ${script^^} ====="
-echo -e "\nBash version: ${BASH_VERSINFO[@]}"
-set -xeo pipefail
-
-# run <func> [user]
-run() {
-  local func=$1 user=$2
-  echo "[${user:-root}] $func"
-  if [ $user ]; then
-    export -f $func
-    su $user -c "bash -c 'cd \$HOME; $func'"
-  else
-    $func
-  fi
-}
-
 set_hostname() (
   hostname="alprs${ENV}-${HOST,,}"
   echo $hostname > /etc/hostname

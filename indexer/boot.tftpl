@@ -1,8 +1,9 @@
-#!/bin/bash
-
-export           ENV="${ENV}"
-export        S3_URL="${S3_URL}"
-export CONFIG_BUCKET="${CONFIG_BUCKET}"
-
 export HOST="INDEXER"
 export USER="ubuntu"
+
+export ENV="${ENV}"
+export S3_URL="${S3_URL}"
+export CONFIG_BUCKET="${CONFIG_BUCKET}"
+
+export INDEXER_XMS="-Xms16g"
+export INDEXER_XMX="-Xmx16g"

@@ -7,16 +7,25 @@ locals {
     data = file("${path.module}/bastion/.bashrc")
     }, {
     path = "bastion/bootstrap.sh"
-    data = <<EOT
+    data = <<-EOT
+${file("${path.module}/shared/prolog.sh")}
 ${templatefile("${path.module}/bastion/boot.tftpl", {
-    ENV      = var.env
-    PG_IP    = module.postgresql_server.private_ip
-    ES_IP    = module.elasticsearch_server.private_ip
-    S3_URL   = local.user_data_s3_url
-    FA_TOKEN = var.FONTAWESOME_NPM_TOKEN
-})}
+    ENV        = var.env
+    PG_IP      = module.postgresql_server.private_ip
+    ES_IP      = module.elasticsearch_server.private_ip
+    USR_S3_URL = local.user_data_s3_url
+    })}
 ${file("${path.module}/bastion/boot.sh")}
-${file("${path.module}/bastion/install.sh")}
+${templatefile("${path.module}/webapp/install.tftpl", {
+    FA_TOKEN   = var.FONTAWESOME_NPM_TOKEN
+    MB_TOKEN   = var.MAPBOX_PUBLIC_TOKEN
+    AUTH0_ID   = var.AUTH0_SPA_CLIENT_ID
+    APP_URL    = "https://${local.app_domain}"
+    API_URL    = "https://${local.api_domain}"
+    APP_S3_URL = "s3://${var.buckets["webapp"]}"
+})}
+${file("${path.module}/webapp/install.sh")}
+${file("${path.module}/shared/epilog.sh")}
 EOT
 }]
 }

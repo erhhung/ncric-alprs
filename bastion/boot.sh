@@ -1,25 +1,3 @@
-# This user-data cloud-init script bootstraps an Amazon Linux2 server.
-# It is appended onto the bastion host's "boot.tftpl" template script.
-
-cd /root
-script=$(basename "$0" .sh)
-exec > >(tee /$script.log | logger -t $script ) 2>&1
-echo "[$(date -R)] ===== BEGIN ${script^^} ====="
-echo -e "\nBash version: ${BASH_VERSINFO[@]}"
-set -xeo pipefail
-
-# run <func> [user]
-run() {
-  local func=$1 user=$2
-  echo "[${user:-root}] $func"
-  if [ $user ]; then
-    export -f $func
-    su $user -c "bash -c 'cd \$HOME; $func'"
-  else
-    $func
-  fi
-}
-
 upgrade_bash() {
   [ ${BASH_VERSINFO[0]}${BASH_VERSINFO[1]} -ge 51 ] && return
   yum groupinstall -y "Development Tools"
@@ -94,13 +72,23 @@ upgrade_awscli() (
 )
 
 user_dotfiles() {
-  aws s3 sync $S3_URL/shared  . --exclude '*' --include '.*' --exclude '.bash*'
-  aws s3 sync $S3_URL/bastion . --exclude '*' --include '.*'
+  aws s3 sync $USR_S3_URL/shared  . --exclude '*' --include '.*' --exclude '.bash*'
+  aws s3 sync $USR_S3_URL/bastion . --exclude '*' --include '.*'
 }
 
 root_dotfiles() (
   cd /home/$USER
   /usr/bin/cp -f .bash_aliases .bashrc .emacs /root
+)
+
+etc_hosts() (
+  cd /etc
+  tab=$(printf "\t")
+  cat <<EOF >> hosts
+
+$PG_IP${tab}postgresql
+$ES_IP${tab}elasticsearch
+EOF
 )
 
 run upgrade_bash
@@ -111,3 +99,4 @@ run motd_banner
 run upgrade_awscli
 run user_dotfiles $USER
 run root_dotfiles
+run etc_hosts

@@ -1,5 +1,5 @@
-# This user-data cloud-init script is a continuation
-# of a host-specific "boot.sh" script.
+# This user data script is a continuation
+# of the host-specific "boot.sh" script.
 
 create_user() (
   cd /home/$USER
@@ -42,15 +42,7 @@ init_destdir() (
   chown -Rh openlattice:openlattice /opt/openlattice
 )
 
-config_vars() {
-  cat <<EOF >> .bashrc
-
-export CONFIG_BUCKET="${CONFIG_BUCKET}"
-export CONFIG_PREFIX="${HOST,,}/"
-EOF
-}
-
-clone_repos() (
+clone_repos() {
   git clone https://github.com/openlattice/ncric-transfer.git
   pushd ncric-transfer
   git co main
@@ -61,25 +53,34 @@ clone_repos() (
   git co main
   git up
   popd
-)
+}
 
-build_service() (
+config_service() {
+  az_url="http://169.254.169.254/latest/meta-data/placement/availability-zone"
+  region=$(curl -s $az_url | sed 's/[a-z]$//')
+  cd openlattice/${HOST,,}/src/main/resources
+  cat <<EOF > aws.yaml
+region: $region
+bucket: $CONFIG_BUCKET
+folder: ${HOST,,}
+EOF
+}
+
+build_service() {
   cd ncric-transfer/scripts/${HOST,,}
   ./build-latest.sh # also installs
-)
+}
 
-launch_service() (
-  cd /opt/openlattice/${HOST,,}
-)
+launch_service() {
+  cd ncric-transfer/scripts/${HOST,,}
+  ./boot.sh
+}
 
 run create_user
 run install_java
 run install_delta
 run init_destdir
-run config_vars    openlattice
 run clone_repos    openlattice
+run config_service openlattice
 run build_service  openlattice
 run launch_service openlattice
-
-set +x
-echo "[$(date -R)] ===== END ${script^^} ====="

@@ -7,5 +7,5 @@ data "aws_route53_zone" "astrometrics" {
 locals {
   zone_id    = data.aws_route53_zone.astrometrics.zone_id
   app_domain = data.aws_route53_zone.astrometrics.name
-  api_domain = "api.${data.aws_route53_zone.astrometrics.name}"
+  api_domain = "api.${local.app_domain}"
 }

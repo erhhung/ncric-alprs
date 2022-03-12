@@ -1,5 +1,6 @@
 locals {
-  indexer_bootstrap_sh = <<EOT
+  indexer_bootstrap_sh = <<-EOT
+${file("${path.module}/shared/prolog.sh")}
 ${templatefile("${path.module}/indexer/boot.tftpl", {
   ENV           = var.env
   S3_URL        = local.user_data_s3_url
@@ -7,6 +8,7 @@ ${templatefile("${path.module}/indexer/boot.tftpl", {
 })}
 ${file("${path.module}/shared/boot.sh")}
 ${file("${path.module}/shared/install.sh")}
+${file("${path.module}/shared/epilog.sh")}
 EOT
 }
 
