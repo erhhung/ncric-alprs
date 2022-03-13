@@ -1,3 +1,20 @@
+module "postgresql_sg" {
+  source = "./modules/secgrp"
+
+  name        = "postgresql-sg"
+  description = "Allow PostgreSQL traffic"
+  vpc_id      = module.main_vpc.vpc_id
+
+  rules = {
+    ingress_5432 = {
+      from_port   = 5432
+      to_port     = 5432
+      protocol    = "tcp"
+      cidr_blocks = local.subnet_cidrs["private"]
+    }
+  }
+}
+
 # https://registry.terraform.io/providers/hashicorp/external/latest/docs/data-sources/data_source
 data "external" "old_passwords" {
   program = [
@@ -43,14 +60,23 @@ locals {
     path = "postgresql/pg_hba.conf"
     data = data.external.pg_hba_conf.result.text
     }, {
+    # "alprs.sql" contains the exported EDM (entity
+    # data model) that was originally imported from
+    # api.openlattice.com by starting the conductor
+    # once with the "edmsync" flag
+    path = "postgresql/alprs.sql.gz"
+    file = "${path.module}/postgresql/alprs.sql.gz"
+    data = null
+    }, {
     path = "postgresql/bootstrap.sh"
     data = <<-EOT
 ${file("${path.module}/shared/prolog.sh")}
 ${templatefile("${path.module}/postgresql/boot.tftpl", {
-    ENV     = var.env
-    S3_URL  = local.user_data_s3_url
-    PG_CONF = "${local.user_data_s3_url}/postgresql/postgresql.conf"
-    PG_HBA  = "${local.user_data_s3_url}/postgresql/pg_hba.conf"
+    ENV       = var.env
+    S3_URL    = local.user_data_s3_url
+    PG_CONF   = "${local.user_data_s3_url}/postgresql/postgresql.conf"
+    PG_HBA    = "${local.user_data_s3_url}/postgresql/pg_hba.conf"
+    ALPRS_SQL = "${local.user_data_s3_url}/postgresql/alprs.sql.gz"
 
     alprs_pass = local.alprs_pass
     atlas_pass = local.atlas_pass
@@ -68,9 +94,10 @@ resource "aws_s3_object" "pg_user_data" {
 
   bucket       = data.aws_s3_bucket.user_data.id
   key          = "userdata/${each.value.path}"
-  content_type = "text/plain"
-  content      = chomp(each.value.data)
-  source_hash  = md5(each.value.data)
+  content_type = regex("\\.\\w+$", each.value.path) == ".gz" ? "application/gzip" : "text/plain"
+  content      = each.value.data == null ? null : chomp(each.value.data)
+  source       = each.value.data != null ? null : each.value.file
+  source_hash  = each.value.data != null ? md5(each.value.data) : filemd5(each.value.file)
 }
 
 locals {
@@ -99,6 +126,7 @@ module "postgresql_server" {
   root_volume_size = 32
   data_volume_size = 256 # 1024*5
   subnet_id        = module.main_vpc.subnet_ids["private1"]
+  security_groups  = [module.postgresql_sg.id]
   instance_profile = aws_iam_instance_profile.ssm_instance.name
   key_name         = aws_key_pair.admin.key_name
   user_data        = chomp(local.pg_bootstrap)

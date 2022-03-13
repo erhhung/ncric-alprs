@@ -11,7 +11,7 @@ locals {
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudfront_distribution
 resource "aws_cloudfront_distribution" "app" {
   enabled             = true
-  comment             = "Astrometrics app frontend"
+  comment             = "AstroMetrics frontend"
   aliases             = [local.app_domain]
   default_root_object = "index.html"
   price_class         = "PriceClass_100" # US+EU

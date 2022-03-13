@@ -101,11 +101,24 @@ REVOKE ALL ON DATABASE $db FROM PUBLIC;
 GRANT  ALL ON DATABASE $db TO   $user;
 EOT
   done
+  psql <<'EOT'
+ALTER USER atlas_user CREATEDB CREATEROLE;
+EOT
   chmod 400 *
+}
+
+create_db_objects() {
+  cd /opt/postgresql
+  mkdir -p init
+  cd init
+  aws s3 cp $ALPRS_SQL alprs.sql.gz
+  gunzip -f alprs.sql.gz
+  psql alprs < alprs.sql
 }
 
 run create_xfs_volume
 run install_postgresql
 run config_postgresql
 run start_postgresql
-run create_databases postgres
+run create_databases  postgres
+run create_db_objects postgres

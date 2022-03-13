@@ -1,3 +1,32 @@
+module "elasticsearch_sg" {
+  source = "./modules/secgrp"
+
+  name        = "elasticsearch-sg"
+  description = "Allow Elasticsearch/Kibana traffic"
+  vpc_id      = module.main_vpc.vpc_id
+
+  rules = {
+    ingress_9200 = {
+      from_port   = 9200
+      to_port     = 9200
+      protocol    = "tcp"
+      cidr_blocks = local.subnet_cidrs["private"]
+    }
+    ingress_9300 = {
+      from_port   = 9300
+      to_port     = 9300
+      protocol    = "tcp"
+      cidr_blocks = local.subnet_cidrs["private"]
+    }
+    ingress_443 = {
+      from_port   = 443
+      to_port     = 443
+      protocol    = "tcp"
+      cidr_blocks = local.subnet_cidrs["private"]
+    }
+  }
+}
+
 # https://registry.terraform.io/providers/hashicorp/external/latest/docs/data-sources/data_source
 data "external" "elasticsearch_yml" {
   program = [
@@ -85,6 +114,7 @@ module "elasticsearch_server" {
   root_volume_size = 32
   data_volume_size = 256 # 1024*1
   subnet_id        = module.main_vpc.subnet_ids["private1"]
+  security_groups  = [module.elasticsearch_sg.id]
   instance_profile = aws_iam_instance_profile.ssm_instance.name
   key_name         = aws_key_pair.admin.key_name
   user_data        = chomp(local.es_bootstrap)

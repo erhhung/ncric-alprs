@@ -11,13 +11,17 @@ Host alprsprod*
   ProxyCommand aws --profile alprsgov --region us-gov-west-1 ssm start-session --target %h --document-name AWS-StartSSHSession --parameters "portNumber=%p"
 
 Host alprsdevbast*
-  HostName i-0326769f0ecfbffbd
+  HostName i-084dd77c1674ee09e
 Host alprsdevpg*
-  HostName i-074dc0bb9ee5656bc
+  HostName i-0a353f0fb0f12edca
 Host alprsdeves*
-  HostName i-07d034865839aeaf4
+  HostName i-01184590d159a271e
 Host alprsdevcond*
-  HostName i-0f84f9d08f3dc5440
+  HostName i-07bc8bdcdc5b15279
+Host alprsdevdata*
+  HostName i-0d75da862fbb86d54
+Host alprsdevidx*
+  HostName i-02e8eafab18e018ee
 
 Host alprs*bast*
   User ec2-user

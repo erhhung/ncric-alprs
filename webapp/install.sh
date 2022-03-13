@@ -44,7 +44,9 @@ build_webapp() {
 //npm.fontawesome.com/:_authToken=$FA_TOKEN
 EOF
   npm install
-  npm audit fix
+  # do NOT run "audit fix" as that changes
+  # "lattice-auth" version in package.json
+  # (should be "0.21.2-any-base-url")
   npm run build:$ENV -- --env.mapboxToken=$MB_TOKEN
 }
 

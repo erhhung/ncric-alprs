@@ -1,12 +1,11 @@
-# https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/security_group
-resource "aws_security_group" "allow_http" {
+module "allow_http_sg" {
+  source = "./modules/secgrp"
+
   name        = "allow-http-sg"
   description = "Allow HTTP/S inbound traffic"
   vpc_id      = module.main_vpc.vpc_id
-}
 
-locals {
-  sg_rules = {
+  rules = {
     ingress_443 = {
       from_port   = 443
       to_port     = 443
@@ -19,39 +18,15 @@ locals {
       protocol    = "tcp"
       cidr_blocks = ["0.0.0.0/0"]
     }
-    egress_all = {
-      from_port   = 0
-      to_port     = 0
-      protocol    = -1
-      cidr_blocks = flatten(values(local.subnet_cidrs))
-    }
   }
-}
-
-# https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/security_group_rule
-resource "aws_security_group_rule" "allow_http" {
-  for_each = local.sg_rules
-
-  security_group_id = aws_security_group.allow_http.id
-  type              = regex("^[a-z]+", each.key)
-  cidr_blocks       = each.value.cidr_blocks
-  from_port         = each.value.from_port
-  to_port           = each.value.to_port
-  protocol          = each.value.protocol
-}
-
-locals {
-  public_subnet_ids = [for name, id in module.main_vpc.subnet_ids :
-    id if length(regexall("public", name)) > 0
-  ]
 }
 
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/lb
 resource "aws_lb" "api" {
   name                       = "api-lb"
   load_balancer_type         = "application"
-  security_groups            = [aws_security_group.allow_http.id]
   subnets                    = local.public_subnet_ids
+  security_groups            = [module.allow_http_sg.id]
   drop_invalid_header_fields = true
 
   access_logs {

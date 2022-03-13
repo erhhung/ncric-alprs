@@ -1,3 +1,6 @@
+# the bastion host builds & deploys the AstroMetrics
+# frontend to the webapp bucket during bootstrapping
+
 locals {
   bastion_user_data = [{
     path = "bastion/.bash_aliases"
@@ -66,8 +69,8 @@ module "bastion" {
   instance_type    = "t3.small"
   instance_name    = "Bastion Host"
   root_volume_size = 32
-  subnet_id        = module.main_vpc.subnet_ids["public1"]
-  assign_public_ip = true
+  subnet_id        = module.main_vpc.subnet_ids["private1"]
+  security_groups  = [module.egress_only_sg.id]
   instance_profile = aws_iam_instance_profile.alprs_buckets.name
   key_name         = aws_key_pair.admin.key_name
   user_data        = chomp(local.bastion_bootstrap)
@@ -75,7 +78,4 @@ module "bastion" {
 
 output "bastion_instance_id" {
   value = module.bastion.instance_id
-}
-output "bastion_public_domain" {
-  value = module.bastion.public_domain
 }

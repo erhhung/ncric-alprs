@@ -5,6 +5,7 @@ ${templatefile("${path.module}/datastore/boot.tftpl", {
   ENV           = var.env
   S3_URL        = local.user_data_s3_url
   CONFIG_BUCKET = var.buckets["config"]
+  CONDUCTOR_IP  = module.conductor_server.private_ip
 })}
 ${file("${path.module}/shared/boot.sh")}
 ${file("${path.module}/shared/install.sh")}
@@ -46,6 +47,7 @@ module "datastore_server" {
   instance_name    = "Datastore"
   root_volume_size = 32
   subnet_id        = module.main_vpc.subnet_ids["private1"]
+  security_groups  = [module.services_sg.id]
   instance_profile = aws_iam_instance_profile.alprs_config.name
   key_name         = aws_key_pair.admin.key_name
   user_data        = chomp(local.datastore_bootstrap)

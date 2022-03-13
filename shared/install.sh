@@ -72,8 +72,21 @@ build_service() {
 }
 
 launch_service() {
+  wait_service() {
+    local name=$1 host=$2
+    while ! nc -z $host 5701; do
+      echo "Waiting for $name at $host to listen on port 5701..."
+      sleep 10
+    done
+  }
+  case $HOST in
+    DATASTORE) wait_service CONDUCTOR $CONDUCTOR_IP ;;
+    INDEXER)   wait_service DATASTORE $DATASTORE_IP ;;
+  esac
   cd ncric-transfer/scripts/${HOST,,}
-  ./boot.sh
+  # optional flags, like edmsync, may
+  # be defined by individual services
+  ./boot.sh "${SVC_FLAGS[@]}"
 }
 
 run create_user
