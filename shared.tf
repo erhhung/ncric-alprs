@@ -23,7 +23,7 @@ module "services_sg" {
       from_port   = 8443
       to_port     = 8443
       protocol    = "tcp"
-      cidr_blocks = local.subnet_cidrs["public"]
+      cidr_blocks = local.all_subnet_cidrs
     }
   }
 }

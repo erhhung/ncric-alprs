@@ -1,7 +1,7 @@
-module "allow_http_sg" {
+module "elb_http_sg" {
   source = "./modules/secgrp"
 
-  name        = "allow-http-sg"
+  name        = "elb-http-sg"
   description = "Allow HTTP/S inbound traffic"
   vpc_id      = module.main_vpc.vpc_id
 
@@ -23,10 +23,12 @@ module "allow_http_sg" {
 
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/lb
 resource "aws_lb" "api" {
+  depends_on = [module.elb_http_sg]
+
   name                       = "api-lb"
   load_balancer_type         = "application"
   subnets                    = local.public_subnet_ids
-  security_groups            = [module.allow_http_sg.id]
+  security_groups            = [module.elb_http_sg.id]
   drop_invalid_header_fields = true
 
   access_logs {
@@ -94,4 +96,8 @@ resource "aws_route53_record" "api" {
     zone_id                = aws_lb.api.zone_id
     evaluate_target_health = true
   }
+}
+
+output "api_elb_domain" {
+  value = aws_lb.api.dns_name
 }

@@ -105,6 +105,7 @@ module "elasticsearch_server" {
 
   depends_on = [
     module.main_vpc,
+    module.elasticsearch_sg,
     aws_s3_object.shared_user_data,
     aws_s3_object.es_user_data,
   ]

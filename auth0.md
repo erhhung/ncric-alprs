@@ -8,6 +8,7 @@
 * Auth0 Management API: `https://maiveric.us.auth0.com/api/v2/`
 * API Grant Permission Scopes: `read:users` and `read:users_app_metadata` only
 * Token Endpoint Authentication Method: Post
+* Application Logo: `https://dev.astrometrics.us/maiveric-logo.png`
 * Application Login URI: _{empty}_
 * Allowed Callback URLs: _{empty}_
 * Allowed Logout URLs: _{empty}_
@@ -21,6 +22,7 @@
 
 * Description: AstroMetrics (ALPRS) DEV platform
 * Connections: disable all social (google-oauth2)
+* Application Logo: `https://dev.astrometrics.us/maiveric-logo.png`
 * Application Login URI: _{empty}_
 * Allowed Callback URLs: `https://dev.astrometrics.us/`
 * Allowed Logout URLs: _{empty}_

@@ -73,15 +73,15 @@ build_service() {
 
 launch_service() {
   wait_service() {
-    local name=$1 host=$2
-    while ! nc -z $host 5701; do
-      echo "Waiting for $name at $host to listen on port 5701..."
+    local name=$1 host=$2 port=$3
+    while ! nc -z $host $port; do
+      echo "[$(date "+%D %r")] Waiting for $name on $host:$port..."
       sleep 10
     done
   }
   case $HOST in
-    DATASTORE) wait_service CONDUCTOR $CONDUCTOR_IP ;;
-    INDEXER)   wait_service DATASTORE $DATASTORE_IP ;;
+    DATASTORE) wait_service CONDUCTOR $CONDUCTOR_IP 5701 ;;
+    INDEXER)   wait_service DATASTORE $DATASTORE_IP 8080 ;;
   esac
   cd ncric-transfer/scripts/${HOST,,}
   # optional flags, like edmsync, may

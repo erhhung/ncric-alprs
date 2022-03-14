@@ -38,15 +38,21 @@ config_webapp() {
 }
 
 build_webapp() {
+  change_logo() (
+    cd node_modules/lattice-auth/build
+    logo=$(aws s3 cp $APP_S3_URL/maiveric-logo.png - | base64 -w0)
+    sed -Ei 's|logo:"data:[^"]+"|logo:"data:image/png;base64,'$logo'"|' index.js
+  )
   cd astrometrics
   cat <<EOF > .npmrc
 @fortawesome:registry=https://npm.fontawesome.com/
 //npm.fontawesome.com/:_authToken=$FA_TOKEN
 EOF
-  npm install
   # do NOT run "audit fix" as that changes
   # "lattice-auth" version in package.json
   # (should be "0.21.2-any-base-url")
+  npm install
+  change_logo
   npm run build:$ENV -- --env.mapboxToken=$MB_TOKEN
 }
 

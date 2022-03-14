@@ -117,6 +117,7 @@ module "postgresql_server" {
 
   depends_on = [
     module.main_vpc,
+    module.postgresql_sg,
     aws_s3_object.shared_user_data,
     aws_s3_object.pg_user_data,
   ]

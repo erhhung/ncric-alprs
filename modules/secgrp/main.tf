@@ -14,6 +14,10 @@ resource "aws_security_group" "group" {
   name        = var.name
   description = var.description
   vpc_id      = var.vpc_id
+
+  lifecycle {
+    create_before_destroy = true
+  }
 }
 
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/security_group_rule

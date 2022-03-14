@@ -38,6 +38,7 @@ module "conductor_server" {
 
   depends_on = [
     module.main_vpc,
+    module.services_sg,
     aws_s3_object.shared_user_data,
     aws_s3_object.conductor_bootstrap,
   ]
