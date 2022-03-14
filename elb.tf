@@ -48,7 +48,9 @@ resource "aws_lb_target_group" "api" {
   vpc_id           = module.main_vpc.vpc_id
 
   health_check {
-    path     = "/"
+    path     = "/datastore"
+    protocol = "HTTPS"
+    matcher = "401"
     interval = 20
   }
 }

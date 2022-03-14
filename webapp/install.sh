@@ -57,6 +57,9 @@ EOF
 }
 
 deploy_webapp() {
+  # don't upload "favicon_v2.png" because
+  # new version has already been uploaded
+  rm -f astrometrics/build/favicon_v2.png
   aws s3 sync astrometrics/build $APP_S3_URL
 }
 

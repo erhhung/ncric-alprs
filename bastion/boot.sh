@@ -48,7 +48,7 @@ yum_install() {
   yum_update
   rpm -qa | grep -q epel-release-7 || \
     yum install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
-  yum --enablerepo epel install -y figlet emacs-nox moreutils most jq htop pwgen certbot
+  yum --enablerepo epel install -y figlet emacs-nox moreutils most jq htop pwgen nmap
 }
 
 motd_banner() (
@@ -83,9 +83,9 @@ root_dotfiles() (
 
 etc_hosts() (
   cd /etc
+  grep -q postgresql hosts && exit
   tab=$(printf "\t")
   cat <<EOF >> hosts
-
 $PG_IP${tab}postgresql
 $ES_IP${tab}elasticsearch
 EOF

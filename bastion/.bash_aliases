@@ -99,15 +99,27 @@ alias tad='touchall -d'
 dnsips() {
   nslookup "$1" | grep 'Address: ' | colrm 1 9 | sort -V
 }
-sslcert() {
-  nmap -p ${2:-443} --script ssl-cert "$1"
-}
 listening() {
   netstat -ant | grep LISTEN | grep -E 'tcp4?' | sort -V
 }
 _diskusage() {
   local path="${1:-.}" depth=${2:-1}
   du -d $depth -x -h "$path" 2> >(grep -v 'Permission denied') | sort -h
+}
+
+# view website SSL certificate details
+# sslcert [host=localhost] [port=8443]
+sslcert() {
+  local host=${1:-localhost} port=${2:-8443}
+  if [ ${host-0} -eq ${host-1} 2> /dev/null ]; then
+    port=$host; host=localhost
+  fi
+
+  openssl s_client \
+    -servername $host \
+    -connect $host:$port \
+    -showcerts <<< '' 2> /dev/null | \
+    openssl x509 -inform pem -noout -text
 }
 
 # delete files and/or dirs older than x days
