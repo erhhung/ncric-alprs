@@ -48,9 +48,9 @@ resource "aws_lb_target_group" "api" {
   vpc_id           = module.main_vpc.vpc_id
 
   health_check {
-    path     = "/datastore"
+    path     = "/admin/ping"
     protocol = "HTTPS"
-    matcher = "401"
+    matcher = "200"
     interval = 20
   }
 }

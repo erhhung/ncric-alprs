@@ -3,8 +3,8 @@ clientSecret: ${AUTH0_M2M_CLIENT_SECRET}
 configurations:
   - issuer: https://maiveric.us.auth0.com
     audience: ${AUTH0_SPA_CLIENT_ID}
-    secret: ${AUTH0_SPA_CLIENT_SECRET}
-    base64EncodedSecret: false
-    signingAlgorithm: HS256
+    # secret: ${AUTH0_SPA_CLIENT_SECRET}
+    # base64EncodedSecret: false
+    signingAlgorithm: RS256
 domain: maiveric.us.auth0.com
 managementApiUrl: https://maiveric.us.auth0.com/api/v2/

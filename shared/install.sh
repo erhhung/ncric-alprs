@@ -11,6 +11,10 @@ create_user() (
 
 alias ol='sudo su -l openlattice'
 EOF
+  cat <<'EOF' >> .bashrc
+
+cd $HOME/ncric-transfer/scripts/${HOSTNAME/#*-/}
+EOF
   cd /etc/sudoers.d
   usermod -aG sudo openlattice
   cat <<'EOF' > 91-openlattice-user
@@ -43,16 +47,11 @@ init_destdir() (
 )
 
 clone_repos() {
-  git clone https://github.com/openlattice/ncric-transfer.git
-  pushd ncric-transfer
-  git co main
-  git up
-  popd
   git clone https://github.com/openlattice/openlattice.git
-  pushd openlattice
+  git clone https://github.com/openlattice/ncric-transfer.git
+  cd ncric-transfer
   git co main
   git up
-  popd
 }
 
 config_service() {
@@ -68,7 +67,8 @@ EOF
 
 build_service() {
   cd ncric-transfer/scripts/${HOST,,}
-  ./build-latest.sh # also installs
+  # build script also installs
+  ./build-latest.sh develop
 }
 
 launch_service() {
