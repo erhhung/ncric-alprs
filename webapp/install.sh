@@ -28,8 +28,15 @@ clone_repo() {
 
 config_webapp() {
   cd astrometrics/src
-  sed -Ei "/auth0CdnUrl:/i\  baseUrl: '$API_URL'," index.js
-  sed -Ei 's/cdn.auth0.com/cdn.us.auth0.com/'      index.js
+  while read file; do
+    sed -Ei 's/\bAstrometrics\b/AstroMetrics/' $file
+  done < <(egrep -rl '\bAstrometrics\b')
+  while read file; do
+    sed -Ei "s/[a-zA-Z0-9_.+-]+@openlattice\\.com\b/$SUPPORT_EMAIL/g" $file
+  done < <(egrep -rl '@openlattice\.com\b')
+  grep -q 'baseUrl:' index.js || \
+    sed -Ei "/auth0CdnUrl:/i\  baseUrl: '$API_URL'," index.js
+  sed -Ei 's/cdn.auth0.com/cdn.us.auth0.com/' index.js
   cd ../config/auth
   sed -Ei "s/ID_${ENV^^} =.+/ID_${ENV^^} = '$AUTH0_ID';/"   auth0.config.js
   sed -Ei "s/DOMAIN =.+/DOMAIN = 'maiveric.us.auth0.com';/" auth0.config.js

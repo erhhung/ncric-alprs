@@ -20,12 +20,13 @@ ${templatefile("${path.module}/bastion/boot.tftpl", {
     })}
 ${file("${path.module}/bastion/boot.sh")}
 ${templatefile("${path.module}/webapp/install.tftpl", {
-    FA_TOKEN   = var.FONTAWESOME_NPM_TOKEN
-    MB_TOKEN   = var.MAPBOX_PUBLIC_TOKEN
-    AUTH0_ID   = var.AUTH0_SPA_CLIENT_ID
-    APP_URL    = "https://${local.app_domain}"
-    API_URL    = "https://${local.api_domain}"
-    APP_S3_URL = "s3://${var.buckets["webapp"]}"
+    FA_TOKEN      = var.FONTAWESOME_NPM_TOKEN
+    MB_TOKEN      = var.MAPBOX_PUBLIC_TOKEN
+    AUTH0_ID      = var.AUTH0_SPA_CLIENT_ID
+    SUPPORT_EMAIL = var.ALPRS_SUPPORT_EMAIL
+    APP_URL       = "https://${local.app_domain}"
+    API_URL       = "https://${local.api_domain}"
+    APP_S3_URL    = "s3://${var.buckets["webapp"]}"
 })}
 ${file("${path.module}/webapp/install.sh")}
 ${file("${path.module}/shared/epilog.sh")}
