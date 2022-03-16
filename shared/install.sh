@@ -11,7 +11,7 @@ create_user() (
 
 alias ol='sudo su -l openlattice'
 EOF
-  cat <<'EOF' >> .bashrc
+  cat <<'EOF' >> /home/openlattice/.bashrc
 
 cd $HOME/ncric-transfer/scripts/${HOSTNAME/#*-/}
 EOF
@@ -47,6 +47,7 @@ init_destdir() (
 )
 
 clone_repos() {
+  rm -rf openlattice ncric-transfer
   git clone https://github.com/openlattice/openlattice.git
   git clone https://github.com/openlattice/ncric-transfer.git
   cd ncric-transfer

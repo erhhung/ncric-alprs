@@ -19,6 +19,7 @@ install_delta() (
 )
 
 clone_repo() {
+  rm -rf astrometrics
   git clone https://github.com/openlattice/astrometrics.git
   cd astrometrics
   git co develop
