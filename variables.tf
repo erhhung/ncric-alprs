@@ -63,3 +63,7 @@ variable "MAPBOX_PUBLIC_TOKEN" {
   description = "Mapbox public token"
   type        = string
 }
+variable "ALPRS_SUPPORT_EMAIL" {
+  description = "Support e-mail address"
+  type        = string
+}
