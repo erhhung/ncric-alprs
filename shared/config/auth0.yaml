@@ -1,7 +1,7 @@
 clientId: ${AUTH0_M2M_CLIENT_ID}
 clientSecret: ${AUTH0_M2M_CLIENT_SECRET}
 configurations:
-  - issuer: https://maiveric.us.auth0.com
+  - issuer: https://maiveric.us.auth0.com/
     audience: ${AUTH0_SPA_CLIENT_ID}
     # secret: ${AUTH0_SPA_CLIENT_SECRET}
     # base64EncodedSecret: false

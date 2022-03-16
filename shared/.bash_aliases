@@ -38,6 +38,7 @@ alias agr='ag autoremove -y --purge'
 alias l='less'
 alias mbs='most +10000 /bootstrap.log'
 alias mol='most +1000000 /opt/openlattice/logging/*.log'
+alias tol='tail -f /opt/openlattice/logging/*.log'
 
 alias myip='printf "public: %s\n local: %s\n" "$(_instmeta public-ipv4)" "$(_instmeta local-ipv4)"'
 alias myid='_instmeta instance-id'

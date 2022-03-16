@@ -49,6 +49,9 @@ yum_install() {
   rpm -qa | grep -q epel-release-7 || \
     yum install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
   yum --enablerepo epel install -y figlet emacs-nox moreutils most jq htop pwgen nmap
+  VERSION=v4.22.1; BINARY=yq_linux_amd64
+  wget https://github.com/mikefarah/yq/releases/download/$VERSION/$BINARY \
+    -O /usr/bin/yq && chmod +x /usr/bin/yq
 }
 
 motd_banner() (

@@ -27,6 +27,7 @@ apt_install() {
   apt-get dist-upgrade -y
   wait_apt_get
   apt-get install -y figlet emacs-nox moreutils most unzip net-tools pwgen
+  snap install yq
 }
 
 motd_banner() (
