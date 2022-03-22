@@ -4,6 +4,7 @@ ${file("${path.module}/shared/prolog.sh")}
 ${templatefile("${path.module}/conductor/boot.tftpl", {
   ENV           = var.env
   S3_URL        = local.user_data_s3_url
+  FROM_EMAIL    = local.alprs_sender_email
   CONFIG_BUCKET = var.buckets["config"]
 })}
 ${file("${path.module}/shared/boot.sh")}

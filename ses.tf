@@ -19,10 +19,15 @@ resource "aws_ses_domain_mail_from" "astrometrics" {
   mail_from_domain = "bounce.${local.app_domain}"
 }
 
+locals {
+  mail_from_domain   = aws_ses_domain_mail_from.astrometrics.mail_from_domain
+  alprs_sender_email = "alprs@${local.mail_from_domain}"
+}
+
 resource "aws_route53_record" "ses_mail_from_mx" {
   provider = aws.route53
   zone_id  = local.zone_id
-  name     = aws_ses_domain_mail_from.astrometrics.mail_from_domain
+  name     = local.mail_from_domain
   type     = "MX"
   ttl      = 3600
   records  = ["10 feedback-smtp.${data.aws_region.current.name}.amazonses.com"]
@@ -31,7 +36,7 @@ resource "aws_route53_record" "ses_mail_from_mx" {
 resource "aws_route53_record" "ses_mail_from_txt" {
   provider = aws.route53
   zone_id  = local.zone_id
-  name     = aws_ses_domain_mail_from.astrometrics.mail_from_domain
+  name     = local.mail_from_domain
   type     = "TXT"
   ttl      = 3600
   records  = ["v=spf1 include:amazonses.com -all"]

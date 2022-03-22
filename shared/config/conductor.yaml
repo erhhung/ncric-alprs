@@ -1,4 +1,4 @@
-reportEmailAddress: report@bounce.${APP_DOMAIN}
+reportEmailAddress: alprs@bounce.${APP_DOMAIN}
 searchConfiguration:
   elasticsearchUrl: ${ELASTICSEARCH_HOST}
   elasticsearchCluster: alprs

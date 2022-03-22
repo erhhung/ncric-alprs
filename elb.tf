@@ -43,14 +43,14 @@ resource "aws_lb_target_group" "api" {
   name             = "api-tg"
   port             = 8443
   protocol         = "HTTPS"
-  protocol_version = "HTTP2"
+  protocol_version = "HTTP1" # Postman will not work with HTTP2
   target_type      = "instance"
   vpc_id           = module.main_vpc.vpc_id
 
   health_check {
     path     = "/admin/ping"
     protocol = "HTTPS"
-    matcher = "200"
+    matcher  = "200"
     interval = 20
   }
 }

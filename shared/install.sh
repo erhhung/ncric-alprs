@@ -58,12 +58,18 @@ clone_repos() {
 config_service() {
   az_url="http://169.254.169.254/latest/meta-data/placement/availability-zone"
   region=$(curl -s $az_url | sed 's/[a-z]$//')
-  cd openlattice/${HOST,,}/src/main/resources
+  cd ~/openlattice/${HOST,,}/src/main/resources
   cat <<EOF > aws.yaml
 region: $region
 bucket: $CONFIG_BUCKET
 folder: ${HOST,,}
 EOF
+  if [ "$FROM_EMAIL" ]; then
+    cd ~/openlattice/conductor-client/src/main/kotlin/com/openlattice/search/renderers
+    for file in Alpr*EmailRenderer.kt; do
+      sed -Ei "s/FROM_EMAIL =.+/FROM_EMAIL = \"$FROM_EMAIL\"/" $file
+    done
+  fi
 }
 
 build_service() {
@@ -72,14 +78,15 @@ build_service() {
   ./build-latest.sh develop
 }
 
+wait_service() {
+  local name=$1 host=$2 port=$3
+  while ! nc -z $host $port; do
+    echo "[$(date "+%D %r")] Waiting for $name on $host:$port..."
+    sleep 10
+  done
+}
+
 launch_service() {
-  wait_service() {
-    local name=$1 host=$2 port=$3
-    while ! nc -z $host $port; do
-      echo "[$(date "+%D %r")] Waiting for $name on $host:$port..."
-      sleep 10
-    done
-  }
   case $HOST in
     DATASTORE) wait_service CONDUCTOR $CONDUCTOR_IP 5701 ;;
     INDEXER)   wait_service DATASTORE $DATASTORE_IP 8080 ;;
@@ -89,6 +96,8 @@ launch_service() {
   # be defined by individual services
   ./boot.sh "${SVC_FLAGS[@]}"
 }
+
+export -f wait_service
 
 run create_user
 run install_java

@@ -113,6 +113,7 @@ create_db_objects() {
   cd init
   aws s3 cp $ALPRS_SQL alprs.sql.gz
   gunzip -f alprs.sql.gz
+  sed -Ei "s|https://astrometrics\.us|$APP_URL|" alprs.sql
   psql alprs < alprs.sql
 }
 
