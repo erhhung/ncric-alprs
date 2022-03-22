@@ -6,6 +6,8 @@ locals {
       ext  = regex("\\.\\w+$", path)
       name = basename(path)
     }
+    # ignore dot files like .gitignore
+    if length(regexall("^\\.", basename(path))) == 0
   ]
   contents = {
     for file in local.files : file.name => merge(file, {

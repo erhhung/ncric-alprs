@@ -14,6 +14,7 @@ aws_provider = {
 buckets = {
   webapp = "alprs-webapp-prod"
   config = "alprs-config-prod"
+  backup = "alprs-backup-prod"
   audit  = "alprs-audit-prod"
   media  = "alprs-media-prod"
   sftp   = "alprs-sftp-prod"
@@ -21,10 +22,12 @@ buckets = {
 
 elb_account_id = "048591011584"
 
-ssh_key = {
+ssh_keys = [{
   key_name   = "alprsgov-admin"
   public_key = "ssh-ed25519 ... alprsgov-admin"
-}
+  }, {
+  public_key = "ssh-ed25519 ... authorized-user"
+}]
 
 AUTH0_M2M_CLIENT_ID     = ""
 AUTH0_M2M_CLIENT_SECRET = ""

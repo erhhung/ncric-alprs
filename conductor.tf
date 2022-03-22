@@ -55,7 +55,8 @@ module "conductor_server" {
 }
 
 module "conductor_config" {
-  source = "./modules/config"
+  source     = "./modules/config"
+  depends_on = [data.external.rhizome_jks]
 
   service = "conductor"
   path    = "${path.module}/conductor/config"

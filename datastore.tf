@@ -56,7 +56,8 @@ module "datastore_server" {
 }
 
 module "datastore_config" {
-  source = "./modules/config"
+  source     = "./modules/config"
+  depends_on = [data.external.rhizome_jks]
 
   service = "datastore"
   path    = "${path.module}/datastore/config"

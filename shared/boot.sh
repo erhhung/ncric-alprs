@@ -49,6 +49,14 @@ install_awscli() (
   rm -rf /tmp/aws*
 )
 
+authorize_keys() {
+  cd .ssh
+  while read key || [ "$key" ]; do
+    grep -q "$key" authorized_keys || \
+       echo "$key" >> authorized_keys
+  done < <(aws s3 cp $S3_URL/shared/authorized_keys -)
+}
+
 user_dotfiles() {
   aws s3 sync $S3_URL/shared . --exclude '*' --include '.*'
   mkdir -p .cache && touch .cache/motd.legal-displayed
@@ -77,8 +85,8 @@ generate_cert() (
   echo US
   echo California
   echo Walnut Creek
-  echo MaiVERIC, Inc.
-  echo ALPR
+  echo MaiVERIC
+  echo ALPRS
   echo $myFQDN
   echo root@$myFQDN
 .
@@ -99,5 +107,6 @@ run custom_prompt
 run apt_install
 run motd_banner
 run install_awscli
-run user_dotfiles $USER
+run authorize_keys $USER
+run user_dotfiles  $USER
 run root_dotfiles

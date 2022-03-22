@@ -38,6 +38,8 @@ Host alprs*tun
   RemoteCommand none
   RequestTTY no
 
+Host alprs*basttun
+  LocalForward 9001 localhost:9000
 Host alprs*pgtun
   LocalForward 5433 localhost:5432
 Host alprs*estun

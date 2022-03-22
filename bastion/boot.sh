@@ -74,6 +74,14 @@ upgrade_awscli() (
   rm -rf /tmp/aws*
 )
 
+authorize_keys() {
+  cd .ssh
+  while read key || [ "$key" ]; do
+    grep -q "$key" authorized_keys || \
+       echo "$key" >> authorized_keys
+  done < <(aws s3 cp $USR_S3_URL/shared/authorized_keys -)
+}
+
 user_dotfiles() {
   aws s3 sync $USR_S3_URL/shared  . --exclude '*' --include '.*' --exclude '.bash*'
   aws s3 sync $USR_S3_URL/bastion . --exclude '*' --include '.*'
@@ -100,6 +108,7 @@ run custom_prompt
 run yum_install
 run motd_banner
 run upgrade_awscli
-run user_dotfiles $USER
+run authorize_keys $USER
+run user_dotfiles  $USER
 run root_dotfiles
 run etc_hosts

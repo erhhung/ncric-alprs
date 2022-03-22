@@ -35,6 +35,6 @@ terraform init -backend-config config/dev.conf -upgrade
 ## Terraform Apply
 
 ```bash
-terraform plan -var-file config/dev.tfvars
-terraform apply -var-file config/dev.tfvars
+terraform plan  -var-file config/dev.tfvars -compact-warnings
+terraform apply -var-file config/dev.tfvars -compact-warnings
 ```

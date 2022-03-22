@@ -30,6 +30,9 @@ module "services_sg" {
 
 locals {
   shared_user_data = [{
+    path = "shared/authorized_keys"
+    data = local.authorized_keys
+    }, {
     path = "shared/.bash_aliases"
     data = file("${path.module}/shared/.bash_aliases")
     }, {

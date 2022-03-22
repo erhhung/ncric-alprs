@@ -27,8 +27,9 @@ resource "aws_s3_bucket" "buckets" {
 
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket_server_side_encryption_configuration
 resource "aws_s3_bucket_server_side_encryption_configuration" "buckets" {
-  for_each = var.buckets
-  bucket   = each.value
+  for_each   = var.buckets
+  depends_on = [aws_s3_bucket.buckets]
+  bucket     = each.value
 
   rule {
     apply_server_side_encryption_by_default {
@@ -39,8 +40,9 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "buckets" {
 
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket_public_access_block
 resource "aws_s3_bucket_public_access_block" "buckets" {
-  for_each = var.buckets
-  bucket   = each.value
+  for_each   = var.buckets
+  depends_on = [aws_s3_bucket.buckets]
+  bucket     = each.value
 
   block_public_acls       = true
   block_public_policy     = true
@@ -50,8 +52,9 @@ resource "aws_s3_bucket_public_access_block" "buckets" {
 
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket_ownership_controls
 resource "aws_s3_bucket_ownership_controls" "buckets" {
-  for_each = var.buckets
-  bucket   = each.value
+  for_each   = var.buckets
+  depends_on = [aws_s3_bucket.buckets]
+  bucket     = each.value
 
   rule {
     object_ownership = "BucketOwnerPreferred"
@@ -60,14 +63,35 @@ resource "aws_s3_bucket_ownership_controls" "buckets" {
 
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket_acl
 resource "aws_s3_bucket_acl" "buckets" {
-  for_each = var.buckets
-  bucket   = each.value
+  for_each   = var.buckets
+  depends_on = [aws_s3_bucket.buckets]
+  bucket     = each.value
 
   # https://docs.aws.amazon.com/AmazonS3/latest/userguide/acl-overview.html#canned-acl
   acl = each.key == "audit" ? "log-delivery-write" : "private"
 }
 
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket_lifecycle_configuration
+resource "aws_s3_bucket_lifecycle_configuration" "backup" {
+  bucket = aws_s3_bucket.buckets["backup"].id
+
+  rule {
+    id     = "backup"
+    status = "Enabled"
+
+    transition {
+      days          = 30
+      storage_class = "STANDARD_IA"
+    }
+    transition {
+      days          = 90
+      storage_class = "GLACIER"
+    }
+    expiration {
+      days = 365
+    }
+  }
+}
 resource "aws_s3_bucket_lifecycle_configuration" "audit" {
   bucket = aws_s3_bucket.buckets["audit"].id
 
@@ -175,9 +199,10 @@ locals {
 
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket_policy
 resource "aws_s3_bucket_policy" "buckets" {
-  for_each = var.buckets
+  for_each   = var.buckets
+  depends_on = [aws_s3_bucket.buckets]
+  bucket     = each.value
 
-  bucket = each.value
   policy = lookup(local.bucket_policies, each.key,
     data.aws_iam_policy_document.https_only[each.key]
   ).json

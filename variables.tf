@@ -20,6 +20,7 @@ variable "buckets" {
   type = object({
     webapp = string
     config = string
+    backup = string
     audit  = string
     media  = string
     sftp   = string
@@ -31,12 +32,13 @@ variable "elb_account_id" {
   description = "ELB account ID"
   type        = string
 }
-variable "ssh_key" {
+
+variable "ssh_keys" {
   description = "Admin SSH key to import"
-  type = object({
-    key_name   = string
+  type = list(object({
+    key_name   = optional(string)
     public_key = string
-  })
+  }))
 }
 
 variable "AUTH0_M2M_CLIENT_ID" {

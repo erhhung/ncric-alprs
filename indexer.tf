@@ -54,7 +54,8 @@ module "indexer_server" {
 }
 
 module "indexer_config" {
-  source = "./modules/config"
+  source     = "./modules/config"
+  depends_on = [data.external.rhizome_jks]
 
   service = "indexer"
   path    = "${path.module}/indexer/config"

@@ -1,5 +1,11 @@
 #!/usr/bin/env bash
 
+# update ~/.ssh/config with current instance IDs.
+# script expects the config to contain names and
+# sections as formatted in "sshconfig".
+#
+# usage: upssh.sh
+
 _reqcmds() {
   local cmd
   for cmd in "$@"; do
