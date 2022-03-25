@@ -47,11 +47,3 @@ locals {
     local.new_pg_pass["atlas_user"]
   )
 }
-
-output "postgresql_user_logins" {
-  value = {
-    alprs_user = local.alprs_pass
-    atlas_user = local.atlas_pass
-  }
-  sensitive = true
-}

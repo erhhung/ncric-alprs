@@ -73,7 +73,3 @@ resource "aws_route53_record" "app" {
     evaluate_target_health = true
   }
 }
-
-output "app_cf_domain" {
-  value = aws_cloudfront_distribution.app.domain_name
-}

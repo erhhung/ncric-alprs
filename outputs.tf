@@ -2,8 +2,31 @@ output "env" {
   value = var.env
 }
 
-# iam_user_access_keys:         iam-users.tf
-# postgresql_user_logins:       postgresql.tf
+output "iam_user_access_keys" {
+  value = { for user in local.users : user.name => {
+    access_key_id     = aws_iam_access_key.users[user.name].id,
+    secret_access_key = aws_iam_access_key.users[user.name].secret,
+  } }
+  sensitive = true
+}
+
+output "postgresql_user_logins" {
+  value = {
+    alprs_user = local.alprs_pass
+    atlas_user = local.atlas_pass
+  }
+  sensitive = true
+}
+
+output "app_cf_domain" {
+  value = aws_cloudfront_distribution.app.domain_name
+}
+
+output "api_elb_domain" {
+  value = aws_lb.api.dns_name
+}
+
+# bastion_instance_id:          bastion.tf
 # postgresql_instance_id:       postgresql.tf
 # postgresql_private_domain:    postgresql.tf
 # postgresql_private_ip:        postgresql.tf
@@ -19,6 +42,3 @@ output "env" {
 # indexer_instance_id:          indexer.tf
 # indexer_private_domain:       indexer.tf
 # indexer_private_ip:           indexer.tf
-# bastion_instance_id:          bastion.tf
-# app_cf_domain:                cloudfront.tf
-# api_elb_domain:               elb.tf

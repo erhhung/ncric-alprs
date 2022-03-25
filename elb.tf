@@ -99,7 +99,3 @@ resource "aws_route53_record" "api" {
     evaluate_target_health = true
   }
 }
-
-output "api_elb_domain" {
-  value = aws_lb.api.dns_name
-}
