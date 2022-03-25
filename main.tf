@@ -1,7 +1,7 @@
 terraform {
   # terraform init -backend-config config/{ENV}.conf
   backend "s3" {
-    key = "tfstates/terraform.tfstate"
+    key = "tfstate/terraform.tfstate"
   }
 
   # https://www.terraform.io/language/providers/requirements

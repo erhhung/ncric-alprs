@@ -4,7 +4,7 @@
 
 cd /root 2> /dev/null
 script=$(basename "$0" .sh)
-exec > >(tee /$script.log | logger -t $script ) 2>&1
+exec > >(tee -a /$script.log | logger -t $script ) 2>&1
 echo -e "[$(date -R)] ===== BEGIN ${script^^} =====\n"
 echo "Bash version: ${BASH_VERSINFO[@]}"
 set -xeo pipefail

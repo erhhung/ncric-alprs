@@ -8,10 +8,9 @@ upgrade_bash() {
   ./configure --prefix=/
   make && make install
   rm -rf /tmp/bash-5.1.16*
-  self=$(realpath "$0")
   echo "RESTARTING..."
   hash -r; sleep 1
-  exec "$self" "$@"
+  exec /bootstrap.sh
 }
 
 set_hostname() (

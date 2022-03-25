@@ -85,21 +85,31 @@ EOF
   chown root:kibana *
 )
 
-restart_service() {
-  systemctl restart $1
-  systemctl enable  $1; sleep 10
-  systemctl status  $1 --no-pager
-  for port in ${@:2}; do
-    # script will fail
-    # if not listening
-    nc -z localhost $port
+wait_service() {
+  local name=$1 port=$2 count=12
+  while ! nc -z localhost $port && [ $((count--)) -ge 0 ]; do
+    echo "[$(date "+%D %r")] Waiting for $name on port $port..."
+    sleep 5
   done
+  if [ $count -lt 0 ]; then
+    echo >&2 "$name failed to start!"
+    return 1
+  fi
+}
+
+restart_service() {
+  systemctl restart ${1,,}
+  systemctl enable  ${1,,}
+  for port in ${@:2}; do
+    wait_service $1 $port
+  done
+  systemctl status  ${1,,} --no-pager
 }
 
 start_elasticsearch() {
   systemctl daemon-reload
-  restart_service elasticsearch 9201 9301
-  restart_service kibana        5601
+  restart_service Elasticsearch 9201 9301
+  restart_service Kibana        5601
 }
 
 config_nginx() (
@@ -149,7 +159,7 @@ EOT
 )
 
 start_nginx() {
-  restart_service nginx 443 9200 9300
+  restart_service Nginx 443 9200 9300
 }
 
 run install_java

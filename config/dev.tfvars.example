@@ -22,19 +22,21 @@ buckets = {
 
 # t3.micro:    x86,  2 vCPUs,   1 GiB, EBS only,  5 Gb/s, $.0104/hr
 # t3.small:    x86,  2 vCPUs,   2 GiB, EBS only,  5 Gb/s, $.0208/hr
+# r6g.large:   ARM:  2 VCPUs,  16 GiB, EBS only, 10 Gb/s, $.1008/hr
 # r6g.xlarge:  ARM,  4 vCPUs,  32 GiB, EBS only, 10 Gb/s, $.2016/hr
 # r6g.2xlarge: ARM,  8 vCPUs,  64 GiB, EBS only, 10 Gb/s, $.4032/hr
 # r6g.4xlarge: ARM, 16 vCPUs, 128 GiB, EBS only, 10 Gb/s, $.8064/hr
+# t4g.large:   ARM:  2 VCPUs,   8 GiB, EBS only,  5 Gb/s, $.0672/hr
 # t4g.xlarge:  ARM,  4 vCPUs,  16 GiB, EBS only,  5 Gb/s, $.1344/hr
 # t4g.2xlarge: ARM,  8 vCPUs,  32 GiB, EBS only,  5 Gb/s, $.2688/hr
 
 instance_types = {
   bastion       = "t3.small"
-  postgresql    = "r6g.xlarge"
-  elasticsearch = "r6g.xlarge"
-  conductor     = "r6g.xlarge"
-  datastore     = "r6g.xlarge"
-  indexer       = "t4g.xlarge"
+  postgresql    = "r6g.large"
+  elasticsearch = "r6g.large"
+  conductor     = "r6g.large"
+  datastore     = "r6g.large"
+  indexer       = "t4g.large"
 }
 
 data_volume_sizes = {

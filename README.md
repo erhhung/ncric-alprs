@@ -1,4 +1,4 @@
-# ALPRS AWS Infra
+# ALPRS Infrastructure
 
 ## Local Environment
 
@@ -19,18 +19,19 @@ export TF_CLI_ARGS_apply="-compact-warnings"
 
 ## Terraform State
 
-Create S3 bucket for Terraform to store its state:
+Create S3 bucket for Terraform to store its state:  
+_(adjust values for **prod** environment accordingly)_
 
 ```bash
 aws s3api create-bucket \
-  --profile alprscom
-  --bucket alprs-tfstates-dev \
+  --profile alprscom \
+  --bucket alprs-tfstate-dev \
   --create-bucket-configuration "LocationConstraint=us-west-2" \
   --object-ownership BucketOwnerEnforced
 
 aws s3api put-public-access-block \
-  --profile alprscom
-  --bucket alprs-tfstates-dev \
+  --profile alprscom \
+  --bucket alprs-tfstate-dev \
   --public-access-block-configuration "BlockPublicAcls=true,IgnorePublicAcls=true,BlockPublicPolicy=true,RestrictPublicBuckets=true"
 ```
 

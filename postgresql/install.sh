@@ -84,14 +84,24 @@ EOF
   chown -h postgres:postgres *
 )
 
+wait_service() {
+  local name=$1 port=$2 count=12
+  while ! nc -z localhost $port && [ $((count--)) -ge 0 ]; do
+    echo "[$(date "+%D %r")] Waiting for $name on port $port..."
+    sleep 5
+  done
+  if [ $count -lt 0 ]; then
+    echo >&2 "$name failed to start!"
+    return 1
+  fi
+}
+
 start_postgresql() {
   systemctl daemon-reload
   systemctl restart postgresql
   systemctl enable  postgresql
+  wait_service PostgreSQL 5432
   systemctl status  postgresql --no-pager
-  # script will fail
-  # if not listening
-  nc -z localhost 5432
 }
 
 create_databases() {

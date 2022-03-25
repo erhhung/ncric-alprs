@@ -24,7 +24,17 @@ curl -so /bootstrap.sh \
   -H "Date: $date" \
   -H "Authorization: AWS $key_id:$hash" \
   -H "x-amz-security-token: $token" \
-  https://$bucket.s3.amazonaws.com/$file
+  -L https://$bucket.s3.amazonaws.com/$file
 
-chmod +x /bootstrap.sh
-exec     /bootstrap.sh
+# make sure response isn't an XML-based error message
+if [[ "$(head -1 /bootstrap.sh)" =~ ^#\!/.+ ]]; then
+  chmod +x /bootstrap.sh
+  exec     /bootstrap.sh
+else
+  mv /bootstrap.sh /bootstrap.log
+  echo >&2 -e "[$(date "+%D %r")] BOOT FAILED! Retrying in 10 seconds...\n$(< /bootstrap.log)"
+  sleep 10
+  curl -so /boot.sh http://169.254.169.254/latest/user-data
+  chmod +x /boot.sh
+  exec     /boot.sh
+fi
