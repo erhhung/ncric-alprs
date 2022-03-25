@@ -31,20 +31,15 @@ ${file("${path.module}/shared/s3boot.sh")}
 EOT
 }
 
-# r6g.2xlarge: ARM,  8 vCPUs,  64 GiB, EBS only, 10 Gb/s, $.4032/hr
-# r6g.4xlarge: ARM, 16 vCPUs, 128 GiB, EBS only, 10 Gb/s, $.8064/hr
-
 module "conductor_server" {
   source = "./modules/instance"
 
   depends_on = [
-    module.main_vpc,
-    module.services_sg,
     aws_s3_object.shared_user_data,
     aws_s3_object.conductor_bootstrap,
   ]
   ami_id           = data.aws_ami.ubuntu_20arm.id
-  instance_type    = "r6g.2xlarge" # r6g.4xlarge
+  instance_type    = var.instance_types["conductor"]
   instance_name    = "Conductor"
   root_volume_size = 32
   subnet_id        = module.main_vpc.subnet_ids["private1"]

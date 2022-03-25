@@ -16,18 +16,6 @@ module "postgresql_sg" {
 }
 
 # https://registry.terraform.io/providers/hashicorp/external/latest/docs/data-sources/data_source
-data "external" "old_passwords" {
-  program = [
-    "bash", "-c",
-    "terraform output -json postgresql_user_logins 2> /dev/null || echo '{}'",
-  ]
-}
-data "external" "new_passwords" {
-  program = [
-    "${path.module}/shared/pwgen.sh",
-    "alprs_user", "atlas_user",
-  ]
-}
 data "external" "postgresql_conf" {
   program = [
     "${path.module}/shared/minconf.sh",
@@ -42,17 +30,6 @@ data "external" "pg_hba_conf" {
 }
 
 locals {
-  old_pass = data.external.old_passwords.result
-  new_pass = data.external.new_passwords.result
-
-  alprs_pass = coalesce(
-    lookup(local.old_pass, "alprs_user", null),
-    local.new_pass["alprs_user"]
-  )
-  atlas_pass = coalesce(
-    lookup(local.old_pass, "atlas_user", null),
-    local.new_pass["atlas_user"]
-  )
   pg_user_data = [{
     path = "postgresql/postgresql.conf"
     data = data.external.postgresql_conf.result.text
@@ -79,6 +56,7 @@ ${templatefile("${path.module}/postgresql/boot.tftpl", {
     PG_HBA    = "${local.user_data_s3_url}/postgresql/pg_hba.conf"
     ALPRS_SQL = "${local.user_data_s3_url}/postgresql/alprs.sql.gz"
 
+    # passwords created by keys.tf
     alprs_pass = local.alprs_pass
     atlas_pass = local.atlas_pass
 })}
@@ -111,22 +89,17 @@ ${file("${path.module}/shared/s3boot.sh")}
 EOT
 }
 
-# r6g.2xlarge: ARM, 8 vCPUs, 64 GiB, EBS only, 10 Gb/s, $.4032/hr
-
 module "postgresql_server" {
   source = "./modules/instance"
 
   depends_on = [
-    module.main_vpc,
-    module.postgresql_sg,
     aws_s3_object.shared_user_data,
     aws_s3_object.pg_user_data,
   ]
   ami_id           = data.aws_ami.ubuntu_20arm.id
-  instance_type    = "r6g.2xlarge"
+  instance_type    = var.instance_types["postgresql"]
   instance_name    = "PostgreSQL"
   root_volume_size = 32
-  data_volume_size = 256 # 1024*5
   subnet_id        = module.main_vpc.subnet_ids["private1"]
   security_groups  = [module.postgresql_sg.id]
   instance_profile = aws_iam_instance_profile.ssm_instance.name
@@ -134,12 +107,11 @@ module "postgresql_server" {
   user_data        = chomp(local.pg_bootstrap)
 }
 
-output "postgresql_user_logins" {
-  value = {
-    alprs_user = local.alprs_pass
-    atlas_user = local.atlas_pass
-  }
-  sensitive = true
+# https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/volume_attachment
+resource "aws_volume_attachment" "postgresql_data" {
+  volume_id   = aws_ebs_volume.postgresql_data.id
+  instance_id = module.postgresql_server.instance_id
+  device_name = "/dev/xvdb"
 }
 
 output "postgresql_instance_id" {

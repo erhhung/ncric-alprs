@@ -1,5 +1,15 @@
 # ALPRS AWS Infra
 
+## Local Environment
+
+Add to "`~/.bash_profile`":
+
+```bash
+export TF_CLI_ARGS_init="-compact-warnings -upgrade"
+export TF_CLI_ARGS_plan="-compact-warnings"
+export TF_CLI_ARGS_apply="-compact-warnings"
+```
+
 ## AWS Environment
 
 ### AWS Systems Manager
@@ -29,12 +39,12 @@ aws s3api put-public-access-block \
 ## Terraform Init
 
 ```bash
-terraform init -backend-config config/dev.conf -upgrade
+terraform init -backend-config config/dev.conf
 ```
 
 ## Terraform Apply
 
 ```bash
-terraform plan  -var-file config/dev.tfvars -compact-warnings
-terraform apply -var-file config/dev.tfvars -compact-warnings
+terraform plan  -var-file config/dev.tfvars
+terraform apply -var-file config/dev.tfvars
 ```

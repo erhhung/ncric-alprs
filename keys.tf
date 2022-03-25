@@ -20,3 +20,38 @@ data "external" "rhizome_jks" {
     local.app_domain,
   ]
 }
+
+data "external" "old_pg_pass" {
+  program = [
+    "bash", "-c",
+    "terraform output -json postgresql_user_logins 2> /dev/null || echo '{}'",
+  ]
+}
+data "external" "new_pg_pass" {
+  program = [
+    "${path.module}/shared/pwgen.sh",
+    "alprs_user", "atlas_user",
+  ]
+}
+
+locals {
+  old_pg_pass = data.external.old_pg_pass.result
+  new_pg_pass = data.external.new_pg_pass.result
+
+  alprs_pass = coalesce(
+    lookup(local.old_pg_pass, "alprs_user", null),
+    local.new_pg_pass["alprs_user"]
+  )
+  atlas_pass = coalesce(
+    lookup(local.old_pg_pass, "atlas_user", null),
+    local.new_pg_pass["atlas_user"]
+  )
+}
+
+output "postgresql_user_logins" {
+  value = {
+    alprs_user = local.alprs_pass
+    atlas_user = local.atlas_pass
+  }
+  sensitive = true
+}

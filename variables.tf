@@ -27,6 +27,34 @@ variable "buckets" {
   })
 }
 
+variable "instance_types" {
+  type = object({
+    bastion       = string
+    postgresql    = string
+    elasticsearch = string
+    conductor     = string
+    datastore     = string
+    indexer       = string
+  })
+
+  validation {
+    condition = alltrue([
+      for type in keys(var.instance_types) : length(regexall(
+        type == "bastion" ? "^.+[^g]\\." : "^.+g\\.", var.instance_types[type]
+      )) > 0
+    ])
+    error_message = "Instances other than the Bastion must use ARM-based CPUs."
+  }
+}
+
+variable "data_volume_sizes" {
+  description = "Data volume sizes in GiB"
+  type = object({
+    postgresql    = number
+    elasticsearch = number
+  })
+}
+
 variable "elb_account_id" {
   # https://docs.aws.amazon.com/elasticloadbalancing/latest/classic/enable-access-logs.html
   description = "ELB account ID"

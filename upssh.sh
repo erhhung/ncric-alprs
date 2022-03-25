@@ -15,7 +15,6 @@ _reqcmds() {
     fi
   done
 }
-
 _reqcmds terraform egrep jq || exit $?
 
 _altcmd() {

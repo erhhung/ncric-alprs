@@ -34,10 +34,11 @@ hist = log --graph --date=short --pretty=format:\"%>|(6)%C(white)┃ %C(yellow)%
 ehist = "!f() { \
   git rebase -i ${1:-HEAD~1}; \
 }; f"
+sub = submodule
 # fetch plus submodules
 up = "!f() { \
   git pull --rebase --prune \"$@\" && \
-  git submodule update --init --recursive; \
+  git submodule update --recursive; \
 }; f"
 co = checkout
 # create new branch

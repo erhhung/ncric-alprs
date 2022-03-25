@@ -31,19 +31,15 @@ ${file("${path.module}/shared/s3boot.sh")}
 EOT
 }
 
-# t4g.2xlarge: ARM, 8 vCPUs, 32 GiB, EBS only, 5 Gb/s, $.2688/hr
-
 module "indexer_server" {
   source = "./modules/instance"
 
   depends_on = [
-    module.main_vpc,
-    module.services_sg,
     aws_s3_object.shared_user_data,
     aws_s3_object.indexer_bootstrap,
   ]
   ami_id           = data.aws_ami.ubuntu_20arm.id
-  instance_type    = "t4g.2xlarge"
+  instance_type    = var.instance_types["indexer"]
   instance_name    = "Indexer"
   root_volume_size = 48
   subnet_id        = module.main_vpc.subnet_ids["private1"]

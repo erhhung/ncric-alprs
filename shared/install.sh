@@ -49,6 +49,11 @@ init_destdir() (
 clone_repos() {
   rm -rf openlattice ncric-transfer
   git clone https://github.com/openlattice/openlattice.git
+  cd openlattice
+  rmdir neuron
+  git sub init
+  git sub deinit neuron
+  cd ..
   git clone https://github.com/openlattice/ncric-transfer.git
   cd ncric-transfer
   git co main
@@ -87,6 +92,15 @@ wait_service() {
 }
 
 launch_service() {
+  heap_size=$(awk '/MemTotal.*kB/ {print int($2 /1024/1024 / 2)+1}' /proc/meminfo)
+  exports=$(cat <<EOT
+
+export ${HOST}_XMS="-Xms${heap_size}g"
+export ${HOST}_XMX="-Xmx${heap_size}g"
+EOT
+)
+  echo "$exports" >> .bashrc
+  eval "$exports"
   case $HOST in
     DATASTORE) wait_service CONDUCTOR $CONDUCTOR_IP 5701 ;;
     INDEXER)   wait_service DATASTORE $DATASTORE_IP 8080 ;;

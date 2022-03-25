@@ -1,11 +1,6 @@
-variable "ami_id" {
-  description = "EC2 AMI ID"
+variable "instance_name" {
+  description = "Instance name"
   type        = string
-
-  validation {
-    condition     = length(regexall("^ami-[a-f0-9]+$", var.ami_id)) > 0
-    error_message = "Invalid ami_id."
-  }
 }
 
 variable "instance_type" {
@@ -18,9 +13,14 @@ variable "instance_type" {
   }
 }
 
-variable "instance_name" {
-  description = "Instance name"
+variable "ami_id" {
+  description = "EC2 AMI ID"
   type        = string
+
+  validation {
+    condition     = length(regexall("^ami-[a-f0-9]+$", var.ami_id)) > 0
+    error_message = "Invalid ami_id."
+  }
 }
 
 variable "root_volume_type" {
@@ -38,23 +38,6 @@ variable "root_volume_size" {
   description = "Root volume size in GiBs"
   type        = number
   default     = 8
-}
-
-variable "data_volume_type" {
-  description = "Data volume type"
-  type        = string
-  default     = "gp2"
-
-  validation {
-    condition     = contains(["gp2", "gp3"], var.data_volume_type)
-    error_message = "Valid values for data_volume_type: gp2/gp3."
-  }
-}
-
-variable "data_volume_size" {
-  description = "Data volume size in GiBs"
-  type        = number
-  default     = 0
 }
 
 variable "subnet_id" {

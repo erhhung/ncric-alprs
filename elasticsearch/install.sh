@@ -12,12 +12,14 @@ EOF
 
 create_xfs_volume() (
   [ -d /opt/elasticsearch ] && exit
-  mkfs.xfs -f -L elastic /dev/nvme1n1
-  mkdir /opt/elasticsearch
+  if ! file -sL /dev/nvme1n1 | grep -q filesystem; then
+    mkfs.xfs -f -L elastic /dev/nvme1n1
+  fi
   tab=$(printf "\t")
   cat <<EOF >> /etc/fstab
 LABEL=elastic${tab}/opt/elasticsearch${tab}xfs${tab}defaults,nofail${tab}0 2
 EOF
+  mkdir /opt/elasticsearch
   mount -a
   df -h /opt/elasticsearch
   cat <<'EOF' >> /etc/environment
@@ -58,18 +60,20 @@ LimitMEMLOCK=infinity
 LimitNOFILE=300000
 EOF
   cd /opt/elasticsearch
-  [ -d data ] && exit
-  mkdir -p data logs
-  ln -s /etc/elasticsearch conf
-  ln -s /usr/share/elasticsearch/bin
-  ln -s /usr/share/elasticsearch/plugins
+  if [ ! -d data ]; then
+    mkdir data logs
+    ln -s /etc/elasticsearch conf
+    ln -s /usr/share/elasticsearch/bin
+    ln -s /usr/share/elasticsearch/plugins
+  fi
 
   cd conf
   mv elasticsearch.yml elasticsearch-default.yml
   aws s3 cp $ES_YML elasticsearch.yml
-  cat <<'EOF' > jvm.options.d/heap.options
--Xms30g
--Xmx30g
+  heap_size=$(awk '/MemTotal.*kB/ {print int($2 /1024/1024 / 2)}' /proc/meminfo)
+  cat <<EOF > jvm.options.d/heap.options
+-Xms${heap_size}g
+-Xmx${heap_size}g
 EOF
   chown -Rh elasticsearch:elasticsearch \
     /opt/elasticsearch /etc/elasticsearch
@@ -83,14 +87,19 @@ EOF
 
 restart_service() {
   systemctl restart $1
-  systemctl enable  $1
+  systemctl enable  $1; sleep 10
   systemctl status  $1 --no-pager
+  for port in ${@:2}; do
+    # script will fail
+    # if not listening
+    nc -z localhost $port
+  done
 }
 
 start_elasticsearch() {
   systemctl daemon-reload
-  restart_service elasticsearch
-  restart_service kibana
+  restart_service elasticsearch 9201 9301
+  restart_service kibana        5601
 }
 
 config_nginx() (
@@ -140,8 +149,7 @@ EOT
 )
 
 start_nginx() {
-  sleep 1
-  restart_service nginx
+  restart_service nginx 443 9200 9300
 }
 
 run install_java

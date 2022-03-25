@@ -4,17 +4,17 @@ cd $(dirname "$0")
 mkdir -p .disabled
 cd .disabled
 
-HOSTS=(
+TF_FILES=(
+  shared
   bastion
   postgresql
   elasticsearch
   conductor
   datastore
   indexer
-  shared
 )
-[ "$1" ] && HOSTS=("$@")
+[ "$1" ] && TF_FILES=("$@")
 
-for host in ${HOSTS[@]}; do
-  [ -f "$host.tf" ] && mv "$host.tf" ..
+for tf in ${TF_FILES[@]}; do
+  [ -f "$tf.tf" ] && mv "$tf.tf" ..
 done

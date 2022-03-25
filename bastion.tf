@@ -55,20 +55,15 @@ ${file("${path.module}/shared/s3boot.sh")}
 EOT
 }
 
-# t3.micro: x86, 2 vCPUs, 1 GiB, EBS only, 5 Gb/s, $.0104/hr
-# t3.small: x86, 2 vCPUs, 2 GiB, EBS only, 5 Gb/s, $.0208/hr
-
 module "bastion" {
   source = "./modules/instance"
 
   depends_on = [
-    module.main_vpc,
-    module.egress_only_sg,
     aws_s3_object.shared_user_data,
     aws_s3_object.bastion_user_data,
   ]
   ami_id           = data.aws_ami.amazon_linux2.id
-  instance_type    = "t3.small"
+  instance_type    = var.instance_types["bastion"]
   instance_name    = "Bastion Host"
   root_volume_size = 32
   subnet_id        = module.main_vpc.subnet_ids["private1"]

@@ -51,7 +51,7 @@ yum_install() {
   yum --enablerepo epel install -y figlet emacs-nox moreutils most jq htop pwgen nmap
   VERSION=v4.22.1; BINARY=yq_linux_amd64
   wget https://github.com/mikefarah/yq/releases/download/$VERSION/$BINARY \
-    -O /usr/bin/yq && chmod +x /usr/bin/yq
+    -q -O /usr/bin/yq && chmod +x /usr/bin/yq
 }
 
 motd_banner() (
@@ -83,8 +83,8 @@ authorize_keys() {
 }
 
 user_dotfiles() {
-  aws s3 sync $USR_S3_URL/shared  . --exclude '*' --include '.*' --exclude '.bash*'
-  aws s3 sync $USR_S3_URL/bastion . --exclude '*' --include '.*'
+  aws s3 sync $USR_S3_URL/shared  . --exclude '*' --include '.*' --exclude '.bash*' --no-progress
+  aws s3 sync $USR_S3_URL/bastion . --exclude '*' --include '.*' --no-progress
 }
 
 root_dotfiles() (

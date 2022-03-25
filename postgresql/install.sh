@@ -3,12 +3,14 @@
 
 create_xfs_volume() (
   [ -d /opt/postgresql ] && exit
-  mkfs.xfs -f -L postgresql /dev/nvme1n1
-  mkdir /opt/postgresql
+  if ! file -sL /dev/nvme1n1 | grep -q filesystem; then
+    mkfs.xfs -f -L postgresql /dev/nvme1n1
+  fi
   tab=$(printf "\t")
   cat <<EOF >> /etc/fstab
 LABEL=postgresql${tab}/opt/postgresql${tab}xfs${tab}defaults,nofail${tab}0 2
 EOF
+  mkdir /opt/postgresql
   mount -a
   df -h /opt/postgresql
 )
@@ -61,17 +63,20 @@ EOF
   service procps force-reload
 
   cd /opt/postgresql
-  [ -d data ] && exit
-  ln -s /etc/postgresql/14/main conf
-  ln -s /usr/lib/postgresql/14/bin
-  ln -s /var/log/postgresql logs
-  mkdir -p data
-  chown -Rh postgres:postgres .
-  su postgres -c 'bin/initdb data'
+  if [ ! -d data ]; then
+    mkdir data
+    ln -s /etc/postgresql/14/main conf
+    ln -s /usr/lib/postgresql/14/bin
+    ln -s /var/log/postgresql logs
+    chown -Rh postgres:postgres .
+    su postgres -c 'bin/initdb data'
+  fi
 
   cd conf
   mv postgresql.conf postgresql-default.conf
   aws s3 cp $PG_CONF postgresql.conf
+  shared_buffers=$(awk '/MemTotal.*kB/ {print int($2 /1024/1024 / 2)+1}' /proc/meminfo)
+  sed -Ei "s/^shared_buffers.+$/shared_buffers = ${shared_buffers}GB/" postgresql.conf
   mv pg_hba.conf pg_hba-default.conf
   aws s3 cp $PG_HBA pg_hba.conf
   run generate_cert
@@ -84,11 +89,15 @@ start_postgresql() {
   systemctl restart postgresql
   systemctl enable  postgresql
   systemctl status  postgresql --no-pager
+  # script will fail
+  # if not listening
+  nc -z localhost 5432
 }
 
 create_databases() {
   cd /opt/postgresql
-  mkdir -p users
+  [ -d users ] && exit
+  mkdir users
   cd users
   for db in alprs atlas; do
     user="${db}_user"
@@ -101,15 +110,16 @@ REVOKE ALL ON DATABASE $db FROM PUBLIC;
 GRANT  ALL ON DATABASE $db TO   $user;
 EOT
   done
+  chmod 400 *
   psql <<'EOT'
 ALTER USER atlas_user CREATEDB CREATEROLE;
 EOT
-  chmod 400 *
 }
 
 create_db_objects() {
   cd /opt/postgresql
-  mkdir -p init
+  [ -d init ] && exit
+  mkdir init
   cd init
   aws s3 cp $ALPRS_SQL alprs.sql.gz
   gunzip -f alprs.sql.gz

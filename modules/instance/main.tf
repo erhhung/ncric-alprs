@@ -28,24 +28,3 @@ resource "aws_instance" "host" {
     }
   }
 }
-
-resource "aws_ebs_volume" "data" {
-  count = var.data_volume_size > 0 ? 1 : 0
-
-  type              = var.data_volume_type
-  size              = var.data_volume_size
-  encrypted         = true
-  availability_zone = aws_instance.host.availability_zone
-
-  tags = {
-    Name = "${var.instance_name} Data"
-  }
-}
-
-resource "aws_volume_attachment" "data" {
-  count = var.data_volume_size > 0 ? 1 : 0
-
-  volume_id   = one(aws_ebs_volume.data).id
-  instance_id = aws_instance.host.id
-  device_name = "/dev/xvdb"
-}
