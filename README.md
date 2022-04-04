@@ -35,7 +35,7 @@ aws s3api put-public-access-block \
   --public-access-block-configuration "BlockPublicAcls=true,IgnorePublicAcls=true,BlockPublicPolicy=true,RestrictPublicBuckets=true"
 ```
 
-**_Assumes AWS CLI profiles `alprscom` and `alprsgov` already exists!_**
+**_Assumes AWS CLI profiles `alprscom` and `alprsgov` already exist!_**
 
 ## Terraform Init
 

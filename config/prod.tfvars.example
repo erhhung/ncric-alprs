@@ -53,6 +53,11 @@ ssh_keys = [{
   public_key = "ssh-ed25519 ... authorized-user"
 }]
 
+sftp_users = {
+  # NOTE: ed25519 keys are NOT supported
+  user_name = "ssh-rsa ... third-party"
+}
+
 AUTH0_M2M_CLIENT_ID     = ""
 AUTH0_M2M_CLIENT_SECRET = ""
 AUTH0_SPA_CLIENT_ID     = ""

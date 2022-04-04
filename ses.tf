@@ -30,7 +30,7 @@ resource "aws_route53_record" "ses_mail_from_mx" {
   name     = local.mail_from_domain
   type     = "MX"
   ttl      = 3600
-  records  = ["10 feedback-smtp.${data.aws_region.current.name}.amazonses.com"]
+  records  = ["10 feedback-smtp.${data.aws_region.current.name}.amazonses.com."]
 }
 
 resource "aws_route53_record" "ses_mail_from_txt" {
@@ -55,5 +55,5 @@ resource "aws_route53_record" "ses_domain_dkim" {
   name     = "${each.value}._domainkey"
   type     = "CNAME"
   ttl      = 3600
-  records  = ["${each.value}.dkim.amazonses.com"]
+  records  = ["${each.value}.dkim.amazonses.com."]
 }

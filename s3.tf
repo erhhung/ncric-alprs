@@ -92,6 +92,7 @@ resource "aws_s3_bucket_lifecycle_configuration" "backup" {
     }
   }
 }
+
 resource "aws_s3_bucket_lifecycle_configuration" "audit" {
   bucket = aws_s3_bucket.buckets["audit"].id
 
@@ -103,6 +104,14 @@ resource "aws_s3_bucket_lifecycle_configuration" "audit" {
       days = 30
     }
   }
+}
+
+# https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket_logging
+resource "aws_s3_bucket_logging" "sftp" {
+  bucket = aws_s3_bucket.buckets["sftp"].id
+
+  target_bucket = aws_s3_bucket.buckets["audit"].id
+  target_prefix = "AWSLogs/${local.account}/transfer/"
 }
 
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document

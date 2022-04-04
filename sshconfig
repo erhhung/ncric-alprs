@@ -5,6 +5,16 @@ Host *
   IgnoreUnknown UseKeychain
   UseKeychain yes
 
+Host alprs*sftp
+  User sftp_test
+  IdentityFile ~/.ssh/sftp
+  ProxyCommand nc $([ $http_proxy ] && sed -En 's|.+//([^:]+).*|-x \1|p' <<< $http_proxy) %h %p
+
+Host alprsdevsftp
+  HostName sftp.dev.astrometrics.us
+Host alprsprodsftp
+  HostName sftp.astrometrics.us
+
 Host alprsdev*
   ProxyCommand aws --profile alprscom --region us-west-2 ssm start-session --target %h --document-name AWS-StartSSHSession --parameters "portNumber=%p"
 Host alprsprod*

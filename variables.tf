@@ -69,6 +69,11 @@ variable "ssh_keys" {
   }))
 }
 
+variable "sftp_users" {
+  description = "Map of SFTP users to public keys"
+  type        = map(string)
+}
+
 variable "AUTH0_M2M_CLIENT_ID" {
   description = "Auth0 Machine-to-Machine client ID"
   type        = string
