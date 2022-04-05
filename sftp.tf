@@ -16,7 +16,12 @@ EOT
 }
 
 # https://github.com/hashicorp/terraform-provider-aws/issues/18077
+# https://registry.terraform.io/providers/hashicorp/null/latest/docs/resources/resource
 resource "null_resource" "aws_transfer_server_custom_hostname" {
+  triggers = {
+    hosted_zone = local.zone_id
+    hostname    = local.sftp_domain
+  }
   depends_on = [aws_transfer_server.sftp]
 
   provisioner "local-exec" {
@@ -29,10 +34,6 @@ aws transfer tag-resource \
     Key=aws:transfer:route53HostedZoneId,Value=/hostedzone/${local.zone_id} \
     Key=aws:transfer:customHostname,Value=${local.sftp_domain}
 EOF
-  }
-  triggers = {
-    hosted_zone = local.zone_id
-    hostname    = local.sftp_domain
   }
 }
 

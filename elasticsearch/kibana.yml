@@ -31,7 +31,7 @@ server.host: localhost
 server.name: alprs${ENV}-elasticsearch
 
 # The URLs of the Elasticsearch instances to use for all your queries.
-elasticsearch.hosts: ['http://localhost:9100']
+elasticsearch.hosts: ['http://localhost:9201']
 
 # Kibana uses an index in Elasticsearch to store saved searches, visualizations
 # and dashboards. Kibana creates a new index if the index doesn't already exist.

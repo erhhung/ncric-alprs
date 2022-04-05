@@ -106,10 +106,18 @@ restart_service() {
   systemctl status  ${1,,} --no-pager
 }
 
+elasticsearch_settings() {
+  # https://www.elastic.co/guide/en/elasticsearch/reference/7.17/modules-cluster.html#misc-cluster-settings
+  curl -sX PUT http://localhost:9201/_cluster/settings \
+    -H 'Content-Type: application/json' \
+    -d '{"persistent":{"cluster.max_shards_per_node":"10000"}}' | jq
+}
+
 start_elasticsearch() {
   systemctl daemon-reload
   restart_service Elasticsearch 9201 9301
-  restart_service Kibana        5601
+  elasticsearch_settings
+  restart_service Kibana 5601
 }
 
 config_nginx() (

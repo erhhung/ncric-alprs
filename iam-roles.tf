@@ -8,14 +8,13 @@ locals {
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document
 data "aws_iam_policy_document" "ec2_trust" {
   statement {
-    effect = "Allow"
+    effect  = "Allow"
+    actions = ["sts:AssumeRole"]
 
     principals {
       type        = "Service"
       identifiers = ["ec2.amazonaws.com"]
     }
-
-    actions = ["sts:AssumeRole"]
   }
 }
 
@@ -149,14 +148,13 @@ resource "aws_iam_instance_profile" "alprs_buckets" {
 
 data "aws_iam_policy_document" "sftp_transfer" {
   statement {
-    effect = "Allow"
+    effect  = "Allow"
+    actions = ["sts:AssumeRole"]
 
     principals {
       type        = "Service"
       identifiers = ["transfer.amazonaws.com"]
     }
-
-    actions = ["sts:AssumeRole"]
   }
 }
 

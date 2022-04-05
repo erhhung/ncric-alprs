@@ -26,7 +26,7 @@ apt_install() {
   wait_apt_get
   apt-get dist-upgrade -y
   wait_apt_get
-  apt-get install -y figlet emacs-nox moreutils most unzip net-tools pwgen
+  apt-get install -y figlet emacs-nox moreutils most jq unzip net-tools pwgen
   snap install yq
 }
 
