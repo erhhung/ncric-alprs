@@ -1,22 +1,22 @@
 # Emacs -*-Shell-Script-*- Mode
 
 export LSCOLORS=GxFxCxDxBxegedabagaced \
-EDITOR='emacs' \
-PAGER='most' \
-AWS_PAGER='' \
-DELTA_PAGER='less' \
-MOST_SWITCHES='-sw +u'
+  EDITOR='emacs' \
+  PAGER='most' \
+  AWS_PAGER='' \
+  DELTA_PAGER='less' \
+  MOST_SWITCHES='-sw +u'
 
 export LESSQUIET=1 \
-LESS='-RKMi -x4 -z-4' \
-LESS_ADVANCED_PREPROCESSOR=1 \
-LESS_TERMCAP_mb=$'\E[1;31m' \
-LESS_TERMCAP_md=$'\E[1;36m' \
-LESS_TERMCAP_me=$'\E[0m' \
-LESS_TERMCAP_so=$'\E[01;44;33m' \
-LESS_TERMCAP_se=$'\E[0m' \
-LESS_TERMCAP_us=$'\E[1;32m' \
-LESS_TERMCAP_ue=$'\E[0m'
+  LESS='-RKMi -x4 -z-4' \
+  LESS_ADVANCED_PREPROCESSOR=1 \
+  LESS_TERMCAP_mb=$'\E[1;31m' \
+  LESS_TERMCAP_md=$'\E[1;36m' \
+  LESS_TERMCAP_me=$'\E[0m' \
+  LESS_TERMCAP_so=$'\E[01;44;33m' \
+  LESS_TERMCAP_se=$'\E[0m' \
+  LESS_TERMCAP_us=$'\E[1;32m' \
+  LESS_TERMCAP_ue=$'\E[0m'
 
 alias cdd='cd - > /dev/null'
 alias pwd='printf "%q\n" "$(builtin pwd)/"'
@@ -40,7 +40,9 @@ alias mbs='most +10000 /bootstrap.log'
 alias mol='most +1000000 /opt/openlattice/logging/*.log'
 alias tol='tail -f /opt/openlattice/logging/*.log'
 
-alias myip='printf "public: %s\n local: %s\n" "$(_instmeta public-ipv4)" "$(_instmeta local-ipv4)"'
+alias myip='printf " local: %s\npublic: %s\n" \
+         "$(_instmeta local-ipv4)" \
+         "$(_instmeta public-ipv4 || echo none)"'
 alias myid='_instmeta instance-id'
 alias myaz='_instmeta placement/availability-zone'
 alias mytype='_instmeta instance-type'
@@ -49,7 +51,8 @@ alias myhost='_instmeta local-hostname'
 # my instance metadata
 # _instmeta <rel_path>
 _instmeta() {
-  echo $(curl -s "http://169.254.169.254/latest/meta-data/$1")
+  local value=$(curl -s "http://169.254.169.254/latest/meta-data/$1")
+  [[ "$value" =~ "404 - Not Found" ]] && return 1 || echo "$value"
 }
 
 __touch_date() {

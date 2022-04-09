@@ -24,9 +24,10 @@ ${templatefile("${path.module}/webapp/install.tftpl", {
     MB_TOKEN      = var.MAPBOX_PUBLIC_TOKEN
     AUTH0_ID      = var.AUTH0_SPA_CLIENT_ID
     SUPPORT_EMAIL = var.ALPRS_SUPPORT_EMAIL
+    WEBAPP_BUCKET = var.buckets["webapp"]
+    BACKUP_BUCKET = var.buckets["backup"]
     APP_URL       = "https://${local.app_domain}"
     API_URL       = "https://${local.api_domain}"
-    APP_S3_URL    = "s3://${var.buckets["webapp"]}"
 })}
 ${file("${path.module}/webapp/install.sh")}
 ${file("${path.module}/shared/epilog.sh")}

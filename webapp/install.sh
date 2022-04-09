@@ -70,8 +70,8 @@ config_orgapp() {
 
 change_logo() (
   cd node_modules/lattice-auth/build
-  logo=$(aws s3 cp $APP_S3_URL/$1-logo.png - | base64 -w0)
-  # newer versions of lattice-auth uses the exports syntax
+  logo=$(aws s3 cp s3://$WEBAPP_BUCKET/$1-logo.png - | base64 -w0)
+  # newer versions of lattice-auth use the exports syntax, so search both patterns
   sed -Ei 's|logo:"data:[^"]+"|logo:"data:image/png;base64,'$logo'"|'       index.js
   sed -Ei 's|exports="data:[^"]+"|exports="data:image/png;base64,'$logo'"|' index.js
 )
@@ -94,10 +94,18 @@ build_webapp() {
 }
 
 deploy_webapp() {
+  build=astrometrics/build
   # don't upload "favicon_v2.png" because
   # new version has already been uploaded
-  rm -f astrometrics/build/favicon_v2.png
-  aws s3 sync astrometrics/build $APP_S3_URL --no-progress
+  rm -f $build/favicon_v2.png
+  aws s3 sync $build s3://$WEBAPP_BUCKET --no-progress
+}
+
+archive_build() {
+  service=astrometrics
+  build=$service/build
+  dest="s3://$BACKUP_BUCKET/$service/${service}_$(date +%Y-%m-%d).tar.gz"
+  tar czf - -C $build . | aws s3 cp - $dest
 }
 
 export -f config_app
@@ -112,3 +120,4 @@ run config_orgapp $USER
 run start_orgapp  $USER
 run build_webapp  $USER
 run deploy_webapp $USER
+run archive_build $USER

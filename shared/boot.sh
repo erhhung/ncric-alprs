@@ -27,11 +27,11 @@ wait_apt_get() {
 }
 
 apt_install() {
-  apt-get update
+  add-apt-repository -y ppa:git-core/ppa
   wait_apt_get
   apt-get dist-upgrade -y
   wait_apt_get
-  apt-get install -y figlet emacs-nox moreutils most jq unzip net-tools pwgen
+  apt-get install -y figlet emacs-nox moreutils most jq git unzip net-tools pwgen
   snap install yq
 }
 
