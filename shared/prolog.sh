@@ -3,7 +3,8 @@
 # This user data script bootstraps an EC2 instance.
 # It forms the head of every custom "/bootstrap.sh",
 # and is concatenated by the instance's "boot.tftpl"
-# and "install.sh", finally ending with "epilog.sh".
+# and "boot.sh", followed by its custom "install.sh",
+# and finally ending with "epilog.sh".
 
 cd /root 2> /dev/null
 script=$(basename "$0" .sh)
