@@ -55,10 +55,10 @@ ${templatefile("${path.module}/postgresql/boot.tftpl", {
     PG_CONF   = "${local.user_data_s3_url}/postgresql/postgresql.conf"
     PG_HBA    = "${local.user_data_s3_url}/postgresql/pg_hba.conf"
     ALPRS_SQL = "${local.user_data_s3_url}/postgresql/alprs.sql.gz"
-
     # passwords created by keys.tf
-    alprs_pass = local.alprs_pass
-    atlas_pass = local.atlas_pass
+    alprs_pass    = local.alprs_pass
+    atlas_pass    = local.atlas_pass
+    BACKUP_BUCKET = var.buckets["backup"]
 })}
 ${file("${path.module}/shared/boot.sh")}
 ${file("${path.module}/postgresql/install.sh")}
@@ -102,7 +102,7 @@ module "postgresql_server" {
   root_volume_size = 32
   subnet_id        = module.main_vpc.subnet_ids["private1"]
   security_groups  = [module.postgresql_sg.id]
-  instance_profile = aws_iam_instance_profile.ssm_instance.name
+  instance_profile = aws_iam_instance_profile.alprs_service.name
   key_name         = aws_key_pair.admin.key_name
   user_data        = chomp(local.pg_bootstrap)
 }

@@ -64,11 +64,12 @@ locals {
     data = <<-EOT
 ${file("${path.module}/shared/prolog.sh")}
 ${templatefile("${path.module}/elasticsearch/boot.tftpl", {
-    ENV     = var.env
-    S3_URL  = local.user_data_s3_url
-    ES_YML  = "${local.user_data_s3_url}/elasticsearch/elasticsearch.yml"
-    KB_YML  = "${local.user_data_s3_url}/elasticsearch/kibana.yml"
-    NG_CONF = "${local.user_data_s3_url}/elasticsearch/nginx.conf"
+    ENV           = var.env
+    S3_URL        = local.user_data_s3_url
+    ES_YML        = "${local.user_data_s3_url}/elasticsearch/elasticsearch.yml"
+    KB_YML        = "${local.user_data_s3_url}/elasticsearch/kibana.yml"
+    NG_CONF       = "${local.user_data_s3_url}/elasticsearch/nginx.conf"
+    BACKUP_BUCKET = var.buckets["backup"]
 })}
 ${file("${path.module}/shared/boot.sh")}
 ${file("${path.module}/elasticsearch/install.sh")}
@@ -111,7 +112,7 @@ module "elasticsearch_server" {
   root_volume_size = 32
   subnet_id        = module.main_vpc.subnet_ids["private1"]
   security_groups  = [module.elasticsearch_sg.id]
-  instance_profile = aws_iam_instance_profile.ssm_instance.name
+  instance_profile = aws_iam_instance_profile.alprs_service.name
   key_name         = aws_key_pair.admin.key_name
   user_data        = chomp(local.es_bootstrap)
 }

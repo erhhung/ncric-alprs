@@ -111,6 +111,15 @@ EOT
   ./boot.sh "${SVC_FLAGS[@]}"
 }
 
+archive_build() (
+  service=${HOST,,}
+  src=${service}.tgz
+  cd /opt/openlattice
+  [ -f $src ] || exit
+  dest="s3://$BACKUP_BUCKET/$service/${service}_$(date +%Y-%m-%d).tgz"
+  aws s3 cp --no-progress $src $dest
+)
+
 export -f wait_service
 
 run create_user
@@ -121,3 +130,4 @@ run clone_repos    openlattice
 run config_service openlattice
 run build_service  openlattice
 run launch_service openlattice
+run archive_build

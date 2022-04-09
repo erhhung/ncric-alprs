@@ -29,6 +29,11 @@ END
   hostname $hostname
 )
 
+set_timezone() {
+  timedatectl set-timezone America/Los_Angeles
+  timedatectl
+}
+
 custom_prompt() (
   cd /etc/profile.d
   [ -f custom_prompt.sh ] && exit
@@ -103,6 +108,7 @@ EOF
 
 run upgrade_bash
 run set_hostname
+run set_timezone
 run custom_prompt
 run yum_install
 run motd_banner

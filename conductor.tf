@@ -5,6 +5,7 @@ ${templatefile("${path.module}/conductor/boot.tftpl", {
   ENV           = var.env
   S3_URL        = local.user_data_s3_url
   FROM_EMAIL    = local.alprs_sender_email
+  BACKUP_BUCKET = var.buckets["backup"]
   CONFIG_BUCKET = var.buckets["config"]
 })}
 ${file("${path.module}/shared/boot.sh")}
@@ -44,7 +45,7 @@ module "conductor_server" {
   root_volume_size = 32
   subnet_id        = module.main_vpc.subnet_ids["private1"]
   security_groups  = [module.services_sg.id]
-  instance_profile = aws_iam_instance_profile.alprs_config.name
+  instance_profile = aws_iam_instance_profile.alprs_service.name
   key_name         = aws_key_pair.admin.key_name
   user_data        = chomp(local.conductor_bootstrap)
 }

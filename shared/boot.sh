@@ -4,6 +4,11 @@ set_hostname() (
   hostname $hostname
 )
 
+set_timezone() {
+  timedatectl set-timezone America/Los_Angeles
+  timedatectl
+}
+
 custom_prompt() (
   cd /etc/profile.d
   [ -f custom_prompt.sh ] && exit
@@ -61,6 +66,10 @@ user_dotfiles() {
   aws s3 sync $S3_URL/shared . --exclude '*' --include '.*' --no-progress
   mkdir -p .cache && touch .cache/motd.legal-displayed
   touch .sudo_as_admin_successful
+  cat <<EOF >> .bashrc
+
+export BACKUP_BUCKET=$BACKUP_BUCKET
+EOF
 }
 
 root_dotfiles() (
@@ -103,6 +112,7 @@ EOF
 )
 
 run set_hostname
+run set_timezone
 run custom_prompt
 run apt_install
 run motd_banner

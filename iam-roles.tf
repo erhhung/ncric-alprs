@@ -24,6 +24,20 @@ resource "aws_iam_role" "ssm_instance" {
   assume_role_policy = data.aws_iam_policy_document.ec2_trust.json
 }
 
+# https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy_attachment
+resource "aws_iam_role_policy_attachment" "ssm_instance" {
+  for_each = { for arn in local.ssm_policy_arns : basename(arn) => arn }
+
+  role       = aws_iam_role.ssm_instance.name
+  policy_arn = each.value
+}
+
+# https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_instance_profile
+resource "aws_iam_instance_profile" "ssm_instance" {
+  name = "AmazonSSMInstanceProfile"
+  role = aws_iam_role.ssm_instance.name
+}
+
 data "aws_iam_policy_document" "user_data_bucket" {
   statement {
     effect    = "Allow"
@@ -43,82 +57,15 @@ data "aws_iam_policy_document" "user_data_bucket" {
   }
 }
 
-locals {
-  user_data_roles = [
-    aws_iam_role.ssm_instance.id,
-    aws_iam_role.alprs_config.id,
-    aws_iam_role.alprs_buckets.id,
-  ]
-}
-
-# https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy
-resource "aws_iam_role_policy" "user_data_bucket" {
-  for_each = toset(local.user_data_roles)
-
-  name   = "userdata-bucket-access-policy"
-  role   = each.value
-  policy = data.aws_iam_policy_document.user_data_bucket.json
-}
-
-# https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy_attachment
-resource "aws_iam_role_policy_attachment" "ssm_instance" {
-  for_each = { for arn in local.ssm_policy_arns : basename(arn) => arn }
-
-  role       = aws_iam_role.ssm_instance.name
-  policy_arn = each.value
-}
-
-# https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_instance_profile
-resource "aws_iam_instance_profile" "ssm_instance" {
-  name = "AmazonSSMInstanceProfile"
-  role = aws_iam_role.ssm_instance.name
-}
-
-resource "aws_iam_role" "alprs_config" {
-  name               = "ALPRSConfigAccessRole"
+resource "aws_iam_role" "alprs_bastion" {
+  name               = "ALPRSBastionAccessRole"
   assume_role_policy = data.aws_iam_policy_document.ec2_trust.json
 }
 
-resource "aws_iam_role_policy_attachment" "alprs_config" {
+resource "aws_iam_role_policy_attachment" "alprs_bastion" {
   for_each = { for arn in local.ssm_policy_arns : basename(arn) => arn }
 
-  role       = aws_iam_role.alprs_config.name
-  policy_arn = each.value
-}
-
-data "aws_iam_policy_document" "config_bucket" {
-  statement {
-    effect    = "Allow"
-    actions   = ["s3:ListBucket"]
-    resources = [aws_s3_bucket.buckets["config"].arn]
-  }
-  statement {
-    effect    = "Allow"
-    actions   = ["s3:GetObject"]
-    resources = ["${aws_s3_bucket.buckets["config"].arn}/*"]
-  }
-}
-
-resource "aws_iam_role_policy" "config_bucket" {
-  name   = "config-bucket-access-policy"
-  role   = aws_iam_role.alprs_config.id
-  policy = data.aws_iam_policy_document.config_bucket.json
-}
-
-resource "aws_iam_instance_profile" "alprs_config" {
-  name = "ALPRSConfigInstanceProfile"
-  role = aws_iam_role.alprs_config.name
-}
-
-resource "aws_iam_role" "alprs_buckets" {
-  name               = "ALPRSBucketsAccessRole"
-  assume_role_policy = data.aws_iam_policy_document.ec2_trust.json
-}
-
-resource "aws_iam_role_policy_attachment" "alprs_buckets" {
-  for_each = { for arn in local.ssm_policy_arns : basename(arn) => arn }
-
-  role       = aws_iam_role.alprs_buckets.name
+  role       = aws_iam_role.alprs_bastion.name
   policy_arn = each.value
 }
 
@@ -135,15 +82,81 @@ data "aws_iam_policy_document" "alprs_buckets" {
   }
 }
 
-resource "aws_iam_role_policy" "alprs_buckets" {
+# https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy
+resource "aws_iam_role_policy" "alprs_bastion_user_data_bucket" {
+  name   = "userdata-bucket-access-policy"
+  role   = aws_iam_role.alprs_bastion.id
+  policy = data.aws_iam_policy_document.user_data_bucket.json
+}
+resource "aws_iam_role_policy" "alprs_bastion_alprs_buckets" {
   name   = "alprs-buckets-access-policy"
-  role   = aws_iam_role.alprs_buckets.id
+  role   = aws_iam_role.alprs_bastion.id
   policy = data.aws_iam_policy_document.alprs_buckets.json
 }
 
-resource "aws_iam_instance_profile" "alprs_buckets" {
-  name = "ALPRSBucketsInstanceProfile"
-  role = aws_iam_role.alprs_buckets.name
+resource "aws_iam_instance_profile" "alprs_bastion" {
+  name = "ALPRSBastionInstanceProfile"
+  role = aws_iam_role.alprs_bastion.name
+}
+
+resource "aws_iam_role" "alprs_service" {
+  name               = "ALPRSServiceAccessRole"
+  assume_role_policy = data.aws_iam_policy_document.ec2_trust.json
+}
+
+resource "aws_iam_role_policy_attachment" "alprs_service" {
+  for_each = { for arn in local.ssm_policy_arns : basename(arn) => arn }
+
+  role       = aws_iam_role.alprs_service.name
+  policy_arn = each.value
+}
+
+data "aws_iam_policy_document" "backup_bucket" {
+  statement {
+    effect    = "Allow"
+    actions   = ["s3:ListBucket"]
+    resources = [aws_s3_bucket.buckets["backup"].arn]
+  }
+  statement {
+    effect    = "Allow"
+    actions   = ["s3:GetObject", "s3:PutObject"]
+    resources = ["${aws_s3_bucket.buckets["backup"].arn}/*"]
+  }
+}
+
+data "aws_iam_policy_document" "config_bucket" {
+  statement {
+    effect    = "Allow"
+    actions   = ["s3:ListBucket"]
+    resources = [aws_s3_bucket.buckets["config"].arn]
+  }
+  statement {
+    effect    = "Allow"
+    actions   = ["s3:GetObject"]
+    resources = ["${aws_s3_bucket.buckets["config"].arn}/*"]
+  }
+}
+
+# https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy
+resource "aws_iam_role_policy" "alprs_service_user_data_bucket" {
+  name   = "userdata-bucket-access-policy"
+  role   = aws_iam_role.alprs_service.id
+  policy = data.aws_iam_policy_document.user_data_bucket.json
+}
+resource "aws_iam_role_policy" "alprs_service_backup_bucket" {
+  name   = "backup-bucket-access-policy"
+  role   = aws_iam_role.alprs_service.id
+  policy = data.aws_iam_policy_document.backup_bucket.json
+}
+resource "aws_iam_role_policy" "alprs_service_config_bucket" {
+  name   = "config-bucket-access-policy"
+  role   = aws_iam_role.alprs_service.id
+  policy = data.aws_iam_policy_document.config_bucket.json
+}
+
+resource "aws_iam_instance_profile" "alprs_service" {
+  name = "ALPRSServiceInstanceProfile"
+  role = aws_iam_role.alprs_service.name
 }
 
 data "aws_iam_policy_document" "sftp_transfer" {

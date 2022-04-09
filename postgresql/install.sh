@@ -64,7 +64,7 @@ EOF
 
   cd /opt/postgresql
   if [ ! -d data ]; then
-    mkdir data
+    mkdir data temp
     ln -s /etc/postgresql/14/main conf
     ln -s /usr/lib/postgresql/14/bin
     ln -s /var/log/postgresql logs
@@ -137,9 +137,45 @@ create_db_objects() {
   psql alprs < alprs.sql
 }
 
+create_backup_sh() {
+  cat <<EOF > backup.sh
+#!/bin/bash
+
+TEMP="/opt/postgresql/temp"
+
+# destination file will be overwritten multiple times per day by cron job
+dest="s3://$BACKUP_BUCKET/postgresql/pg_backup_\$(date +%Y-%m-%d).tar.bz"
+
+clean() {
+  rm -rf \$TEMP/*
+}
+clean
+trap clean EXIT
+
+nice pg_basebackup -D \$TEMP -X stream
+nice tar cjf - -C \$TEMP . | nice aws s3 cp - \$dest
+EOF
+  chmod +x backup.sh
+}
+
+add_backup_cron() (
+  cd /etc/cron.d
+  cat <<'EOF' > pg_backup
+USER=root
+HOME=/root
+PATH=/bin:/usr/bin:/usr/sbin:/usr/local/bin:/snap/bin
+
+# min hr dom mon dow user command
+0 2,8,12,16,20 * * * root su postgres -c 'bash -c "$HOME/backup.sh"'
+EOF
+  chmod 644 pg_backup
+)
+
 run create_xfs_volume
 run install_postgresql
 run config_postgresql
 run start_postgresql
 run create_databases  postgres
 run create_db_objects postgres
+run create_backup_sh  postgres
+run add_backup_cron

@@ -4,6 +4,7 @@ ${file("${path.module}/shared/prolog.sh")}
 ${templatefile("${path.module}/indexer/boot.tftpl", {
   ENV           = var.env
   S3_URL        = local.user_data_s3_url
+  BACKUP_BUCKET = var.buckets["backup"]
   CONFIG_BUCKET = var.buckets["config"]
   DATASTORE_IP  = module.datastore_server.private_ip
 })}
@@ -44,7 +45,7 @@ module "indexer_server" {
   root_volume_size = 48
   subnet_id        = module.main_vpc.subnet_ids["private1"]
   security_groups  = [module.services_sg.id]
-  instance_profile = aws_iam_instance_profile.alprs_config.name
+  instance_profile = aws_iam_instance_profile.alprs_service.name
   key_name         = aws_key_pair.admin.key_name
   user_data        = chomp(local.indexer_bootstrap)
 }
