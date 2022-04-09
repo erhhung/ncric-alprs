@@ -1,3 +1,4 @@
+# global options
 Host *
   TCPKeepAlive yes
   ForwardAgent yes
@@ -5,6 +6,8 @@ Host *
   IgnoreUnknown UseKeychain
   UseKeychain yes
 
+# defined first because SSH only uses the
+# first value specified for each property
 Host alprs*sftp
   User sftp_test
   IdentityFile ~/.ssh/sftp
@@ -15,11 +18,16 @@ Host alprsdevsftp
 Host alprsprodsftp
   HostName sftp.astrometrics.us
 
+# expects AWS profiles with already
+# established IAM admin credentials;
+# make sure to use recent AWS CLI v2
 Host alprsdev*
   ProxyCommand aws --profile alprscom --region us-west-2 ssm start-session --target %h --document-name AWS-StartSSHSession --parameters "portNumber=%p"
 Host alprsprod*
   ProxyCommand aws --profile alprsgov --region us-gov-west-1 ssm start-session --target %h --document-name AWS-StartSSHSession --parameters "portNumber=%p"
 
+# the instance IDs of the following hosts can be updated by the
+# "upssh.sh" script when run after those instances get recreated
 Host alprsdevbast*
   HostName i-084dd77c1674ee09e
 Host alprsdevpg*
@@ -38,6 +46,9 @@ Host alprs*bast*
 Host alprs*
   User ubuntu
   StrictHostKeyChecking = no
+
+# use private keys that match public
+# keys defined in "config/*.tfvars"
 Host alprsdev*
   IdentityFile ~/.ssh/alprscom
 Host alprsprod*
@@ -49,9 +60,11 @@ Host alprs*tun
   RequestTTY no
 
 Host alprs*basttun
+  # lattice-org app
   LocalForward 9001 localhost:9000
 Host alprs*pgtun
   LocalForward 5433 localhost:5432
 Host alprs*estun
+  # Elasticsearch REST and Kibana
   LocalForward 9201 localhost:9200
   LocalForward 9202 localhost:443
