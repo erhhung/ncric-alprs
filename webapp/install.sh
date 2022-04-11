@@ -105,7 +105,7 @@ archive_build() {
   service=astrometrics
   build=$service/build
   dest="s3://$BACKUP_BUCKET/$service/${service}_$(date +%Y-%m-%d).tar.gz"
-  tar czf - -C $build . | aws s3 cp - $dest
+  tar czf - -C $build . | aws s3 cp - $dest --no-progress
 }
 
 export -f config_app

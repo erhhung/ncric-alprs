@@ -13,7 +13,6 @@ cd .disabled
 
 # defaults
 TF_FILES=(
-  shared
   bastion
   postgresql
   elasticsearch

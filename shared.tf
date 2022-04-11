@@ -65,20 +65,17 @@ locals {
     APP_DOMAIN              = local.app_domain
     ALPRS_PASSWORD          = local.alprs_pass
     ATLAS_PASSWORD          = local.atlas_pass
-    AUDIT_BUCKET            = var.buckets["audit"]
-    AUDIT_ACCESS_KEY        = aws_iam_access_key.users["alprs-audit"].id
-    AUDIT_SECRET_KEY        = aws_iam_access_key.users["alprs-audit"].secret
-    AUTH0_M2M_CLIENT_ID     = var.AUTH0_M2M_CLIENT_ID
-    AUTH0_M2M_CLIENT_SECRET = var.AUTH0_M2M_CLIENT_SECRET
     AUTH0_SPA_CLIENT_ID     = var.AUTH0_SPA_CLIENT_ID
     AUTH0_SPA_CLIENT_SECRET = var.AUTH0_SPA_CLIENT_SECRET
-    CONDUCTOR_HOST          = module.conductor_server.private_domain
-    ELASTICSEARCH_HOST      = module.elasticsearch_server.private_domain
+    AUTH0_M2M_CLIENT_ID     = var.AUTH0_M2M_CLIENT_ID
+    AUTH0_M2M_CLIENT_SECRET = var.AUTH0_M2M_CLIENT_SECRET
     MAPBOX_PUBLIC_TOKEN     = var.MAPBOX_PUBLIC_TOKEN
+    AUDIT_BUCKET            = var.buckets["audit"]
     MEDIA_BUCKET            = var.buckets["media"]
+    AUDIT_ACCESS_KEY        = aws_iam_access_key.users["alprs-audit"].id
+    AUDIT_SECRET_KEY        = aws_iam_access_key.users["alprs-audit"].secret
     MEDIA_ACCESS_KEY        = aws_iam_access_key.users["alprs-media"].id
     MEDIA_SECRET_KEY        = aws_iam_access_key.users["alprs-media"].secret
-    POSTGRESQL_HOST         = module.postgresql_server.private_domain
     SES_ACCESS_KEY          = aws_iam_access_key.users["alprs-mail"].id
     SMTP_PASSWORD           = aws_iam_access_key.users["alprs-mail"].ses_smtp_password_v4
   }

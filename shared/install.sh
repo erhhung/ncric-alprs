@@ -117,7 +117,7 @@ archive_build() (
   cd /opt/openlattice
   [ -f $src ] || exit
   dest="s3://$BACKUP_BUCKET/$service/${service}_$(date +%Y-%m-%d).tar.gz"
-  aws s3 cp --no-progress $src $dest
+  aws s3 cp $src $dest --no-progress
 )
 
 export -f wait_service

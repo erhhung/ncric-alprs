@@ -51,13 +51,21 @@ module "indexer_server" {
 }
 
 module "indexer_config" {
-  source     = "./modules/config"
-  depends_on = [data.external.rhizome_jks]
+  source = "./modules/config"
 
+  depends_on = [
+    module.conductor_server,
+    data.external.rhizome_jks,
+  ]
   service = "indexer"
   path    = "${path.module}/indexer/config"
   bucket  = aws_s3_bucket.buckets["config"].id
-  values  = local.config_values
+
+  values = merge(local.config_values, {
+    CONDUCTOR_HOST     = module.conductor_server.private_domain
+    POSTGRESQL_HOST    = module.postgresql_server.private_domain
+    ELASTICSEARCH_HOST = module.elasticsearch_server.private_domain
+  })
 }
 
 output "indexer_instance_id" {
