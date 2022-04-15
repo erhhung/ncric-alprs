@@ -23,6 +23,27 @@ resource "aws_s3_object" "conductor_bootstrap" {
 }
 
 locals {
+  conductor_scripts_path = "${path.module}/conductor/scripts"
+  conductor_scripts = [
+    for path in fileset(local.conductor_scripts_path, "**") : {
+      abs  = abspath("${local.conductor_scripts_path}/${path}")
+      rel  = path
+      name = basename(path)
+    }
+  ]
+}
+
+resource "aws_s3_object" "conductor_scripts" {
+  for_each = { for file in local.conductor_scripts : file.name => file }
+
+  bucket       = data.aws_s3_bucket.user_data.id
+  key          = "userdata/conductor/scripts/${each.value.rel}"
+  content_type = "text/plain"
+  source       = each.value.abs
+  source_hash  = filemd5(each.value.abs)
+}
+
+locals {
   conductor_bootstrap = <<EOT
 ${templatefile("${path.module}/shared/boot.tftpl", {
   BUCKET = local.user_data_bucket
@@ -38,6 +59,7 @@ module "conductor_server" {
   depends_on = [
     aws_s3_object.shared_user_data,
     aws_s3_object.conductor_bootstrap,
+    aws_s3_object.conductor_scripts,
   ]
   ami_id           = data.aws_ami.ubuntu_20arm.id
   instance_type    = var.instance_types["conductor"]

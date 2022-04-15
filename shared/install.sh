@@ -13,7 +13,7 @@ alias ol='sudo su -l openlattice'
 EOF
   cat <<'EOF' >> /home/openlattice/.bashrc
 
-cd $HOME/ncric-transfer/scripts/${HOSTNAME/#*-/}
+cd $HOME/scripts
 EOF
   cd /etc/sudoers.d
   usermod -aG sudo openlattice
@@ -46,24 +46,24 @@ init_destdir() (
   chown -Rh openlattice:openlattice /opt/openlattice
 )
 
+copy_scripts() {
+  aws s3 sync $S3_URL/${HOST,,}/scripts scripts --no-progress
+  find scripts -type f -name '*.sh' -exec chmod +x {} \;
+}
+
 clone_repos() {
-  rm -rf openlattice ncric-transfer
+  rm -rf openlattice
   git clone https://github.com/openlattice/openlattice.git
   cd openlattice
   rmdir neuron
   git sub init
   git sub deinit neuron
-  cd ..
-  git clone https://github.com/openlattice/ncric-transfer.git
-  cd ncric-transfer
-  git co main
-  git up
 }
 
 config_service() {
   az_url="http://169.254.169.254/latest/meta-data/placement/availability-zone"
   region=$(curl -s $az_url | sed 's/[a-z]$//')
-  cd ~/openlattice/${HOST,,}/src/main/resources
+  cd openlattice/${HOST,,}/src/main/resources
   cat <<EOF > aws.yaml
 region: $region
 bucket: $CONFIG_BUCKET
@@ -78,9 +78,8 @@ EOF
 }
 
 build_service() {
-  cd ncric-transfer/scripts/${HOST,,}
-  # build script also installs
-  ./build-latest.sh develop
+  # build and then install
+  scripts/build.sh develop
 }
 
 wait_service() {
@@ -91,7 +90,7 @@ wait_service() {
   done
 }
 
-launch_service() {
+start_service() {
   heap_size=$(awk '/MemTotal.*kB/ {print int($2 /1024/1024 / 2)+1}' /proc/meminfo)
   exports=$(cat <<EOT
 
@@ -99,16 +98,15 @@ export ${HOST}_XMS="-Xms${heap_size}g"
 export ${HOST}_XMX="-Xmx${heap_size}g"
 EOT
 )
-  echo "$exports" >> .bashrc
+  grep -q _XMS .bashrc || echo "$exports" >> .bashrc
   eval "$exports"
   case $HOST in
     DATASTORE) wait_service CONDUCTOR $CONDUCTOR_IP 5701 ;;
     INDEXER)   wait_service DATASTORE $DATASTORE_IP 8080 ;;
   esac
-  cd ncric-transfer/scripts/${HOST,,}
   # optional flags, like edmsync, may
   # be defined by individual services
-  ./boot.sh "${SVC_FLAGS[@]}"
+  scripts/start.sh "${SVC_FLAGS[@]}"
 }
 
 archive_build() (
@@ -126,8 +124,9 @@ run create_user
 run install_java
 run install_delta
 run init_destdir
+run copy_scripts   openlattice
 run clone_repos    openlattice
 run config_service openlattice
 run build_service  openlattice
-run launch_service openlattice
+run start_service  openlattice
 run archive_build

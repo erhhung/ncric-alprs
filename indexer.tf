@@ -23,6 +23,27 @@ resource "aws_s3_object" "indexer_bootstrap" {
 }
 
 locals {
+  indexer_scripts_path = "${path.module}/indexer/scripts"
+  indexer_scripts = [
+    for path in fileset(local.indexer_scripts_path, "**") : {
+      abs  = abspath("${local.indexer_scripts_path}/${path}")
+      rel  = path
+      name = basename(path)
+    }
+  ]
+}
+
+resource "aws_s3_object" "indexer_scripts" {
+  for_each = { for file in local.indexer_scripts : file.name => file }
+
+  bucket       = data.aws_s3_bucket.user_data.id
+  key          = "userdata/indexer/scripts/${each.value.rel}"
+  content_type = "text/plain"
+  source       = each.value.abs
+  source_hash  = filemd5(each.value.abs)
+}
+
+locals {
   indexer_bootstrap = <<EOT
 ${templatefile("${path.module}/shared/boot.tftpl", {
   BUCKET = local.user_data_bucket
@@ -38,6 +59,7 @@ module "indexer_server" {
   depends_on = [
     aws_s3_object.shared_user_data,
     aws_s3_object.indexer_bootstrap,
+    aws_s3_object.indexer_scripts,
   ]
   ami_id           = data.aws_ami.ubuntu_20arm.id
   instance_type    = var.instance_types["indexer"]

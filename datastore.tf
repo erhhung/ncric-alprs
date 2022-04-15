@@ -24,6 +24,27 @@ resource "aws_s3_object" "datastore_bootstrap" {
 }
 
 locals {
+  datastore_scripts_path = "${path.module}/datastore/scripts"
+  datastore_scripts = [
+    for path in fileset(local.datastore_scripts_path, "**") : {
+      abs  = abspath("${local.datastore_scripts_path}/${path}")
+      rel  = path
+      name = basename(path)
+    }
+  ]
+}
+
+resource "aws_s3_object" "datastore_scripts" {
+  for_each = { for file in local.datastore_scripts : file.name => file }
+
+  bucket       = data.aws_s3_bucket.user_data.id
+  key          = "userdata/datastore/scripts/${each.value.rel}"
+  content_type = "text/plain"
+  source       = each.value.abs
+  source_hash  = filemd5(each.value.abs)
+}
+
+locals {
   datastore_bootstrap = <<EOT
 ${templatefile("${path.module}/shared/boot.tftpl", {
   BUCKET = local.user_data_bucket
@@ -39,6 +60,7 @@ module "datastore_server" {
   depends_on = [
     aws_s3_object.shared_user_data,
     aws_s3_object.datastore_bootstrap,
+    aws_s3_object.datastore_scripts,
   ]
   ami_id           = data.aws_ami.ubuntu_20arm.id
   instance_type    = var.instance_types["datastore"]
