@@ -6,6 +6,7 @@ set_hostname() (
 
 set_timezone() {
   timedatectl set-timezone America/Los_Angeles
+  service cron restart
   timedatectl
 }
 

@@ -31,6 +31,7 @@ END
 
 set_timezone() {
   timedatectl set-timezone America/Los_Angeles
+  systemctl restart crond
   timedatectl
 }
 
