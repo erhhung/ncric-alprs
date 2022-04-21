@@ -33,6 +33,7 @@ config=".ssh/config"
 # first make backup copies in case update goes awry...
 mkdir -p /tmp/.ssh && cp -a ~/$config ~/$known /tmp/.ssh/
 
+printf 'Retrieving Terraform output variables...'
 env=$(terraform output -raw env)
 # use gsed on BSD/macOS
 sed=$(_altcmd gsed sed)
@@ -49,6 +50,7 @@ while read host id; do
 done < <(
   old_host_ids
 )
+echo "DONE."
 
 get_outputs() {
   terraform output -json | \
@@ -73,12 +75,12 @@ while read host id; do
   host="alprs$env$(host_abbrev $host)" || continue
 
   $sed -Ei "/^Host +$host.*$/{\$!{N;s/^Host +$host.+HostName.+$/Host $host\*\n  HostName $id/;t;P;D}}" ~/$config
-  printf "%-13s %s => %s\n" $host: $(eval "echo \$$host") $id
+  printf "%-$((10 + ${#env}))s %s => %s\n" $host: $(eval "echo \$$host") $id
 done < <(
   get_outputs instance_id
 )
 
-printf 'Updating "/etc/hosts" on the bastion host...'
+printf 'Updating "/etc/hosts" on bastion host...'
 script=$(cat <<'EOF'
 add_host() {
   if awk '{print $2}' /etc/hosts | egrep -q "^$1$"; then
@@ -89,6 +91,7 @@ add_host() {
 };
 EOF
 )
+
 script+=$(cat <<EOF
 while read host ip; do
   add_host \$host \$ip
@@ -97,5 +100,6 @@ $(get_outputs private_ip)
 EOT
 EOF
 )
+
 ssh "alprs${env}bast" "$script" > /dev/null 2>&1
 echo "DONE."
