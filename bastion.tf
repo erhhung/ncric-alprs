@@ -13,10 +13,11 @@ locals {
     data = <<-EOT
 ${file("${path.module}/shared/prolog.sh")}
 ${templatefile("${path.module}/bastion/boot.tftpl", {
-    ENV        = var.env
-    PG_IP      = module.postgresql_server.private_ip
-    ES_IP      = module.elasticsearch_server.private_ip
-    USR_S3_URL = local.user_data_s3_url
+    ENV         = var.env
+    PG_IP       = module.postgresql_server.private_ip
+    ES_IP       = module.elasticsearch_server.private_ip
+    USR_S3_URL  = local.user_data_s3_url
+    ALL_BUCKETS = join(" ", [for key, name in var.buckets : "'${upper(key)}_BUCKET=\"${name}\"'"])
     })}
 ${file("${path.module}/bastion/boot.sh")}
 ${templatefile("${path.module}/webapp/install.tftpl", {
@@ -24,8 +25,6 @@ ${templatefile("${path.module}/webapp/install.tftpl", {
     MB_TOKEN      = var.MAPBOX_PUBLIC_TOKEN
     AUTH0_ID      = var.AUTH0_SPA_CLIENT_ID
     SUPPORT_EMAIL = var.ALPRS_SUPPORT_EMAIL
-    WEBAPP_BUCKET = var.buckets["webapp"]
-    BACKUP_BUCKET = var.buckets["backup"]
     APP_URL       = "https://${local.app_domain}"
     API_URL       = "https://${local.api_domain}"
 })}
@@ -56,7 +55,7 @@ ${file("${path.module}/shared/s3boot.sh")}
 EOT
 }
 
-module "bastion" {
+module "bastion_host" {
   source = "./modules/instance"
 
   depends_on = [
@@ -75,5 +74,5 @@ module "bastion" {
 }
 
 output "bastion_instance_id" {
-  value = module.bastion.instance_id
+  value = module.bastion_host.instance_id
 }

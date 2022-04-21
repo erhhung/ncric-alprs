@@ -69,7 +69,7 @@ user_dotfiles() {
   touch .sudo_as_admin_successful
   cat <<EOF >> .bashrc
 
-export BACKUP_BUCKET=$BACKUP_BUCKET
+export BACKUP_BUCKET="$BACKUP_BUCKET"
 EOF
 }
 

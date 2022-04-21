@@ -4,8 +4,13 @@
 create_user() (
   cd /home/$USER
   egrep -q '^openlattice:' /etc/passwd && exit
-  cp .bash_aliases .gitconfig .emacs .screenrc \
-    .sudo_as_admin_successful /etc/skel
+  cat <<EOF >> .bashrc
+export CONFIG_BUCKET="$CONFIG_BUCKET"
+EOF
+  # adduser copies files from /etc/skel
+  # into the new user's home directory
+  cp -a .bashrc .bash_aliases .gitconfig .emacs \
+    .screenrc .sudo_as_admin_successful /etc/skel
   adduser --disabled-login --gecos "" openlattice
   cat <<'EOF' >> .bash_aliases
 

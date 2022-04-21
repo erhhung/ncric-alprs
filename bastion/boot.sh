@@ -79,6 +79,10 @@ upgrade_awscli() (
   rm -rf /tmp/aws*
 )
 
+export_buckets() {
+  for bucket in "${ALL_BUCKETS[@]}"; do eval export $bucket; done
+}
+
 authorize_keys() {
   cd .ssh
   while read key || [ "$key" ]; do
@@ -94,7 +98,11 @@ user_dotfiles() {
 
 root_dotfiles() (
   cd /home/$USER
-  /usr/bin/cp -f .bash_aliases .bashrc .emacs /root
+  cat <<EOF >> .bashrc
+
+$(for bucket in "${ALL_BUCKETS[@]}"; do echo -en "\nexport $bucket"; done)
+EOF
+  /usr/bin/cp -f .bashrc .bash_aliases .emacs /root
 )
 
 etc_hosts() (
@@ -114,6 +122,7 @@ run custom_prompt
 run yum_install
 run motd_banner
 run upgrade_awscli
+run export_buckets
 run authorize_keys $USER
 run user_dotfiles  $USER
 run root_dotfiles
