@@ -16,7 +16,7 @@ module "sftp_sg" {
       from_port   = 22
       to_port     = 22
       protocol    = "tcp"
-      cidr_blocks = local.subnet_cidrs["public"]
+      cidr_blocks = ["0.0.0.0/0"]
     }
   }
 }
@@ -96,10 +96,15 @@ resource "aws_transfer_ssh_key" "sftp_users" {
 
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/route53_record
 resource "aws_route53_record" "sftp" {
-  provider = aws.route53
-  zone_id  = local.zone_id
-  name     = local.sftp_domain
-  type     = "A"
-  records  = [aws_eip.sftp.public_ip]
-  ttl      = 300
+  provider       = aws.route53
+  zone_id        = local.zone_id
+  name           = local.sftp_domain
+  type           = "A"
+  set_identifier = "US"
+  records        = [aws_eip.sftp.public_ip]
+  ttl            = 60
+
+  geolocation_routing_policy {
+    country = "US"
+  }
 }

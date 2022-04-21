@@ -103,15 +103,19 @@ resource "aws_cloudfront_distribution" "app" {
 
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/route53_record
 resource "aws_route53_record" "app" {
-  provider = aws.route53
-  zone_id  = local.zone_id
-  name     = local.app_domain
-  type     = "A"
+  provider       = aws.route53
+  zone_id        = local.zone_id
+  name           = local.app_domain
+  type           = "A"
+  set_identifier = "US"
 
   alias {
     name                   = aws_cloudfront_distribution.app.domain_name
     zone_id                = aws_cloudfront_distribution.app.hosted_zone_id
     evaluate_target_health = true
+  }
+  geolocation_routing_policy {
+    country = "US"
   }
 }
 
