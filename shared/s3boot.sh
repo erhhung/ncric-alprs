@@ -5,8 +5,13 @@
 # the AWS CLI because it may not be installed yet
 # on the host OS.
 
+URL="http://169.254.169.254/latest"
+
+az=$(curl -fsm .25 $URL/meta-data/placement/availability-zone)
+region=${az:0:-1}
+
 meta() {
-  local iam='curl -fsm .25 http://169.254.169.254/latest/meta-data/iam/security-credentials'
+  local iam="curl -fsm .25 $URL/meta-data/iam/security-credentials"
   local res=$($iam/`$iam/` | sed -rn 's/.*"'"$2"'"[^"]+"([^"]*).*/\1/p')
   [ "$res" ] && eval "$1=\"$res\""
 }
@@ -20,11 +25,11 @@ hash="$(echo -en "GET\n\n\n$date\nx-amz-security-token:$token\n/$bucket/$file" |
   openssl base64)"
 
 curl -so /bootstrap.sh \
-  -H "Host: $bucket.s3.amazonaws.com" \
+  -H "Host: $bucket.s3.$region.amazonaws.com" \
   -H "Date: $date" \
   -H "Authorization: AWS $key_id:$hash" \
   -H "x-amz-security-token: $token" \
-  -L https://$bucket.s3.amazonaws.com/$file
+  -L https://$bucket.s3.$region.amazonaws.com/$file
 
 # make sure response isn't an XML-based error message
 if [[ "$(head -1 /bootstrap.sh)" =~ ^#\!/.+ ]]; then
@@ -34,7 +39,7 @@ else
   mv /bootstrap.sh /bootstrap.log
   echo >&2 -e "[$(date "+%D %r")] BOOT FAILED! Retrying in 10 seconds...\n$(< /bootstrap.log)"
   sleep 10
-  curl -so /boot.sh http://169.254.169.254/latest/user-data
+  curl -so /boot.sh $URL/user-data
   chmod +x /boot.sh
   exec     /boot.sh
 fi

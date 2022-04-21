@@ -47,3 +47,10 @@ locals {
     local.new_pg_pass["atlas_user"]
   )
 }
+
+locals {
+  # CloudFront custom origin Referer header secret
+  # token used only in prod environment where the
+  # webapp bucket in GovCloud must be made public
+  cf_referer = sha1("${local.alprs_pass}_${local.atlas_pass}")
+}

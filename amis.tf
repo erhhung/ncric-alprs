@@ -11,7 +11,7 @@ data "aws_ami" "amazon_linux2" {
 
 data "aws_ami" "ubuntu_20arm" {
   most_recent = true
-  owners      = ["099720109477"] # Canonical
+  owners      = ["099720109477", "513442679011"] # Canonical
 
   filter {
     name   = "name"

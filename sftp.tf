@@ -1,10 +1,45 @@
+# IMPORTANT: SFTP server of endpoint type PUBLIC is NOT available in GovCloud: must
+# create one with endpoint type VPC in public subnet and attach an elastic IP to it
+# https://docs.aws.amazon.com/govcloud-us/latest/UserGuide/govcloud-tf.html
+
 # reference implementation: https://github.com/PatientPing/terraform-aws-transfer-sftp
+
+module "sftp_sg" {
+  source = "./modules/secgrp"
+
+  name        = "sftp-sg"
+  description = "Allow SSH traffic"
+  vpc_id      = module.main_vpc.vpc_id
+
+  rules = {
+    ingress_22 = {
+      from_port   = 22
+      to_port     = 22
+      protocol    = "tcp"
+      cidr_blocks = local.subnet_cidrs["public"]
+    }
+  }
+}
+
+# https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/eip
+resource "aws_eip" "sftp" {
+  depends_on = [module.main_vpc]
+  vpc        = true
+}
 
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/transfer_server
 resource "aws_transfer_server" "sftp" {
+  endpoint_type        = "VPC"
   security_policy_name = "TransferSecurityPolicy-FIPS-2020-06"
   logging_role         = aws_iam_role.sftp_logger.arn
   force_destroy        = true
+
+  endpoint_details {
+    vpc_id                 = module.main_vpc.vpc_id
+    subnet_ids             = [module.main_vpc.subnet_ids["public1"]]
+    security_group_ids     = [module.sftp_sg.id]
+    address_allocation_ids = [aws_eip.sftp.id]
+  }
 
   pre_authentication_login_banner = <<-EOT
 ********************************
@@ -64,7 +99,7 @@ resource "aws_route53_record" "sftp" {
   provider = aws.route53
   zone_id  = local.zone_id
   name     = local.sftp_domain
-  type     = "CNAME"
-  records  = ["${aws_transfer_server.sftp.endpoint}."]
+  type     = "A"
+  records  = [aws_eip.sftp.public_ip]
   ttl      = 300
 }

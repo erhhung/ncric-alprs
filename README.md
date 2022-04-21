@@ -40,12 +40,15 @@ aws s3api put-public-access-block \
 ## Terraform Init
 
 ```bash
-terraform init -backend-config config/dev.conf
+terraform init -backend-config config/dev.conf -upgrade
 ```
 
 ## Terraform Apply
 
+_Due to some `for_each` values that depend on resource attributes that cannot be determined
+  until apply, the `-target` option must be used to create those dependent resources first._
+
 ```bash
-terraform plan  -var-file config/dev.tfvars
+terraform apply -var-file config/dev.tfvars -target aws_ses_domain_dkim.astrometrics
 terraform apply -var-file config/dev.tfvars
 ```

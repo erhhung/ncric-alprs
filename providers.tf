@@ -18,9 +18,9 @@ provider "aws" {
 }
 
 provider "aws" {
-  alias   = "us_east_1"
+  alias   = "cloudfront"
   region  = "us-east-1"
-  profile = var.aws_provider.profile
+  profile = "alprscom"
 
   default_tags {
     tags = local.default_tags

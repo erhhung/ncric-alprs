@@ -1,7 +1,10 @@
 locals {
-  ssm_policy_arns = [
+  ssm_policy_arns = var.env == "dev" ? [
     "arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy",
     "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore",
+    ] : [
+    "arn:aws-us-gov:iam::aws:policy/CloudWatchAgentServerPolicy",
+    "arn:aws-us-gov:iam::aws:policy/AmazonSSMManagedInstanceCore",
   ]
 }
 

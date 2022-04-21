@@ -1,17 +1,27 @@
+# IMPORTANT: CloudFront is NOT available in GovCloud: it must be configured in us-east-1
+# region in the commercial account using a custom origin to URL of S3 bucket in GovCloud
+# https://docs.aws.amazon.com/govcloud-us/latest/UserGuide/setting-up-cloudfront.html
+
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudfront_origin_access_identity
 resource "aws_cloudfront_origin_access_identity" "app" {
-  comment = "Identity allowed access to app S3 bucket"
+  count    = var.env == "dev" ? 1 : 0
+  comment  = "Identity allowed access to app S3 bucket"
+  provider = aws.cloudfront
 }
 
 locals {
   s3_origin_id   = "app_s3_origin"
   cached_methods = ["GET", "HEAD"]
+  cf_logs_bucket = replace(var.buckets["audit"], var.env, "dev")
 }
 
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudfront_distribution
 resource "aws_cloudfront_distribution" "app" {
+  depends_on = [aws_acm_certificate_validation.app]
+  provider   = aws.cloudfront
+
   enabled             = true
-  comment             = "AstroMetrics frontend"
+  comment             = "AstroMetrics ${var.env} frontend"
   aliases             = [local.app_domain]
   default_root_object = "index.html"
   price_class         = "PriceClass_100" # US+EU
@@ -20,10 +30,38 @@ resource "aws_cloudfront_distribution" "app" {
     domain_name = aws_s3_bucket.buckets["webapp"].bucket_regional_domain_name
     origin_id   = local.s3_origin_id
 
-    s3_origin_config {
-      origin_access_identity = aws_cloudfront_origin_access_identity.app.cloudfront_access_identity_path
+    dynamic "s3_origin_config" {
+      for_each = var.env == "dev" ? [0] : []
+
+      content {
+        origin_access_identity = one(aws_cloudfront_origin_access_identity.app[*].cloudfront_access_identity_path)
+      }
+    }
+    dynamic "custom_origin_config" {
+      for_each = var.env == "prod" ? [0] : []
+
+      content {
+        http_port              = 80
+        https_port             = 443
+        origin_protocol_policy = "https-only"
+        origin_ssl_protocols   = ["TLSv1.2"]
+      }
+    }
+
+    # since webapp bucket in GovCloud must be made
+    # public for CloudFront custom origin, restrict
+    # access by using Referer header secret token:
+    # https://aws.amazon.com/premiumsupport/knowledge-center/cloudfront-serve-static-website/
+    dynamic "custom_header" {
+      for_each = var.env == "prod" ? [0] : []
+
+      content {
+        name  = "Referer"
+        value = local.cf_referer
+      }
     }
   }
+
   default_cache_behavior {
     viewer_protocol_policy = "redirect-to-https"
     target_origin_id       = local.s3_origin_id
@@ -40,17 +78,20 @@ resource "aws_cloudfront_distribution" "app" {
       }
     }
   }
+
   viewer_certificate {
     acm_certificate_arn      = aws_acm_certificate.app.arn
     minimum_protocol_version = "TLSv1.2_2018"
     ssl_support_method       = "sni-only"
   }
+
   logging_config {
     # https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/AccessLogs.html
-    bucket          = "${var.buckets["audit"]}.s3.amazonaws.com"
+    bucket          = "${local.cf_logs_bucket}.s3.amazonaws.com"
     prefix          = "AWSLogs/${local.account}/cloudfront"
     include_cookies = false
   }
+
   restrictions {
     geo_restriction {
       # https://www.iso.org/obp/ui/#search/code/
@@ -72,4 +113,8 @@ resource "aws_route53_record" "app" {
     zone_id                = aws_cloudfront_distribution.app.hosted_zone_id
     evaluate_target_health = true
   }
+}
+
+output "app_cf_domain" {
+  value = aws_cloudfront_distribution.app.domain_name
 }

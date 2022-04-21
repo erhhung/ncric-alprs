@@ -1,6 +1,6 @@
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/acm_certificate
 resource "aws_acm_certificate" "app" {
-  provider          = aws.us_east_1
+  provider          = aws.cloudfront
   domain_name       = local.app_domain
   validation_method = "DNS"
 
@@ -56,7 +56,7 @@ locals {
 
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/acm_certificate_validation
 resource "aws_acm_certificate_validation" "app" {
-  provider                = aws.us_east_1
+  provider                = aws.cloudfront
   certificate_arn         = aws_acm_certificate.app.arn
   validation_record_fqdns = local.app_fqdns
 }

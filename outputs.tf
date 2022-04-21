@@ -18,14 +18,6 @@ output "postgresql_user_logins" {
   sensitive = true
 }
 
-output "app_cf_domain" {
-  value = aws_cloudfront_distribution.app.domain_name
-}
-
-output "api_elb_domain" {
-  value = aws_lb.api.dns_name
-}
-
 # bastion_instance_id:          bastion.tf
 # postgresql_instance_id:       postgresql.tf
 # postgresql_private_domain:    postgresql.tf
@@ -42,3 +34,5 @@ output "api_elb_domain" {
 # indexer_instance_id:          indexer.tf
 # indexer_private_domain:       indexer.tf
 # indexer_private_ip:           indexer.tf
+# app_cf_domain:                cloudfront.tf
+# api_elb_domain:               elb.tf

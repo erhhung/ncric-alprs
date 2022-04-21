@@ -27,8 +27,8 @@ resource "aws_s3_bucket" "buckets" {
 
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket_server_side_encryption_configuration
 resource "aws_s3_bucket_server_side_encryption_configuration" "buckets" {
-  for_each   = var.buckets
   depends_on = [aws_s3_bucket.buckets]
+  for_each   = var.buckets
   bucket     = each.value
 
   rule {
@@ -38,10 +38,19 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "buckets" {
   }
 }
 
+locals {
+  private_buckets = {
+    # allow webapp bucket in GovCloud to be public so CloudFront can
+    # access the custom origin using secret token in Referer header:
+    # https://aws.amazon.com/premiumsupport/knowledge-center/cloudfront-serve-static-website/
+    for key, name in var.buckets : key => name if var.env != "prod" || key != "webapp"
+  }
+}
+
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket_public_access_block
 resource "aws_s3_bucket_public_access_block" "buckets" {
-  for_each   = var.buckets
   depends_on = [aws_s3_bucket.buckets]
+  for_each   = local.private_buckets
   bucket     = each.value
 
   block_public_acls       = true
@@ -52,8 +61,8 @@ resource "aws_s3_bucket_public_access_block" "buckets" {
 
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket_ownership_controls
 resource "aws_s3_bucket_ownership_controls" "buckets" {
-  for_each   = var.buckets
   depends_on = [aws_s3_bucket.buckets]
+  for_each   = var.buckets
   bucket     = each.value
 
   rule {
@@ -63,8 +72,8 @@ resource "aws_s3_bucket_ownership_controls" "buckets" {
 
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket_acl
 resource "aws_s3_bucket_acl" "buckets" {
-  for_each   = var.buckets
   depends_on = [aws_s3_bucket.buckets]
+  for_each   = local.private_buckets
   bucket     = each.value
 
   # https://docs.aws.amazon.com/AmazonS3/latest/userguide/acl-overview.html#canned-acl
@@ -150,8 +159,12 @@ data "aws_iam_policy_document" "elb_logs" {
     resources = ["${aws_s3_bucket.buckets["audit"].arn}/AWSLogs/${local.account}/*"]
 
     principals {
-      identifiers = ["arn:aws:iam::${var.elb_account_id}:root"]
-      type        = "AWS"
+      identifiers = var.env == "dev" ? [
+        "arn:aws:iam::${var.elb_account_id}:root"
+        ] : [
+        "arn:aws-us-gov:iam::${var.elb_account_id}:root"
+      ]
+      type = "AWS"
     }
   }
   statement {
@@ -183,7 +196,7 @@ data "aws_iam_policy_document" "elb_logs" {
   }
 }
 
-data "aws_iam_policy_document" "app_oai" {
+data "aws_iam_policy_document" "cf_origin" {
   source_policy_documents = [data.aws_iam_policy_document.https_only["webapp"].json]
 
   statement {
@@ -192,9 +205,35 @@ data "aws_iam_policy_document" "app_oai" {
     actions   = ["s3:GetObject"]
     resources = ["${aws_s3_bucket.buckets["webapp"].arn}/*"]
 
-    principals {
-      identifiers = [aws_cloudfront_origin_access_identity.app.iam_arn]
-      type        = "AWS"
+    dynamic "principals" {
+      for_each = var.env == "dev" ? [0] : []
+
+      content {
+        identifiers = aws_cloudfront_origin_access_identity.app[*].iam_arn
+        type        = "AWS"
+      }
+    }
+    dynamic "principals" {
+      for_each = var.env == "prod" ? [0] : []
+
+      content {
+        identifiers = ["*"]
+        type        = "*"
+      }
+    }
+
+    # since webapp bucket in GovCloud must be made
+    # public for CloudFront custom origin, restrict
+    # access by using Referer header secret token:
+    # https://docs.aws.amazon.com/AmazonS3/latest/userguide/example-bucket-policies.html
+    dynamic "condition" {
+      for_each = var.env == "prod" ? [0] : []
+
+      content {
+        test     = "StringLike"
+        variable = "aws:Referer"
+        values   = [local.cf_referer]
+      }
     }
   }
 }
@@ -202,14 +241,14 @@ data "aws_iam_policy_document" "app_oai" {
 locals {
   bucket_policies = {
     audit  = data.aws_iam_policy_document.elb_logs
-    webapp = data.aws_iam_policy_document.app_oai
+    webapp = data.aws_iam_policy_document.cf_origin
   }
 }
 
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket_policy
 resource "aws_s3_bucket_policy" "buckets" {
-  for_each   = var.buckets
   depends_on = [aws_s3_bucket.buckets]
+  for_each   = var.buckets
   bucket     = each.value
 
   policy = lookup(local.bucket_policies, each.key,
