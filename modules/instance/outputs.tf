@@ -1,3 +1,11 @@
+output "ami_id" {
+  value = aws_instance.host.ami
+}
+
+output "ami_name" {
+  value = data.aws_ami.host.name
+}
+
 output "instance_id" {
   value = aws_instance.host.id
 }

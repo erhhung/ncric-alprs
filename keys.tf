@@ -24,7 +24,7 @@ data "external" "rhizome_jks" {
 data "external" "old_pg_pass" {
   program = [
     "bash", "-c",
-    "terraform output -json postgresql_user_logins 2> /dev/null || echo '{}'",
+    "terraform output -json postgresql_user_logins 2> /dev/null || echo -n '{}'",
   ]
 }
 data "external" "new_pg_pass" {
@@ -53,4 +53,27 @@ locals {
   # token used only in prod environment where the
   # webapp bucket in GovCloud must be made public
   cf_referer = sha1("${local.alprs_pass}_${local.atlas_pass}")
+}
+
+data "external" "old_rd_pass" {
+  program = [
+    "bash", "-c", <<-EOT
+      secret=$(terraform output -json rundeck_admin_pass 2> /dev/null)
+      # secret will be quoted string or empty
+      echo -n '{"secret":'$${secret:-null}'}'
+EOT
+  ]
+}
+data "external" "new_rd_pass" {
+  program = ["${path.module}/shared/pwgen.sh"]
+}
+
+locals {
+  old_rd_pass = data.external.old_rd_pass.result
+  new_rd_pass = data.external.new_rd_pass.result
+
+  rundeck_pass = coalesce(
+    local.old_rd_pass["secret"],
+    local.new_rd_pass["secret"],
+  )
 }

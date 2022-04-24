@@ -69,7 +69,7 @@ EOF
 
   cd conf
   mv elasticsearch.yml elasticsearch-default.yml
-  aws s3 cp $ES_YML elasticsearch.yml
+  aws s3 cp $ES_YML elasticsearch.yml --no-progress
   heap_size=$(awk '/MemTotal.*kB/ {print int($2 /1024/1024 / 2)}' /proc/meminfo)
   cat <<EOF > jvm.options.d/heap.options
 -Xms${heap_size}g
@@ -80,7 +80,7 @@ EOF
 
   cd /etc/kibana
   mv kibana.yml kibana-default.yml
-  aws s3 cp $KB_YML kibana.yml
+  aws s3 cp $KB_YML kibana.yml --no-progress
   chmod 660 kibana.yml
   chown root:kibana *
 )
@@ -129,7 +129,7 @@ config_nginx() (
     grep -v stream | xargs rm -f
   rm -f sites-enabled/default
 
-  aws s3 cp $NG_CONF nginx.conf
+  aws s3 cp $NG_CONF nginx.conf --no-progress
   while read service listen port; do
     cat <<EOF > conf.d/http_$service.conf
 # https://docs.nginx.com/nginx/admin-guide/load-balancer/http-load-balancer/

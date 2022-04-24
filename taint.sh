@@ -19,6 +19,19 @@ _reqcmds() {
 }
 _reqcmds terraform || exit $?
 
+_altcmd() {
+  local cmd
+  for cmd in "$@"; do
+    if hash $cmd 2> /dev/null; then
+      printf $cmd && return
+    fi
+  done
+  return 1
+}
+
+# use ggrep on BSD/macOS
+grep=$(_altcmd ggrep grep)
+
 full_addr() {
   case "$1" in
     bastion)
@@ -36,6 +49,12 @@ full_addr() {
   esac
 }
 
+highlight() {
+  $grep -E --color=never  '^\w+' | \
+  $grep -P --color=always 'Resource instance \K\S+'
+  # Perl regex \K restarts match from that position
+}
+
 for addr in "$@"; do
-  terraform taint "$(full_addr "$addr")"
+  terraform taint "$(full_addr "$addr")" | highlight
 done

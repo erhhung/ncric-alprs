@@ -55,7 +55,7 @@ ${templatefile("${path.module}/postgresql/boot.tftpl", {
     PG_CONF   = "${local.user_data_s3_url}/postgresql/postgresql.conf"
     PG_HBA    = "${local.user_data_s3_url}/postgresql/pg_hba.conf"
     ALPRS_SQL = "${local.user_data_s3_url}/postgresql/alprs.sql.gz"
-    # passwords created by keys.tf
+    # passwords are created in keys.tf
     alprs_pass    = local.alprs_pass
     atlas_pass    = local.atlas_pass
     BACKUP_BUCKET = var.buckets["backup"]
@@ -114,6 +114,12 @@ resource "aws_volume_attachment" "postgresql_data" {
   device_name = "/dev/xvdb"
 }
 
+output "postgresql_ami_id" {
+  value = module.postgresql_server.ami_id
+}
+output "postgresql_ami_name" {
+  value = module.postgresql_server.ami_name
+}
 output "postgresql_instance_id" {
   value = module.postgresql_server.instance_id
 }

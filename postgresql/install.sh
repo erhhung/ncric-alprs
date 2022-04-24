@@ -74,11 +74,11 @@ EOF
 
   cd conf
   mv postgresql.conf postgresql-default.conf
-  aws s3 cp $PG_CONF postgresql.conf
+  aws s3 cp $PG_CONF postgresql.conf --no-progress
   shared_buffers=$(awk '/MemTotal.*kB/ {print int($2 /1024/1024 / 2)+1}' /proc/meminfo)
   sed -Ei "s/^shared_buffers.+$/shared_buffers = ${shared_buffers}GB/" postgresql.conf
   mv pg_hba.conf pg_hba-default.conf
-  aws s3 cp $PG_HBA pg_hba.conf
+  aws s3 cp $PG_HBA pg_hba.conf --no-progress
   run generate_cert
   mv /tmp/server.* .
   chown -h postgres:postgres *
@@ -131,7 +131,7 @@ create_db_objects() {
   [ -d init ] && exit
   mkdir init
   cd init
-  aws s3 cp $ALPRS_SQL alprs.sql.gz
+  aws s3 cp $ALPRS_SQL alprs.sql.gz --no-progress
   gunzip -f alprs.sql.gz
   sed -Ei "s|https://astrometrics\.us|$APP_URL|" alprs.sql
   psql alprs < alprs.sql
@@ -153,7 +153,7 @@ clean
 trap clean EXIT
 
 nice pg_basebackup -D \$TEMP -X stream
-nice tar cjf - -C \$TEMP . | nice aws s3 cp - \$dest
+nice tar cjf - -C \$TEMP . | nice aws s3 cp - \$dest --no-progress
 EOF
   chmod +x backup.sh
 }

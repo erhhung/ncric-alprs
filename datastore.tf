@@ -97,6 +97,12 @@ resource "aws_lb_target_group_attachment" "api" {
   target_id        = module.datastore_server.instance_id
 }
 
+output "datastore_ami_id" {
+  value = module.datastore_server.ami_id
+}
+output "datastore_ami_name" {
+  value = module.datastore_server.ami_name
+}
 output "datastore_instance_id" {
   value = module.datastore_server.instance_id
 }

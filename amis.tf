@@ -9,6 +9,17 @@ data "aws_ami" "amazon_linux2" {
   }
 }
 
+# not available in GovCloud yet!
+# data "aws_ami" "amazon_al2022" {
+#   most_recent = true
+#   owners      = ["amazon"]
+# 
+#   filter {
+#     name   = "name"
+#     values = ["al2022-ami-2022*"]
+#   }
+# }
+
 data "aws_ami" "ubuntu_20arm" {
   most_recent = true
   owners      = ["099720109477", "513442679011"] # Canonical

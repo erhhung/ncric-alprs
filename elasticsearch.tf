@@ -124,6 +124,12 @@ resource "aws_volume_attachment" "elasticsearch_data" {
   device_name = "/dev/xvdb"
 }
 
+output "elasticsearch_ami_id" {
+  value = module.elasticsearch_server.ami_id
+}
+output "elasticsearch_ami_name" {
+  value = module.elasticsearch_server.ami_name
+}
 output "elasticsearch_instance_id" {
   value = module.elasticsearch_server.instance_id
 }

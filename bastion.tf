@@ -20,6 +20,11 @@ ${templatefile("${path.module}/bastion/boot.tftpl", {
     ALL_BUCKETS = join(" ", [for key, name in var.buckets : "'${upper(key)}_BUCKET=\"${name}\"'"])
     })}
 ${file("${path.module}/bastion/boot.sh")}
+${templatefile("${path.module}/rundeck/install.tftpl", {
+    # password is created in keys.tf
+    rundeck_pass = local.rundeck_pass
+    })}
+${file("${path.module}/rundeck/install.sh")}
 ${templatefile("${path.module}/webapp/install.tftpl", {
     FA_TOKEN      = var.FONTAWESOME_NPM_TOKEN
     MB_TOKEN      = var.MAPBOX_PUBLIC_TOKEN
@@ -61,6 +66,7 @@ module "bastion_host" {
   depends_on = [
     aws_s3_object.shared_user_data,
     aws_s3_object.bastion_user_data,
+    aws_s3_object.rdproject_jar,
   ]
   ami_id           = data.aws_ami.amazon_linux2.id
   instance_type    = var.instance_types["bastion"]
@@ -73,6 +79,12 @@ module "bastion_host" {
   user_data        = chomp(local.bastion_bootstrap)
 }
 
+output "bastion_ami_id" {
+  value = module.bastion_host.ami_id
+}
+output "bastion_ami_name" {
+  value = module.bastion_host.ami_name
+}
 output "bastion_instance_id" {
   value = module.bastion_host.instance_id
 }

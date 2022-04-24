@@ -1,3 +1,19 @@
+# https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/ami
+data "aws_ami" "host" {
+  owners = [
+    "self",
+    "amazon",
+    "microsoft",
+    "aws-marketplace",
+    "099720109477", # Canonical
+    "513442679011", # Canonical
+  ]
+  filter {
+    name   = "image-id"
+    values = [var.ami_id]
+  }
+}
+
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/instance
 resource "aws_instance" "host" {
   ami                         = var.ami_id

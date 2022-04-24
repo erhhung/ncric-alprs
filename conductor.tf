@@ -90,6 +90,12 @@ module "conductor_config" {
   })
 }
 
+output "conductor_ami_id" {
+  value = module.conductor_server.ami_id
+}
+output "conductor_ami_name" {
+  value = module.conductor_server.ami_name
+}
 output "conductor_instance_id" {
   value = module.conductor_server.instance_id
 }

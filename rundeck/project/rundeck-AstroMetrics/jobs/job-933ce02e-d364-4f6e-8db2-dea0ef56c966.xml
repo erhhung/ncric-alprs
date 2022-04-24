@@ -1,0 +1,154 @@
+<joblist>
+  <job>
+    <context>
+      <options preserveOrder='true'>
+        <option name='ncric_org_dbpwd' secure='true' storagePath='keys/project/NCRIC/ncric_org_user/ol_password' valueExposed='true'>
+          <description>ncric_org_dbpwd</description>
+          <hidden>true</hidden>
+          <label>ncric_org_dbpwd</label>
+        </option>
+        <option name='ncric_org_user' secure='true' storagePath='keys/project/NCRIC/ncric_org_user/ol_user' valueExposed='true'>
+          <description>ncric_org_user</description>
+          <hidden>true</hidden>
+          <label>ncric_org_user</label>
+        </option>
+        <option name='ol_client_id' secure='true' storagePath='keys/project/NCRIC/ncric_at_openlattice/ol_client_id' valueExposed='true'>
+          <hidden>true</hidden>
+          <label>ol_client_id</label>
+        </option>
+        <option name='ol_password' secure='true' storagePath='keys/project/NCRIC/ncric_at_openlattice/ol_password' valueExposed='true'>
+          <hidden>true</hidden>
+          <label>ol_password</label>
+        </option>
+        <option name='ol_user' secure='true' storagePath='keys/project/NCRIC/ncric_at_openlattice/ol_user' valueExposed='true'>
+          <hidden>true</hidden>
+          <label>ol_user</label>
+        </option>
+      </options>
+    </context>
+    <defaultTab>nodes</defaultTab>
+    <description><![CDATA[Gets NCRIC hotlist from sftp every day,
+* appends to _all table and overwrites _daily table in the NCRIC org
+* Wipes yesterday's hotlist entity sets]]></description>
+    <executionEnabled>false</executionEnabled>
+    <id>933ce02e-d364-4f6e-8db2-dea0ef56c966</id>
+    <loglevel>INFO</loglevel>
+    <name>Recurring Integration &amp; Staging: Hotlist (daily)</name>
+    <nodeFilterEditable>false</nodeFilterEditable>
+    <plugins />
+    <schedule>
+      <month month='*' />
+      <time hour='06' minute='00' seconds='0' />
+      <weekday day='*' />
+      <year year='*' />
+    </schedule>
+    <scheduleEnabled>true</scheduleEnabled>
+    <sequence keepgoing='true' strategy='node-first'>
+      <command>
+        <description>Get hotlist from sftp</description>
+        <script><![CDATA[#!/opt/anaconda/envs/openlattice/bin/python
+
+from datetime import datetime
+from io import StringIO
+import pandas as pd
+import boto3
+import olpy
+
+session = boto3.session.Session(region_name="us-gov-west-1")
+s3 = session.resource('s3')
+bucket = s3.Bucket(name='sftp.openlattice.com') # REPLACE WITH YOUR S3 URL
+
+files = bucket.objects.filter(Prefix='hotlist') #output is a s3.Bucket.objectsCollection. REPLACE WITH YOUR BUCKET PREFIX
+
+s3_bucket = "sftp.openlattice.com"
+idx = 0
+
+for obj in files:
+    idx +=1
+    text = obj.get()['Body'].read().decode('utf-8') #makes a textstring
+
+    # get the date and time info from the first row
+    tableinfo = text.partition('\n')[0]
+
+    # get the body of the hotlist
+    textstring = StringIO(text)
+    df = pd.read_fwf(textstring, widths=[7,12], names=['plate', 'agencysubmitted'],
+    skiprows=1, skipfooter=1)
+    print("Hotlist data size (minus header and footer) is", df.shape)
+
+    # check last row (also non-uniform)
+    # print("last row is " + df.tail(1))
+
+    # make it a new column in the dataframe (for rolling table in atlas)
+    c = tableinfo.replace("DATE","")
+    print("cleaned tableinfo is " + c)
+    date_time_obj = datetime.strptime(c, '%m/%d/%Y %H:%M')
+    df['submitted'] = date_time_obj
+    print("Datetime of hotlist is ", date_time_obj)
+
+    ###### UPLOAD TO DATABASE
+    dbuser=os.environ.get("RD_OPTION_DB_USER") # Store credential within Rundeck "options" above, and name it "db_user". Retrieve here
+    dbpw=os.environ.get("RD_OPTION_DB_PASSWORD") # Store credential within Rundeck "options" above, and name it "db_password". Retrieve here
+    db="org_47b646d7a01a4232b25b15c880ea4046" # Insert your database name here
+    host="atlas.openlattice.com" # Insert your hostname here
+    engine=sq.create_engine(f'''postgresql://{dbuser}:{dbpw}@{host}:30001/{db}''')
+
+    dtable = "hotlist_daily"
+    df.to_sql(f'{dtable}', engine, chunksize = 1000, if_exists = "replace")
+    print(f"Uploaded {len(df)} rows to {dtable}")
+
+print("number of files:", idx)]]></script>
+        <scriptargs />
+      </command>
+      <command>
+        <description>sleep for 5 minutes</description>
+        <exec>sleep 300</exec>
+      </command>
+      <command>
+        <description>Wipe the 2 hotlist entity sets every night - WON'T WORK YET, NEED NEW ENTITY SETS</description>
+        <script><![CDATA[#!/opt/anaconda/envs/openlattice/bin/python
+
+import openlattice
+import olpy
+
+configuration = olpy.get_config(base_url = "https://api.openlattice.com") #use Rundeck vars
+
+dataAPI = openlattice.DataApi(openlattice.ApiClient(configuration))
+entitySetsApi = openlattice.EntitySetsApi(openlattice.ApiClient(configuration))
+
+
+###### VEHICLE LIST
+vehicles=dataAPI.load_entity_set_data(entitySetsApi.get_entity_set_id('astrometrics_47b646d7a01a4232b25b15c880ea4046_apphotlistvehicles'))
+vehicle_id_list=[ent['openlattice.@id'][0] for ent in vehicles]
+print(f"There are {len(vehicle_id_list)} entities in the Hotlist vehicle entity set.")
+
+dataAPI.delete_entities(
+    entity_set_id = entitySetsApi.get_entity_set_id('astrometrics_47b646d7a01a4232b25b15c880ea4046_apphotlistvehicles'),
+    type = "Hard",
+    request_body = vehicle_id_list)
+
+# check and get length
+vehicles2=dataAPI.load_entity_set_data(entitySetsApi.get_entity_set_id('astrometrics_47b646d7a01a4232b25b15c880ea4046_apphotlistvehicles'))
+print(f"Deleted! There are now {len(vehicles2)} entities in the Hotlist vehicle entity set.")
+
+
+###### READS
+reads=dataAPI.load_entity_set_data(entitySetsApi.get_entity_set_id('astrometrics_47b646d7a01a4232b25b15c880ea4046_apphotlistreads'))
+reads_id_list=[ent['openlattice.@id'][0] for ent in reads]
+print(f"There are {len(reads_id_list)} entities in the Hotlist reads entity set.")
+
+dataAPI.delete_entities(
+    entity_set_id = entitySetsApi.get_entity_set_id('astrometrics_47b646d7a01a4232b25b15c880ea4046_apphotlistreads'),
+    type = "Hard",
+    request_body = reads_id_list)
+
+reads2=dataAPI.load_entity_set_data(entitySetsApi.get_entity_set_id('astrometrics_47b646d7a01a4232b25b15c880ea4046_apphotlistreads'))
+print(f"Deleted! There are now {len(reads2)} entities in the Hotlist reads entity set.")
+]]></script>
+        <scriptargs />
+      </command>
+    </sequence>
+    <timeZone>PST</timeZone>
+    <uuid>933ce02e-d364-4f6e-8db2-dea0ef56c966</uuid>
+  </job>
+</joblist>

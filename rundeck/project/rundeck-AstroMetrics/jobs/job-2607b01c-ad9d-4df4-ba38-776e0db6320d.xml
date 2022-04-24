@@ -1,0 +1,158 @@
+<joblist>
+  <job>
+    <context>
+      <options preserveOrder='true'>
+        <option name='ol_client_id' secure='true' storagePath='keys/project/NCRIC/ncric_at_openlattice/ol_client_id' valueExposed='true'>
+          <hidden>true</hidden>
+        </option>
+        <option name='ol_password' secure='true' storagePath='keys/project/NCRIC/ncric_at_openlattice/ol_password' valueExposed='true'>
+          <hidden>true</hidden>
+        </option>
+        <option name='ol_user' secure='true' storagePath='keys/project/NCRIC/ncric_at_openlattice/ol_user' valueExposed='true'>
+          <hidden>true</hidden>
+        </option>
+      </options>
+    </context>
+    <defaultTab>nodes</defaultTab>
+    <description><![CDATA[Hourly job for FREMONT only, from Boss4 into Aurora and the Fremont entity sets
+- end datetime range is the bottom of the hour that the job is run. For a job at 9:05 am, covers 8-9 am.
+- all Boss4 data is in UTC time]]></description>
+    <executionEnabled>false</executionEnabled>
+    <id>2607b01c-ad9d-4df4-ba38-776e0db6320d</id>
+    <loglevel>INFO</loglevel>
+    <multipleExecutions>true</multipleExecutions>
+    <name>Recurring Realtime: BOSS4 hourly - FREMONT</name>
+    <nodeFilterEditable>false</nodeFilterEditable>
+    <plugins />
+    <schedule>
+      <month month='*' />
+      <time hour='00' minute='05' seconds='0' />
+      <weekday day='*' />
+      <year year='*' />
+    </schedule>
+    <scheduleEnabled>true</scheduleEnabled>
+    <sequence keepgoing='false' strategy='node-first'>
+      <command>
+        <description>hourly</description>
+        <script><![CDATA[#!/opt/anaconda/envs/openlattice/bin/python
+
+import pyntegrationsncric
+from datetime import datetime, timedelta
+import sqlalchemy as sq
+import pyntegrationsncric.pyntegrations.ca_ncric.utils.openlattice_functions as of
+
+agencies = ["Fremont PD"]
+
+# End datetime is the beginning of the hr that the job starts in.
+dt_end = datetime.now().replace(microsecond=0, second=0, minute=0)
+dt_start = dt_end - timedelta(hours = 1)
+
+# This is now changed to "start hour" since the hour should not change here
+dt_end_str = f"{dt_end.year}-{dt_end.month}-{dt_end.day} {dt_end.hour}:{dt_end.minute}:00"
+dt_start_str = f"{dt_start.year}-{dt_start.month}-{dt_start.day} {dt_start.hour}:{dt_start.minute}:00"
+
+print(f"Searching through {dt_start_str} and {dt_end_str} to integrate!")
+print("Integrating MAIN BOSS4 table!")
+
+# NOTE: CHANGE s3_bucket and s3_prefix to fit the S3 bucket name your files are in
+main_integration = pyntegrations.ca_ncric.boss4.integration_definitions.BOSS4Integration(date_start=dt_start_str,
+                                                                                        date_end=dt_end_str,
+                                                                                        raw_table_name="boss4_fremont",
+                                                                                        raw_table_name_images="boss4_hr_images_fremont",
+                                                                                        s3_bucket="sftp.openlattice.com",
+                                                                                        s3_prefix="ncric")
+main_table_name, images_table_name = main_integration.get_raw_data_from_s3()
+
+# NOTE you must insert your base_url in all of the integration definitions - "https://api.openlattice.com" will no longer exist
+images_integration = pyntegrations.ca_ncric.boss4.integration_definitions.BOSS4ImagesIntegration(sql=f"select * from {images_table_name}",
+                                                                                                clean_table_name_root="boss4_hr_images_clean_fremont",
+                                                                                                base_url="https://api.openlattice.com")
+images_clean_table_name = images_integration.clean_and_upload()
+
+print(main_table_name, images_table_name)
+try:
+    for agency in agencies:
+        agency_no_space = agency.replace(" ", "")
+        print(f"Integrating MAIN table for {agency}!")
+
+    # integrate all with new tables
+        main_integration.integrate_table(
+            shuttle_path="opt/openlattice/shuttle/shuttle-0.0.4-SNAPSHOT/bin/shuttle",
+            shuttle_args=' --read-rate-limit 0 --shuttle-config openlattice-alpha-config us-gov-west-1 --data-store alpr',
+            flight_path=f"ca_ncric/ncric_flights/ncric_{agency_no_space}_flight.yaml",
+            memory_size=3,
+            sql=f"select * from {main_table_name} where standardized_agency_name = '{agency}'"
+            )
+
+        print(f"Integrating IMAGES table for {agency}!")
+        # integrate images table
+        images_integration.integrate_table(
+            sql = f"select * from {images_clean_table_name} where standardized_agency_name = '{agency}'",
+            flight_path=f"ca_ncric/ncric_image_flights/ncric_{agency_no_space}_images_flight.yaml",
+            memory_size=5,
+            shuttle_path="opt/openlattice/shuttle/shuttle-0.0.4-SNAPSHOT/bin/shuttle",
+            shuttle_args=' --s3 PRODUCTION --read-rate-limit 0 --fetchsize 5000 --upload-size 5000 --shuttle-config openlattice-alpha-config us-gov-west-1 --data-store alpr'
+            )
+
+    print("Integrating AGENCIES table!")
+    # integrate agencies associate only
+    integration = pyntegrations.ca_ncric.boss4.integration_definitions.BOSS4AgenciesIntegration(sql=f'select distinct "agency_id", "agencyName", "datasource", "agencyAcronym" from {main_table_name}',
+                                                                                                base_url="https://api.openlattice.com",
+                                                                                                clean_table_name_root="boss4_agencies_test")
+    agencies_table_name = integration.clean_and_upload()
+    integration.integrate_table(
+        clean_table_name = agencies_table_name,
+        shuttle_path="opt/openlattice/shuttle/shuttle-0.0.4-SNAPSHOT/bin/shuttle",
+        shuttle_args=' --read-rate-limit 0 --shuttle-config openlattice-alpha-config us-gov-west-1 --data-store alpr'
+        )
+
+    print("Integrating IMAGE SOURCES table!")
+    # integrate image sources associate only
+    integration = pyntegrations.ca_ncric.boss4.integration_definitions.BOSS4ImageSourcesIntegration(sql=f'select distinct "camera_id", "LPRCameraName", "datasource" from {main_table_name}',
+                                                                                                    base_url="https://api.openlattice.com",
+                                                                                                    clean_table_name_root="boss4_imagesources_test")
+    image_sources_table = integration.clean_and_upload()
+    integration.integrate_table(
+        clean_table_name = image_sources_table,
+        shuttle_path="opt/openlattice/shuttle/shuttle-0.0.4-SNAPSHOT/bin/shuttle",
+        shuttle_args=' --read-rate-limit 0 --shuttle-config openlattice-alpha-config us-gov-west-1 --data-store alpr'
+        )
+
+    print("Integrating STANDARDIZED AGENCIES integration!")
+    sagency_integration=pyntegrations.ca_ncric.boss4.integration_definitions.BOSS4AgenciesStandardizedIntegration(
+        sql="""select distinct standardized_agency_name from standardized_agency_names
+        where \"ol.datasource\" = 'BOSS4';""",
+        base_url="https://api.openlattice.com")
+    sagency_integration.integrate_table(
+        sql="""select distinct standardized_agency_name from standardized_agency_names
+        where \"ol.datasource\" = 'BOSS4';""",
+        shuttle_path="opt/openlattice/shuttle/shuttle-0.0.4-SNAPSHOT/bin/shuttle",
+        shuttle_args=' --read-rate-limit 0 --shuttle-config openlattice-alpha-config us-gov-west-1 --data-store alpr'
+        )
+
+except Exception as e:
+    main_integration.drop_main_table()
+    main_integration.drop_images_table()
+
+    raise RuntimeError(f"Something went wrong with the job! Error message: {str(e)}. Dropping tables.")
+
+main_integration.drop_main_table()
+main_integration.drop_images_table()
+
+# Drop other tables after integration is complete
+dbuser=os.environ.get("RD_OPTION_DB_USER") # Store credential within Rundeck "options" above, and name it "db_user". Retrieve here
+dbpw=os.environ.get("RD_OPTION_DB_PASSWORD") # Store credential within Rundeck "options" above, and name it "db_password". Retrieve here
+db="org_47b646d7a01a4232b25b15c880ea4046" # Insert your database name here
+host="atlas.openlattice.com" # Insert your hostname here
+engine=sq.create_engine(f'''postgresql://{dbuser}:{dbpw}@{host}:30001/{db}''')
+
+of.drop_table(engine, agencies_table_name)
+of.drop_table(engine, image_sources_table)
+]]></script>
+        <scriptargs />
+      </command>
+    </sequence>
+    <timeZone>America/Los_Angeles</timeZone>
+    <uuid>2607b01c-ad9d-4df4-ba38-776e0db6320d</uuid>
+  </job>
+</joblist>

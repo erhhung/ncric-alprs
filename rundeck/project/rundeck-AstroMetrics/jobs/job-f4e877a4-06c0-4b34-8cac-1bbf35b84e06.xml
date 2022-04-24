@@ -1,0 +1,177 @@
+<joblist>
+  <job>
+    <context>
+      <options preserveOrder='true'>
+        <option name='main_chunk_size' value='20000'>
+          <description>main_chunk_size</description>
+          <label>main_chunk_size</label>
+        </option>
+        <option name='main_fetch_upload' value='10000'>
+          <description>main_fetch_upload</description>
+          <label>main_fetch_upload</label>
+        </option>
+        <option name='ol_client_id' secure='true' storagePath='keys/project/NCRIC/ncric_at_openlattice/ol_client_id' valueExposed='true'>
+          <hidden>true</hidden>
+        </option>
+        <option name='ol_password' secure='true' storagePath='keys/project/NCRIC/ncric_at_openlattice/ol_password' valueExposed='true'>
+          <hidden>true</hidden>
+        </option>
+        <option name='ol_user' secure='true' storagePath='keys/project/NCRIC/ncric_at_openlattice/ol_user' valueExposed='true'>
+          <hidden>true</hidden>
+        </option>
+      </options>
+    </context>
+    <defaultTab>nodes</defaultTab>
+    <description><![CDATA[The recurring Flock job scheduled for 2 am (PST) never runs - this runs it later on.
+- Unclear why it never runs.
+- This job runs at noon, and selects the same time window that the 2 am job should catch - 4-10 am UTC)
+
+-Job notes:
+- Insert your base url into the arguments (e.g., L51 of the workflow step called "main")
+- Save your username, password, and client_id using Rundeck's key storage. These are the variables that are stored in the Workflow "options". ]]></description>
+    <executionEnabled>false</executionEnabled>
+    <id>f4e877a4-06c0-4b34-8cac-1bbf35b84e06</id>
+    <loglevel>INFO</loglevel>
+    <multipleExecutions>true</multipleExecutions>
+    <name>Recurring Realtime: Flock (2 am catchup)</name>
+    <nodeFilterEditable>false</nodeFilterEditable>
+    <plugins />
+    <schedule>
+      <month month='*' />
+      <time hour='12' minute='00' seconds='0' />
+      <weekday day='*' />
+      <year year='*' />
+    </schedule>
+    <scheduleEnabled>true</scheduleEnabled>
+    <sequence keepgoing='false' strategy='node-first'>
+      <command>
+        <description>main</description>
+        <script><![CDATA[#!/opt/anaconda/envs/openlattice/bin/python
+
+from pyntegrationsncric.pyntegrations.ca_ncric.flock.integration_definitions import FLOCKIntegration
+import pyntegrationsncric.pyntegrations.ca_ncric.utils.openlattice_functions as of
+import openlattice
+import pandas as pd
+import sqlalchemy as sq
+import math
+from datetime import datetime, time, timedelta
+
+agencies = [
+  "Atherton PD",
+  "CHP",
+  "Danville PD",
+  "GGB Vista Point",
+  "Livermore PD",
+  "Napa PD",
+  "NCRIC",
+  "Piedmont PD",
+  "San Mateo PD",
+  "Vacaville PD",
+  "Vallejo PD"
+]
+
+# End datetime is the beginning of the hr that the job starts in.
+dt_end = datetime.now().replace(microsecond=0, second=0, minute=0) - timedelta(hours = 26)
+dt_start = dt_end - timedelta(hours = 6)
+
+#### Main integration -
+for agency in agencies:
+    agency_no_space = agency.replace(" ", "")
+    flight = f"/opt/openlattice/pyntegrationsncric/pyntegrations/ca_ncric/ncric_flights/ncric_{agency_no_space}_flight.yaml"
+
+    mainsql=f'''
+        select f."readid",f."timestamp", f."type", f."plate", f."confidence",
+                f."latitude", f."longitude", f."cameraid", f."cameraname", f."platestate", f."speed",
+                f."direction", f."model", f."hotlistid", f."hotlistname", f."cameralocationlat",
+                f."cameralocationlon", f."cameranetworkid", f."cameranetworkname", s."standardized_agency_name" from flock_reads f left join standardized_agency_names_flock s
+                on cast(f.cameranetworkid AS TEXT) = s."ol.id"
+        where "timestamp" >= '{dt_start}' and
+            "timestamp" <= '{dt_end}' and
+            s.standardized_agency_name = '{agency}';'''
+
+    print(f"{agency}: Integrating main flight for query {mainsql}.")
+
+    # NOTE you must insert your base_url here - "https://api.openlattice.com" will no longer exist
+    integration=FLOCKIntegration(sql=mainsql, flight_path=flight,
+                                    clean_table_name_suffix='recur',
+                                    base_url="https://api.openlattice.com")
+    clean_table=integration.clean_and_upload()
+
+    ###### Run cleaned table in batches ######
+    dbuser = os.environ.get("RD_OPTION_DB_USER") # Store credential within Rundeck "options" above, and name it "db_user". Retrieve here
+    dbpw = os.environ.get("RD_OPTION_DB_PASSWORD") # Store credential within Rundeck "options" above, and name it "db_password". Retrieve here
+    db = "org_47b646d7a01a4232b25b15c880ea4046" # Insert your database name here
+    host = "atlas.openlattice.com" # Insert your hostname here
+    eng = sq.create_engine(f'''postgresql://{dbuser}:{dbpw}@{host}:30001/{db}''')
+
+    res = eng.execute(f'''select count(*) from {clean_table};''')
+    records = pd.DataFrame(res).loc[0, 0]
+    print('''%s records to process''' % (str(records)))
+    limit=@option.main_chunk_size@
+    its = math.ceil(records/limit)
+
+    for i in range(its):
+        query=f'''select * from {clean_table} limit %s offset %s;''' % (str(limit), str(limit*i))
+        print(query)
+        print(f'''Processing records {str(limit*i)} through {str(limit*(i+1))}''')
+
+        integration.integrate_table(
+            sql=query,
+            shuttle_path="opt/openlattice/shuttle/shuttle-0.0.4-SNAPSHOT/bin/shuttle",
+            drop_table_on_success=False,
+            memory_size=4,
+            shuttle_args=' --upload-size @option.main_fetch_upload@ --fetchsize @option.main_fetch_upload@ --read-rate-limit 0 --shuttle-config openlattice-alpha-config us-gov-west-1 --data-store alpr'
+        )
+
+    of.drop_table(eng, clean_table)
+]]></script>
+        <scriptargs />
+      </command>
+      <command>
+        <description>Standardized agencies</description>
+        <script><![CDATA[#!/opt/anaconda/envs/openlattice/bin/python
+
+from pyntegrationsncric.pyntegrations.ca_ncric.flock.integration_definitions import FLOCKAgencyStandardizationIntegration
+import openlattice
+
+# NOTE you must insert your base_url here - "https://api.openlattice.com" will no longer exist
+agencies2_integration=FLOCKAgencyStandardizationIntegration(sql='''select * from standardized_agency_names''', base_url="https://api.openlattice.com")
+
+agencies2_integration.integrate_table(
+    sql='''select * from standardized_agency_names_flock''',
+    drop_table_on_success=True,
+    shuttle_path="opt/openlattice/shuttle/shuttle-0.0.4-SNAPSHOT/bin/shuttle",
+    shuttle_args=' --read-rate-limit 0 --shuttle-config openlattice-alpha-config us-gov-west-1 --data-store alpr'
+)]]></script>
+        <scriptargs />
+      </command>
+      <command>
+        <description>Image sources</description>
+        <script><![CDATA[#!/opt/anaconda/envs/openlattice/bin/python
+
+from pyntegrationsncric.pyntegrations.ca_ncric.flock.integration_definitions import FLOCKImageSourceIntegration
+import openlattice
+
+# NOTE you must insert your base_url here - "https://api.openlattice.com" will no longer exist
+imagesources_integration=FLOCKImageSourceIntegration(sql='''
+    select distinct "cameraid", "cameraname" from flock_reads
+    where "timestamp" >= @option.start_date@ and
+        "timestamp" <= @option.end_date@;''',
+        base_url="https://api.openlattice.com")
+
+imagesources_table=imagesources_integration.clean_and_upload()
+
+imagesources_integration=imagesources_integration.integrate_table(
+    clean_table_name=imagesources_table,
+    drop_table_on_success=True,
+    shuttle_path="opt/openlattice/shuttle/shuttle-0.0.4-SNAPSHOT/bin/shuttle",
+    shuttle_args=' --upload-size 10000 --fetchsize 10000 --s3 PRODUCTION --read-rate-limit 0 --shuttle-config openlattice-alpha-config us-gov-west-1 --alpr'
+)
+]]></script>
+        <scriptargs />
+      </command>
+    </sequence>
+    <timeZone>PST</timeZone>
+    <uuid>f4e877a4-06c0-4b34-8cac-1bbf35b84e06</uuid>
+  </job>
+</joblist>

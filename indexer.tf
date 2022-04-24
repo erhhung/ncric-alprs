@@ -90,6 +90,12 @@ module "indexer_config" {
   })
 }
 
+output "indexer_ami_id" {
+  value = module.indexer_server.ami_id
+}
+output "indexer_ami_name" {
+  value = module.indexer_server.ami_name
+}
 output "indexer_instance_id" {
   value = module.indexer_server.instance_id
 }

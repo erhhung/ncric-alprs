@@ -60,7 +60,8 @@ Host alprs*tun
   RequestTTY no
 
 Host alprs*basttun
-  # lattice-org app
+  # Rundeck UI and lattice-org app
+  LocalForward 4440 localhost:4440
   LocalForward 9001 localhost:9000
 Host alprs*pgtun
   LocalForward 5433 localhost:5432

@@ -18,19 +18,36 @@ output "postgresql_user_logins" {
   sensitive = true
 }
 
+output "rundeck_admin_pass" {
+  value     = local.rundeck_pass
+  sensitive = true
+}
+
+# bastion_ami_id:               bastion.tf
+# bastino_ami_name:             bastion.tf
 # bastion_instance_id:          bastion.tf
+# postgresql_ami_id:            postgresql.tf
+# postgresql_ami_name:          postgresql.tf
 # postgresql_instance_id:       postgresql.tf
 # postgresql_private_domain:    postgresql.tf
 # postgresql_private_ip:        postgresql.tf
+# elasticsearch_ami_id:         elasticsearch.tf
+# elasticsearch_ami_name:       elasticsearch.tf
 # elasticsearch_instance_id:    elasticsearch.tf
 # elasticsearch_private_domain: elasticsearch.tf
 # elasticsearch_private_ip:     elasticsearch.tf
+# conductor_ami_id:             conductor.tf
+# conductor_ami_name:           conductor.tf
 # conductor_instance_id:        conductor.tf
 # conductor_private_domain:     conductor.tf
 # conductor_private_ip:         conductor.tf
+# datastore_ami_id:             datastore.tf
+# datastore_ami_name:           datastore.tf
 # datastore_instance_id:        datastore.tf
 # datastore_private_domain:     datastore.tf
 # datastore_private_ip:         datastore.tf
+# indexer_ami_id:               indexer.tf
+# indexer_ami_name:             indexer.tf
 # indexer_instance_id:          indexer.tf
 # indexer_private_domain:       indexer.tf
 # indexer_private_ip:           indexer.tf

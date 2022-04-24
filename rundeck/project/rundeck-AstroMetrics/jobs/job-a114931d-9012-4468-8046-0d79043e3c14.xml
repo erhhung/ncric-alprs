@@ -1,0 +1,117 @@
+<joblist>
+  <job>
+    <context>
+      <options preserveOrder='true'>
+        <option name='chunk_size' value='40000' />
+        <option name='fetch_upload' value='5000' />
+        <option name='ol_client_id' secure='true' storagePath='keys/project/NCRIC/ncric_at_openlattice/ol_client_id' valueExposed='true' />
+        <option name='ol_password' secure='true' storagePath='keys/project/NCRIC/ncric_at_openlattice/ol_password' valueExposed='true'>
+          <hidden>true</hidden>
+        </option>
+        <option name='ol_user' secure='true' storagePath='keys/project/NCRIC/ncric_at_openlattice/ol_user' valueExposed='true'>
+          <hidden>true</hidden>
+        </option>
+      </options>
+    </context>
+    <defaultTab>nodes</defaultTab>
+    <description><![CDATA[Flock images - large data stream slows down the regular Flock integration, so is done separately.
+Runs every 3 hours, on 3-hr chunks of data
+- This job runs chooses the bottom of the hr that the job starts in (in PST), 24-hrs ago, as the end datetime and 3 hrs before that as the start date
+- e.g. A job started at 9 am 10/14 will cover 6-9 am 10/13.
+
+- Flock data is pulled at midnight daily, for the entire previous day.]]></description>
+    <executionEnabled>false</executionEnabled>
+    <id>a114931d-9012-4468-8046-0d79043e3c14</id>
+    <loglevel>INFO</loglevel>
+    <multipleExecutions>true</multipleExecutions>
+    <name>Recurring Realtime: Flock IMAGES (3-hr)</name>
+    <nodeFilterEditable>false</nodeFilterEditable>
+    <plugins />
+    <schedule>
+      <month month='*' />
+      <time hour='0/3' minute='20' seconds='0' />
+      <weekday day='*' />
+      <year year='*' />
+    </schedule>
+    <scheduleEnabled>true</scheduleEnabled>
+    <sequence keepgoing='false' strategy='node-first'>
+      <command>
+        <description>images</description>
+        <script><![CDATA[#!/opt/anaconda/envs/openlattice/bin/python
+
+from pyntegrationsncric.pyntegrations.ca_ncric.flock.integration_definitions import FLOCKImagesIntegration
+import openlattice
+import pandas as pd
+import math
+from datetime import datetime, time, timedelta
+
+agencies = [
+  "Atherton PD",
+  "CHP",
+  "Danville PD",
+  "GGB Vista Point",
+  "Livermore PD",
+  "Napa PD",
+  "NCRIC",
+  "Piedmont PD",
+  "San Mateo PD",
+  "Vacaville PD",
+  "Vallejo PD"
+]
+
+# End datetime is the beginning of the hr that the job starts in.
+dt_end = datetime.now().replace(microsecond=0, second=0, minute=0) - timedelta(hours = 30)
+dt_start = dt_end - timedelta(hours = 3) #3
+
+for agency in agencies:
+    agency_no_space = agency.replace(" ", "")
+
+    dbuser=os.environ.get("RD_OPTION_DB_USER") # Store credential within Rundeck "options" above, and name it "db_user". Retrieve here
+    dbpw=os.environ.get("RD_OPTION_DB_PASSWORD") # Store credential within Rundeck "options" above, and name it "db_password". Retrieve here
+    db="org_47b646d7a01a4232b25b15c880ea4046" # Insert your database name here
+    host="atlas.openlattice.com" # Insert your hostname here
+    eng=sq.create_engine(f'''postgresql://{dbuser}:{dbpw}@{host}:30001/{db}''')
+
+    res=eng.execute(f'''select count(*) from (
+                            select f.readid, f.image, s.standardized_agency_name
+                    from flock_reads f left join standardized_agency_names_flock s
+                    on cast(f.cameranetworkid AS TEXT) = s."ol.id"
+                                where "timestamp" >= '{dt_start}' and "timestamp" <= '{dt_end}' and
+            s.standardized_agency_name = '{agency}') t ;''')
+    records = pd.DataFrame(res).loc[0, 0]
+    print('''%s records to process''' % (str(records)))
+    limit = @option.chunk_size@
+    its = math.ceil(records/limit)
+
+    sa = '''--upload-size @option.fetch_upload@ --fetchsize @option.fetch_upload@ --read-rate-limit 0 --s3 PRODUCTION --shuttle-config openlattice-alpha-config us-gov-west-1 --data-store alpr '''
+
+    for i in range(its):
+        query = f'''select f.readid::text || '_FLOCK' as "vehicle_record_id", f.image as "LPRVehiclePlatePhoto", s.standardized_agency_name
+                    from flock_reads f left join standardized_agency_names_flock s
+                    on cast(f.cameranetworkid AS TEXT) = s."ol.id"
+                    where "timestamp" >= '{dt_start}' and "timestamp" <= '{dt_end}' and
+            s.standardized_agency_name = '{agency}'
+                    order by readid
+                    limit '{str(limit)}' offset '{str(limit*i)}';'''
+
+        print(query)
+        print(f"Processing records {(str(limit*i))} through {str(limit*(i+1))}")
+
+        # NOTE you must insert your base_url here - "https://api.openlattice.com" will no longer exist
+        images_integration=FLOCKImagesIntegration(sql=query, base_url="https://api.openlattice.com")
+        images_integration.integrate_table(
+            sql=query,
+            flight_path=f"ca_ncric/ncric_image_flights/ncric_{agency_no_space}_images_flight.yaml",
+            shuttle_path="opt/openlattice/shuttle/shuttle-0.0.4-SNAPSHOT/bin/shuttle",
+            drop_table_on_success=True,
+            memory_size=9,
+            shuttle_args=sa
+        )
+]]></script>
+        <scriptargs />
+      </command>
+    </sequence>
+    <timeZone>PST</timeZone>
+    <uuid>a114931d-9012-4468-8046-0d79043e3c14</uuid>
+  </job>
+</joblist>
