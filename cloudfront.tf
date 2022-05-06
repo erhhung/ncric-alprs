@@ -95,8 +95,10 @@ resource "aws_cloudfront_distribution" "app" {
   restrictions {
     geo_restriction {
       # https://www.iso.org/obp/ui/#search/code/
-      restriction_type = "whitelist"
-      locations        = ["US"]
+#      restriction_type = "whitelist"
+#      locations        = ["US"]
+      restriction_type = "none"
+      locations        = []
     }
   }
 }

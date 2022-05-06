@@ -100,7 +100,7 @@ resource "aws_route53_record" "sftp" {
   zone_id        = local.zone_id
   name           = local.sftp_domain
   type           = "A"
-  set_identifier = "US"
+#  set_identifier = "US"
   records        = [aws_eip.sftp.public_ip]
   ttl            = 60
 
