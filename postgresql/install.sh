@@ -17,15 +17,18 @@ EOF
 
 install_postgresql() (
   curl -s https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add -
-  cat <<EOF > /etc/apt/sources.list.d/postgresql-pgdg.list
+  cd /etc/apt/sources.list.d
+  cat <<EOF > postgresql-pgdg.list
 deb https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main
 EOF
   apt-get update
   apt-get install -y postgresql-14 postgresql-contrib
-  cat <<'EOF' >> /home/$USER/.bash_aliases
+  cd /home/$USER
+  cat <<'EOF' >> .bash_aliases
 
 psql() {
-  sudo su postgres -c "psql $*"
+  [ "$USER" == 'postgres' ] && $(which psql) "$@" || \
+    \sudo -E su postgres -c   "$(which psql)  $@"
 }
 EOF
 )
@@ -44,7 +47,8 @@ postgres hard memlock unlimited
 EOF
   cd /etc/systemd/system
   mkdir -p postgresql.service.d
-  cat <<'EOF' > postgresql.service.d/override.conf
+  cd postgresql.service.d
+  cat <<'EOF' > override.conf
 [Service]
 LimitMEMLOCK=infinity
 LimitNOFILE=300000

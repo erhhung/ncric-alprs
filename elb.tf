@@ -99,9 +99,9 @@ resource "aws_route53_record" "api" {
     zone_id                = aws_lb.api.zone_id
     evaluate_target_health = true
   }
-  geolocation_routing_policy {
-    country = "US"
-  }
+#  geolocation_routing_policy {
+#    country = "US"
+#  }
 }
 
 output "api_elb_domain" {

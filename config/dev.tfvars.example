@@ -22,6 +22,7 @@ buckets = {
 
 # t3.micro:    x86,  2 vCPUs,   1 GiB, EBS only,  5 Gb/s, $.0104/hr
 # t3.small:    x86,  2 vCPUs,   2 GiB, EBS only,  5 Gb/s, $.0208/hr
+# t3.medium:   x86,  2 vCPUs,   4 GiB, EBS only,  5 Gb/s, $.0416/hr
 # r6g.large:   ARM:  2 VCPUs,  16 GiB, EBS only, 10 Gb/s, $.1008/hr
 # r6g.xlarge:  ARM,  4 vCPUs,  32 GiB, EBS only, 10 Gb/s, $.2016/hr
 # r6g.2xlarge: ARM,  8 vCPUs,  64 GiB, EBS only, 10 Gb/s, $.4032/hr
@@ -31,7 +32,7 @@ buckets = {
 # t4g.2xlarge: ARM,  8 vCPUs,  32 GiB, EBS only,  5 Gb/s, $.2688/hr
 
 instance_types = {
-  bastion       = "t3.small"
+  bastion       = "t3.medium"
   postgresql    = "r6g.large"
   elasticsearch = "r6g.large"
   conductor     = "r6g.large"

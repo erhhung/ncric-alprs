@@ -49,10 +49,15 @@ EOF
 
 install_awscli() (
   cd /tmp
-  curl -so awscliv2.zip https://awscli.amazonaws.com/awscli-exe-linux-aarch64.zip
+  curl  -so awscliv2.zip https://awscli.amazonaws.com/awscli-exe-linux-aarch64.zip
   unzip -oq awscliv2.zip
   ./aws/install
   rm -rf /tmp/aws*
+  cd /home/$USER
+  cat <<'EOF' >> .bashrc
+
+complete -C "$(which aws_completer)" aws
+EOF
 )
 
 authorize_keys() {

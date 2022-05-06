@@ -114,9 +114,9 @@ resource "aws_route53_record" "app" {
     zone_id                = aws_cloudfront_distribution.app.hosted_zone_id
     evaluate_target_health = true
   }
-  geolocation_routing_policy {
-    country = "US"
-  }
+#  geolocation_routing_policy {
+#    country = "US"
+#  }
 }
 
 output "app_cf_domain" {

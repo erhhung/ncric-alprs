@@ -30,13 +30,15 @@ EOF
 install_elasticsearch() (
   apt-get install -y apt-transport-https
   curl -s https://artifacts.elastic.co/GPG-KEY-elasticsearch | apt-key add -
-  cat <<'EOF' > /etc/apt/sources.list.d/elastic-7.x.list
+  cd /etc/apt/sources.list.d
+  cat <<'EOF' > elastic-7.x.list
 deb https://artifacts.elastic.co/packages/7.x/apt stable main
 EOF
   apt-get update
   . /etc/environment
   apt-get install -y elasticsearch kibana nginx
-  /usr/share/elasticsearch/bin/elasticsearch-plugin install analysis-phonetic
+  cd /usr/share/elasticsearch/bin
+  ./elasticsearch-plugin install analysis-phonetic
   sed -Ei '/^PATH=/s/(.*)"$/\1:\/usr\/share\/elasticsearch\/bin"/' /etc/environment
 )
 
@@ -54,7 +56,8 @@ elasticsearch hard memlock unlimited
 EOF
   cd /etc/systemd/system
   mkdir -p elasticsearch.service.d
-  cat <<'EOF' > elasticsearch.service.d/override.conf
+  cd elasticsearch.service.d
+  cat <<'EOF' > override.conf
 [Service]
 LimitMEMLOCK=infinity
 LimitNOFILE=300000

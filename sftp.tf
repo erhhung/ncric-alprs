@@ -86,8 +86,8 @@ resource "aws_transfer_user" "sftp_users" {
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/transfer_ssh_key
 # ed25519 ssh keys are NOT supported: https://repost.aws/questions/QUSr4tgKMQS16Yp42ojLis5w
 resource "aws_transfer_ssh_key" "sftp_users" {
-  for_each   = var.sftp_users
   depends_on = [aws_transfer_user.sftp_users]
+  for_each   = var.sftp_users
 
   server_id = aws_transfer_server.sftp.id
   user_name = each.key
@@ -104,7 +104,7 @@ resource "aws_route53_record" "sftp" {
   records        = [aws_eip.sftp.public_ip]
   ttl            = 60
 
-  geolocation_routing_policy {
-    country = "US"
-  }
+#  geolocation_routing_policy {
+#    country = "US"
+#  }
 }
