@@ -92,7 +92,7 @@ resource "aws_route53_record" "api" {
   zone_id        = local.zone_id
   name           = local.api_domain
   type           = "A"
-  set_identifier = "US"
+#  set_identifier = "US"
 
   alias {
     name                   = aws_lb.api.dns_name

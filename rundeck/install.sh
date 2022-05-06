@@ -58,21 +58,29 @@ start_rundeck() {
   systemctl status rundeckd
 }
 
+# eval_with_retry <cmd> [tries]
+eval_with_retry() {
+  local cmd=$1 tries=${2:-3}
+  while [[ ! $(eval $cmd) && $((--tries)) -gt 0 ]]; do
+    echo "Retrying: $cmd"
+    sleep 1
+  done
+  sleep 1
+}
+
 import_project() {
   cd rundeck
-  aws s3 cp $USR_S3_URL/rundeck/astrometrics.rdproject.jar . --no-progress
-  if rd projects list 2> /dev/null | grep -q AstroMetrics; then
-    rd projects delete \
-      -p AstroMetrics -y
-    sleep 1
+  local jar proj="AstroMetrics"
+  jar="${proj,,}.rdproject.jar"
+  aws s3 cp "$USR_S3_URL/rundeck/$jar" . --no-progress
+  if rd projects list 2> /dev/null | grep -q $proj; then
+    eval_with_retry "rd projects delete -p $proj -y"
   fi
-  rd projects create \
-    -p AstroMetrics
-  sleep 1
-  rd projects archives import \
-    -f astrometrics.rdproject.jar \
-    -p AstroMetrics
+  eval_with_retry "rd projects create -p $proj"
+  rd projects archives import -f $jar -p $proj
 }
+
+export -f eval_with_retry
 
 run install_java
 run install_rundeck

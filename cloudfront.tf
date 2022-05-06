@@ -107,7 +107,7 @@ resource "aws_route53_record" "app" {
   zone_id        = local.zone_id
   name           = local.app_domain
   type           = "A"
-  set_identifier = "US"
+#  set_identifier = "US"
 
   alias {
     name                   = aws_cloudfront_distribution.app.domain_name
