@@ -1,0 +1,483 @@
+{
+	"info": {
+		"_postman_id": "e92f38e4-f6d1-4db4-b0bc-f3b39996741a",
+		"name": "MaiVERIC ALPRS",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Auth0 Login",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('Status code is 200', () => {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"const result = pm.response.json();",
+							"const token  = result.id_token;",
+							"const {sub}  = decodeJWT(token);",
+							"",
+							"pm.environment.set('user_id_token', token);",
+							"pm.environment.set('user_auth0_id', sub);",
+							"",
+							"function decodeJWT(jwt) {",
+							"    const [,claims] = jwt?.split('.');",
+							"    const buf = Buffer.from(claims,'base64');",
+							"    return JSON.parse(buf.toString('utf8'));",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"// https://auth0.com/docs/get-started/authentication-and-authorization-flow/call-your-api-using-resource-owner-password-flow",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "urlencoded",
+					"urlencoded": [
+						{
+							"key": "grant_type",
+							"value": "password",
+							"type": "text"
+						},
+						{
+							"key": "username",
+							"value": "{{user_email}}",
+							"type": "text"
+						},
+						{
+							"key": "password",
+							"value": "{{user_password}}",
+							"type": "text"
+						},
+						{
+							"key": "audience",
+							"value": "{{auth0_api_identifier}}",
+							"type": "text"
+						},
+						{
+							"key": "scope",
+							"value": "openid",
+							"type": "text"
+						},
+						{
+							"key": "client_id",
+							"value": "{{auth0_client_id}}",
+							"type": "text"
+						},
+						{
+							"key": "client_secret",
+							"value": "{{auth0_client_secret}}",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "{{auth0_base_endpoint}}/oauth/token",
+					"host": [
+						"{{auth0_base_endpoint}}"
+					],
+					"path": [
+						"oauth",
+						"token"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Organizations",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('Status code is 200', () => {",
+							"    pm.response.to.have.status(200);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{datastore_endpoint}}/organizations",
+					"host": [
+						"{{datastore_endpoint}}"
+					],
+					"path": [
+						"organizations"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create NCRIC Org",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('Status code is 200', () => {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"const coVars = pm.collectionVariables;",
+							"const result = pm.response.json();",
+							"coVars.set('ncric_org_id', result);"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"apps\": [],\n    \"connections\": [],\n    \"description\": \"Northern California Regional Intelligence Center\",\n    \"emailDomains\": [],\n    \"grants\": {},\n    \"members\": [],\n    \"metadataEntitySetIds\": {},\n    \"principal\": {\n        \"id\": \"NCRIC\",\n        \"type\": \"ORGANIZATION\"\n    },\n    \"roles\": [],\n    \"title\": \"NCRIC\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{datastore_endpoint}}/organizations",
+					"host": [
+						"{{datastore_endpoint}}"
+					],
+					"path": [
+						"organizations"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delete NCRIC Org",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('Status code is 200', () => {",
+							"    pm.response.to.have.status(200);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "{{datastore_endpoint}}/organizations/{{ncric_org_id}}",
+					"host": [
+						"{{datastore_endpoint}}"
+					],
+					"path": [
+						"organizations",
+						"{{ncric_org_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create Entity Set Collection",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('Status code is 200', () => {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"const coVars = pm.collectionVariables;",
+							"const result = pm.response.json();",
+							"coVars.set('entity_set_collect_id', result);"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"organizationId\": \"{{ncric_org_id}}\",\n    \"name\": \"astrometrics_{{ncric_org_id}}\",\n    \"title\": \"AstroMetrics In NCRIC Organization\",\n    \"description\": \"AstroMetrics in NCRIC organization\",\n    \"entityTypeCollectionId\": \"{{entity_type_collect_id}}\",\n    \"template\": {},\n    \"contacts\": [\n        \"devops@astrometrics.us\"\n    ]\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{datastore_endpoint}}/collections/entity/set",
+					"host": [
+						"{{datastore_endpoint}}"
+					],
+					"path": [
+						"collections",
+						"entity",
+						"set"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delete Entity Set Collection",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('Status code is 200', () => {",
+							"    pm.response.to.have.status(200);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "{{datastore_endpoint}}/collections/entity/set/{{entity_set_collect_id}}",
+					"host": [
+						"{{datastore_endpoint}}"
+					],
+					"path": [
+						"collections",
+						"entity",
+						"set",
+						"{{entity_set_collect_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Install AstroMetrics App",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('Status code is 200', () => {",
+							"    pm.response.to.have.status(200);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"entitySetCollectionId\": \"{{entity_set_collect_id}}\",\n    \"prefix\": \"\",\n    \"template\": {},\n    \"settings\": {}\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{datastore_endpoint}}/app/install/{{astrometrics_app_id}}/{{ncric_org_id}}",
+					"host": [
+						"{{datastore_endpoint}}"
+					],
+					"path": [
+						"app",
+						"install",
+						"{{astrometrics_app_id}}",
+						"{{ncric_org_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get AstroMetrics App Roles",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{datastore_endpoint}}/app/organization/{{ncric_org_id}}",
+					"host": [
+						"{{datastore_endpoint}}"
+					],
+					"path": [
+						"app",
+						"organization",
+						"{{ncric_org_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get AstroMetrics Configs (Legacy)",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{datastore_endpoint}}/app/config/{{astrometrics_app_id}}",
+					"host": [
+						"{{datastore_endpoint}}"
+					],
+					"path": [
+						"app",
+						"config",
+						"{{astrometrics_app_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get AstroMetrics Configs (New)",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{datastore_endpoint}}/app/config?id={{astrometrics_app_id}}",
+					"host": [
+						"{{datastore_endpoint}}"
+					],
+					"path": [
+						"app",
+						"config"
+					],
+					"query": [
+						{
+							"key": "id",
+							"value": "{{astrometrics_app_id}}"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Reload Cache",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('Status code is 200', () => {",
+							"    pm.response.to.have.status(200);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{datastore_endpoint}}/admin/reload/cache/PERMISSIONS",
+					"host": [
+						"{{datastore_endpoint}}"
+					],
+					"path": [
+						"admin",
+						"reload",
+						"cache",
+						"PERMISSIONS"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{user_id_token}}",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"let baseUrl = 'https://' + pm.environment.get('auth0_domain');",
+					"pm.environment.set('auth0_base_endpoint', baseUrl);",
+					"pm.environment.set('auth0_api_identifier', `${baseUrl}/api/v2/`);",
+					"",
+					"baseUrl = pm.environment.get('base_api_endpoint');",
+					"pm.environment.set('datastore_endpoint', `${baseUrl}/datastore`);",
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "ncric_org_id",
+			"value": "SET_BY_CODE",
+			"type": "string"
+		},
+		{
+			"key": "entity_type_collect_id",
+			"value": "dd70c0e1-be11-4cde-9d52-0d2eedaf2225",
+			"type": "string"
+		},
+		{
+			"key": "entity_set_collect_id",
+			"value": "SET_BY_CODE",
+			"type": "string"
+		},
+		{
+			"key": "astrometrics_app_id",
+			"value": "b74cf7dd-1a03-4799-b863-ec1cc50c2007",
+			"type": "string"
+		}
+	]
+}

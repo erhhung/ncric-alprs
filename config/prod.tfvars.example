@@ -59,9 +59,9 @@ sftp_users = {
   user_name = "ssh-rsa ... third-party"
 }
 
-AUTH0_M2M_CLIENT_ID     = ""
+AUTH0_M2M_CLIENT_ID     = "Urmsy2aviz7STXGLjhq5sECnUgL0pu01"
 AUTH0_M2M_CLIENT_SECRET = ""
-AUTH0_SPA_CLIENT_ID     = ""
+AUTH0_SPA_CLIENT_ID     = "uZXrWBfTt5LJEhtjDAKw1xgj6LqJWvWD"
 AUTH0_SPA_CLIENT_SECRET = ""
 FONTAWESOME_NPM_TOKEN   = ""
 MAPBOX_PUBLIC_TOKEN     = "pk..."
