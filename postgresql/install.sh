@@ -119,13 +119,13 @@ create_databases() {
     echo "${!pass}" > $user
     psql <<EOT
 CREATE USER $user WITH PASSWORD '${!pass}';
-CREATE DATABASE $db WITH OWNER = $user;
-REVOKE ALL ON DATABASE $db FROM PUBLIC;
-GRANT  ALL ON DATABASE $db TO   $user;
 EOT
   done
   chmod 400 *
   psql <<'EOT'
+CREATE DATABASE alprs WITH OWNER = alprs_user;
+REVOKE ALL ON DATABASE alprs FROM PUBLIC;
+GRANT  ALL ON DATABASE alprs   TO alprs_user;
 ALTER USER atlas_user CREATEDB CREATEROLE;
 EOT
 }

@@ -25,9 +25,9 @@
 * Connections: disable all social (google-oauth2)
 * Application Logo: `https://dev.astrometrics.us/maiveric-mark.png`
 * Application Login URI: _{empty}_
-* Allowed Callback URLs: `https://dev.astrometrics.us/`
+* Allowed Callback URLs: `https://dev.astrometrics.us/, http://localhost:9001/` _(`localhost:9001` is used by lattice-org via tunnel)_
 * Allowed Logout URLs: _{empty}_
-* Allowed Web Origins: `https://dev.astrometrics.us`
+* Allowed Web Origins: `https://dev.astrometrics.us, http://localhost:9001` _(`localhost:9001` is used by lattice-org via tunnel)_
 * Allowed Origins (CORS): _{empty}_
 * All settings under Refresh Token Rotation and Refresh Token Expiration sections turned off
 * Advanced settings > OAuth: JWT Signature Algorithm = RS256
