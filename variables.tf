@@ -35,6 +35,7 @@ variable "instance_types" {
     conductor     = string
     datastore     = string
     indexer       = string
+    worker        = string
   })
 
   validation {

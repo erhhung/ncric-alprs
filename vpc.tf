@@ -31,3 +31,20 @@ module "egress_only_sg" {
   description = "Allow only outbound traffic"
   vpc_id      = module.main_vpc.vpc_id
 }
+
+module "private_ssh_sg" {
+  source = "./modules/secgrp"
+
+  name        = "private-ssh-sg"
+  description = "Allow SSH from instances"
+  vpc_id      = module.main_vpc.vpc_id
+
+  rules = {
+    ingress_22 = {
+      from_port   = 22
+      to_port     = 22
+      protocol    = "tcp"
+      cidr_blocks = local.subnet_cidrs["private"]
+    }
+  }
+}

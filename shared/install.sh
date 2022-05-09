@@ -1,5 +1,5 @@
 # This user data script is a continuation
-# of the host-specific "boot.sh" script.
+# of the shared "boot.sh" script.
 
 create_user() (
   cd /home/$USER

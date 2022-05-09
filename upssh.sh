@@ -66,6 +66,7 @@ host_abbrev() {
     conductor)     echo cond ;;
     datastore)     echo data ;;
     indexer)       echo idx  ;;
+    worker)        echo work ;;
     *)             return 1
   esac
 }

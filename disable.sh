@@ -18,6 +18,7 @@ TF_FILES=(
   conductor
   datastore
   indexer
+  worker
 )
 [ "$1" ] && TF_FILES=("$@")
 

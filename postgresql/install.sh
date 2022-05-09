@@ -1,5 +1,5 @@
 # This user data script is a continuation
-# of PostgreSQL's "boot.sh" script.
+# of the shared "boot.sh" script.
 
 create_xfs_volume() (
   [ -d /opt/postgresql ] && exit

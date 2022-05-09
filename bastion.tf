@@ -1,5 +1,6 @@
-# the bastion host builds & deploys the AstroMetrics
+# The bastion host builds & deploys the AstroMetrics
 # frontend to the webapp bucket during bootstrapping
+# and runs the lattice-org webapp and Rundeck server
 
 locals {
   bastion_user_data = [{
@@ -21,8 +22,11 @@ ${templatefile("${path.module}/bastion/boot.tftpl", {
     })}
 ${file("${path.module}/bastion/boot.sh")}
 ${templatefile("${path.module}/rundeck/install.tftpl", {
-    # password is created in keys.tf
+    # password and private key are created in keys.tf
     rundeck_pass = local.rundeck_pass
+    rundeck_key  = chomp(tls_private_key.rundeck_worker.private_key_pem)
+    WORKER_IP    = module.worker_node.private_ip
+    WORKER_OS    = join("-", regex("/(ubuntu-.+)-arm64.+-(\\d+)", module.worker_node.ami_name))
     })}
 ${file("${path.module}/rundeck/install.sh")}
 ${templatefile("${path.module}/webapp/install.tftpl", {
@@ -66,7 +70,7 @@ module "bastion_host" {
   depends_on = [
     aws_s3_object.shared_user_data,
     aws_s3_object.bastion_user_data,
-    aws_s3_object.rdproject_jar,
+    aws_s3_object.rd_user_data,
   ]
   ami_id           = data.aws_ami.amazon_linux2.id
   instance_type    = var.instance_types["bastion"]

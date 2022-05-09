@@ -20,6 +20,10 @@ cd $(dirname "$0")/project
 JAR=../astrometrics.rdproject.jar
 rm -f $JAR
 
+# source files must have identical timestamps
+# in order to get identical zip file checksum
+find . -type f -exec touch -t 202201010000 "{}" \;
+
 # -r recurse subdirs
 # -D no dir entries
 # -X no extra attrs

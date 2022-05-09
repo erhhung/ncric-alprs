@@ -51,5 +51,10 @@ output "rundeck_admin_pass" {
 # indexer_instance_id:          indexer.tf
 # indexer_private_domain:       indexer.tf
 # indexer_private_ip:           indexer.tf
+# worker_ami_id:                worker.tf
+# worker_ami_name:              worker.tf
+# worker_instance_id:           worker.tf
+# worker_private_domain:        worker.tf
+# worker_private_ip:            worker.tf
 # app_cf_domain:                cloudfront.tf
 # api_elb_domain:               elb.tf

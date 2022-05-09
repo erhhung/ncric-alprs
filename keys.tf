@@ -77,3 +77,9 @@ locals {
     local.new_rd_pass["secret"],
   )
 }
+
+# https://registry.terraform.io/providers/hashicorp/tls/latest/docs/resources/private_key
+resource "tls_private_key" "rundeck_worker" {
+  algorithm = "RSA"
+  rsa_bits  = 2048
+}

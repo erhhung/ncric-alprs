@@ -1,5 +1,5 @@
 # This user data script is a continuation
-# of Elasticsearch's "boot.sh" script.
+# of the shared "boot.sh" script.
 
 install_java() (
   hash java 2> /dev/null && exit

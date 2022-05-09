@@ -29,17 +29,34 @@ Host alprsprod*
 # the instance IDs of the following hosts can be updated by the
 # "upssh.sh" script when run after those instances get recreated
 Host alprsdevbast*
-  HostName i-084dd77c1674ee09e
+  HostName i-0123456789abcdef0
 Host alprsdevpg*
-  HostName i-0a353f0fb0f12edca
+  HostName i-0123456789abcdef0
 Host alprsdeves*
-  HostName i-01184590d159a271e
+  HostName i-0123456789abcdef0
 Host alprsdevcond*
-  HostName i-07bc8bdcdc5b15279
+  HostName i-0123456789abcdef0
 Host alprsdevdata*
-  HostName i-0d75da862fbb86d54
+  HostName i-0123456789abcdef0
 Host alprsdevidx*
-  HostName i-02e8eafab18e018ee
+  HostName i-0123456789abcdef0
+Host alprsdevwork*
+  HostName i-0123456789abcdef0
+
+Host alprsprodbast*
+  HostName i-0123456789abcdef0
+Host alprsprodpg*
+  HostName i-0123456789abcdef0
+Host alprsprodes*
+  HostName i-0123456789abcdef0
+Host alprsprodcond*
+  HostName i-0123456789abcdef0
+Host alprsproddata*
+  HostName i-0123456789abcdef0
+Host alprsprodidx*
+  HostName i-0123456789abcdef0
+Host alprsprodwork*
+  HostName i-0123456789abcdef0
 
 Host alprs*bast*
   User ec2-user
@@ -63,6 +80,9 @@ Host alprs*basttun
   # Rundeck UI and lattice-org app
   LocalForward 4440 localhost:4440
   LocalForward 9001 localhost:9000
+  LocalForward 5433 postgresql:5432
+  LocalForward 9201 elasticsearch:9200
+  LocalForward 9202 elasticsearch:443
 Host alprs*pgtun
   LocalForward 5433 localhost:5432
 Host alprs*estun
