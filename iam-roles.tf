@@ -60,6 +60,8 @@ data "aws_iam_policy_document" "user_data_bucket" {
   }
 }
 
+#################### Bastion ####################
+
 resource "aws_iam_role" "alprs_bastion" {
   name               = "ALPRSBastionAccessRole"
   assume_role_policy = data.aws_iam_policy_document.ec2_trust.json
@@ -79,8 +81,12 @@ data "aws_iam_policy_document" "alprs_buckets" {
     resources = [for type, _ in var.buckets : aws_s3_bucket.buckets[type].arn]
   }
   statement {
-    effect    = "Allow"
-    actions   = ["s3:GetObject", "s3:PutObject", "s3:DeleteObject"]
+    effect = "Allow"
+    actions = [
+      "s3:GetObject",
+      "s3:PutObject",
+      "s3:DeleteObject",
+    ]
     resources = [for type, _ in var.buckets : "${aws_s3_bucket.buckets[type].arn}/*"]
   }
 }
@@ -101,6 +107,8 @@ resource "aws_iam_instance_profile" "alprs_bastion" {
   name = "ALPRSBastionInstanceProfile"
   role = aws_iam_role.alprs_bastion.name
 }
+
+#################### Service ####################
 
 resource "aws_iam_role" "alprs_service" {
   name               = "ALPRSServiceAccessRole"
@@ -161,6 +169,8 @@ resource "aws_iam_instance_profile" "alprs_service" {
   name = "ALPRSServiceInstanceProfile"
   role = aws_iam_role.alprs_service.name
 }
+
+#################### SFTP ####################
 
 data "aws_iam_policy_document" "sftp_transfer" {
   statement {
@@ -240,4 +250,63 @@ resource "aws_iam_role_policy" "sftp_logger" {
   name   = "sftp-logger-access-policy"
   role   = aws_iam_role.sftp_logger.id
   policy = data.aws_iam_policy_document.cloudwatch_logger.json
+}
+
+#################### Worker ####################
+
+resource "aws_iam_role" "alprs_worker" {
+  name               = "ALPRSWorkerAccessRole"
+  assume_role_policy = data.aws_iam_policy_document.ec2_trust.json
+}
+
+resource "aws_iam_role_policy_attachment" "alprs_worker" {
+  for_each = { for arn in local.ssm_policy_arns : basename(arn) => arn }
+
+  role       = aws_iam_role.alprs_worker.name
+  policy_arn = each.value
+}
+
+data "aws_iam_policy_document" "ingest_buckets" {
+  statement {
+    effect  = "Allow"
+    actions = ["s3:ListBucket"]
+    resources = [
+      aws_s3_bucket.buckets["sftp"].arn,
+      aws_s3_bucket.buckets["media"].arn,
+    ]
+  }
+  statement {
+    effect = "Allow"
+    actions = [
+      "s3:GetObject",
+      "s3:PutObject",
+      "s3:DeleteObject",
+    ]
+    resources = [
+      "${aws_s3_bucket.buckets["sftp"].arn}/*",
+      "${aws_s3_bucket.buckets["media"].arn}/*",
+    ]
+  }
+}
+
+# https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy
+resource "aws_iam_role_policy" "alprs_worker_user_data_bucket" {
+  name   = "userdata-bucket-access-policy"
+  role   = aws_iam_role.alprs_worker.id
+  policy = data.aws_iam_policy_document.user_data_bucket.json
+}
+resource "aws_iam_role_policy" "alprs_worker_ingest_buckets" {
+  name   = "ingest-buckets-access-policy"
+  role   = aws_iam_role.alprs_worker.id
+  policy = data.aws_iam_policy_document.ingest_buckets.json
+}
+resource "aws_iam_role_policy" "alprs_worker_backup_bucket" {
+  name   = "backup-bucket-access-policy"
+  role   = aws_iam_role.alprs_worker.id
+  policy = data.aws_iam_policy_document.backup_bucket.json
+}
+
+resource "aws_iam_instance_profile" "alprs_worker" {
+  name = "ALPRSWorkerInstanceProfile"
+  role = aws_iam_role.alprs_worker.name
 }

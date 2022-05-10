@@ -44,6 +44,9 @@ full_addr() {
     indexer)
       echo "module.$1_server.aws_instance.host"
       ;;
+    worker)
+      echo "module.$1_node.aws_instance.host"
+      ;;
     *)
       echo "$1"
   esac

@@ -35,6 +35,7 @@ install_elasticsearch() (
 deb https://artifacts.elastic.co/packages/7.x/apt stable main
 EOF
   apt-get update
+  wait_apt_get
   . /etc/environment
   apt-get install -y elasticsearch kibana nginx
   cd /usr/share/elasticsearch/bin

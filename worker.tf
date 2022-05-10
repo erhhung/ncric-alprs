@@ -49,7 +49,7 @@ module "worker_node" {
   root_volume_size = 32
   subnet_id        = module.main_vpc.subnet_ids["private1"]
   security_groups  = [module.private_ssh_sg.id]
-  instance_profile = aws_iam_instance_profile.alprs_service.name
+  instance_profile = aws_iam_instance_profile.alprs_worker.name
   key_name         = aws_key_pair.admin.key_name
   user_data        = chomp(local.worker_bootstrap)
 }
