@@ -18,17 +18,36 @@ install_rundeck() (
   yum install -y rundeck rundeck-cli
 )
 
+# args: [stage]
 config_rundeck() (
   case `whoami` in
     root)
       cd /etc/rundeck
-      # change the default admin password
+      grep -q 'admin:admin' realm.properties || exit 0
+      # change default admin password
       sed -i "s/admin:admin/admin:$rundeck_pass/" realm.properties
+      # use PostgreSQL instead of H2
+      while read  sed; do
+        sed -Ei "$sed" rundeck-config.properties
+      done <<EOT
+s/dataSource\\.dbCreate.+/dataSource.dbCreate=update/
+s|dataSource\\.url.+|dataSource.url=jdbc:postgresql://$PG_HOST:5432/rundeck?sslmode=require|
+/dataSource\\.url.+/a dataSource.driverClassName=org.postgresql.Driver
+/dataSource\\.url.+/a dataSource.password=$rundeck_pass
+/dataSource\\.url.+/a dataSource.username=rundeck_user
+s/config\\.password=.+/config.password=$rundeck_pass/
+EOT
+      cd /etc/ssh
+      # send RD_* environment variables to remote workers
+      sed -Ei $'/^Host \*$/a \\\tSendEnv RD_*' ssh_config
       ;;
     rundeck)
-      mkdir -p projects/AstroMetrics/etc
-      cd projects/AstroMetrics/etc
-      cat <<EOF > resources.xml
+      case "$1" in
+        before_start)
+          # https://docs.rundeck.digitalstacks.net/l/en/document-formats/resource-xml
+          mkdir -p projects/AstroMetrics/etc
+          cd projects/AstroMetrics/etc
+          cat <<EOF > resources.xml
 <?xml version="1.0" encoding="UTF-8"?>
 
 <project>
@@ -43,12 +62,21 @@ config_rundeck() (
         osVersion="$WORKER_OS"
         ssh-authentication="privateKey"
         ssh-key-storage-path="keys/worker"
-        sudo-password-storage-path="keys/worker"
+        ssh-send-env="true"
         sudo-command-enabled="true"
+        sudo-password-storage-path="keys/worker"
         file-copier="ssh-copier"
   />
 </project>
 EOF
+          ;;
+        after_start)
+          cd ~/libext/cache/openssh-node-execution*
+          # work around "rd_secure_passphrase: invalid indirect expansion" error
+          # https://github.com/rundeck-plugins/openssh-node-execution/issues/21
+          sed -Ei 's/\$\{\!rd_secure_passphrase\}/${rd_secure_passphrase+x}/g' ssh-copy.sh
+          ;;
+      esac
       ;;
     $USER)
       mkdir -p .rd
@@ -60,6 +88,7 @@ export RD_PASSWORD="$rundeck_pass"
 export RD_PROJECT="AstroMetrics"
 EOF
       chmod 600 .rd/rd.conf
+      sleep 20
       ;;
   esac
 )
@@ -67,7 +96,7 @@ EOF
 wait_service() {
   local name=$1 port=$2 count=12
   while ! nc -z localhost $port && [ $((count--)) -ge 0 ]; do
-    echo "[$(date "+%D %r")] Waiting for $name on port $port..."
+    echo "[`__ts`] Waiting for $name on port $port..."
     sleep 10
   done
   if [ $count -lt 0 ]; then
@@ -86,8 +115,8 @@ start_rundeck() {
 
 # eval_with_retry <cmd> [tries]
 eval_with_retry() {
-  local cmd=$1 tries=${2:-3}
-  while [[ ! $(eval $cmd) && $((--tries)) -gt 0 ]]; do
+  local cmd="$1" tries=${2:-3}
+  while ! eval "$cmd" && [ $((--tries)) -gt 0 ]; do
     echo "Retrying: $cmd"
     sleep 1
   done
@@ -95,25 +124,27 @@ eval_with_retry() {
 }
 
 import_project() {
-  local jar proj="AstroMetrics"
+  local jar proj=AstroMetrics
   jar="${proj,,}.rdproject.jar"
+  echo "Creating Rundeck project: $proj"
   mkdir -p rundeck
   cd rundeck
-  aws s3 cp "$USR_S3_URL/rundeck/$jar" . --no-progress
-  if rd projects list 2> /dev/null | grep -q $proj; then
-    eval_with_retry "rd projects delete -p $proj -y"
+  if eval_with_retry "rd projects list" | grep -q $proj; then
+     eval_with_retry "rd projects delete -p $proj -y"
   fi
+  aws s3 cp "$S3_URL/rundeck/$jar" . --no-progress
   eval_with_retry "rd projects create -p $proj"
-  rd projects archives import -f $jar -p $proj
+  eval_with_retry "rd projects archives import -f $jar -p $proj"
 }
 
 import_ssh_key() {
-  echo "$rundeck_key" > /tmp/worker
-  rd keys create \
-    -t privateKey \
-    -f /tmp/worker \
-    -p keys/worker
-  rm /tmp/worker
+  local path=keys/worker
+  local file=/tmp/worker
+  # $rundeck_key is private key here
+  printf "%s" "$rundeck_key" > $file
+  eval_with_retry "rd keys delete -p $path" &> /dev/null || true
+  eval_with_retry "rd keys create -p $path -t privateKey -f $file"
+  rm $file
 }
 
 set_property() {
@@ -124,16 +155,43 @@ set_property() {
   mv  $file~ $file
 }
 
+# https://docs.rundeck.digitalstacks.net/l/en/node-execution/ssh-node-execution
 config_project() {
-  local config=/tmp/config
-  rd projects configure get -p AstroMetrics | \
+  local proj=AstroMetrics config=/tmp/config
+  # use sed to trim leading/trailing newlines
+  rd projects configure get -p $proj | \
     sed -e :a -e '/./,$!d;/^\n*$/{$d;N;};/\n$/ba' > $config
   set_property $config project.ssh-authentication   privateKey
   set_property $config project.ssh-key-storage-path keys/worker
+  set_property $config project.ssh-send-env         true
   set_property $config project.ssh-keypath
-  rd projects configure set -p AstroMetrics -f $config
+  rd projects configure set -p $proj -f $config
   cat $config
   rm  $config
+
+  shopt -s expand_aliases
+  . .bash_aliases
+  local path value az=$(myaz)
+  while read path value; do
+    mkdir -p /tmp/$(dirname $path)
+    printf "%s" "$value" > /tmp/$path
+    eval_with_retry "rd keys delete -p $path" &> /dev/null || true
+    eval_with_retry "rd keys create -p $path -t password -f /tmp/$path"
+  done <<EOT
+keys/api_url   $API_URL
+keys/db_host   $PG_HOST
+keys/db_name   $NCRIC_DB
+keys/db_user   atlas_user
+keys/db_pass   $atlas_pass
+keys/region    ${az:0:-1}
+keys/s3_bucket $SFTP_BUCKET
+keys/s3_prefix/boss4   boss4
+keys/s3_prefix/scso    scso
+keys/s3_prefix/flock   flock
+keys/s3_prefix/hotlist hotlist
+keys/shuttle_args $SHUTTLE_ARGS
+EOT
+  rm -rf /tmp/keys
 }
 
 curl_rundeck() {
@@ -141,6 +199,7 @@ curl_rundeck() {
   [ -f $cookies ] || echo "#EMPTY" > $cookies
   curl -b $cookies -c $cookies -s \
     "http://localhost:4440/$1" "${@:2}"
+  echo
 }
 
 config_worker() {
@@ -183,10 +242,11 @@ export -f curl_rundeck
 run install_java
 run install_rundeck
 run config_rundeck
-run config_rundeck rundeck
+run config_rundeck rundeck before_start
 run start_rundeck
 run config_rundeck $USER
 run import_project $USER
 run import_ssh_key $USER
-run config_project $USER
 run config_worker  $USER
+run config_project $USER
+run config_rundeck rundeck after_start

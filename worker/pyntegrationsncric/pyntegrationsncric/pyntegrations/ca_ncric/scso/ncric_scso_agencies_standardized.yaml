@@ -1,0 +1,28 @@
+organizationId: 1446ff84-7112-42ec-828d-f181f45e4d20
+
+entityDefinitions:
+  agencies:
+    fqn: "ol.agency"
+    entitySetName: "NCRICStandardizedAgencies"
+    propertyDefinitions:
+      ol.id:
+        type: "ol.id"
+        column: "standardized_agency_name"
+      ol.name:
+        type: "ol.name"
+        column: "standardized_agency_name"
+    name: "agencies"
+
+  agencies1:
+    fqn: "ol.agency"
+    entitySetName: "NCRICStandardizedAgenciesSCSO"
+    propertyDefinitions:
+      ol.id:
+        type: "ol.id"
+        column: "standardized_agency_name"
+      ol.name:
+        type: "ol.name"
+        column: "standardized_agency_name"
+    name: "agencies1"
+
+associationDefinitions: {}

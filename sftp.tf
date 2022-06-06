@@ -79,7 +79,7 @@ resource "aws_transfer_user" "sftp_users" {
   server_id      = aws_transfer_server.sftp.id
   user_name      = each.key
   role           = aws_iam_role.sftp_transfer.arn
-  home_directory = "/${var.buckets["sftp"]}/${each.key}"
+  home_directory = "/${var.buckets["sftp"]}/${each.value.home_dir}"
   policy         = data.aws_iam_policy_document.sftp_user.json
 }
 
@@ -91,7 +91,7 @@ resource "aws_transfer_ssh_key" "sftp_users" {
 
   server_id = aws_transfer_server.sftp.id
   user_name = each.key
-  body      = each.value
+  body      = each.value.public_key
 }
 
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/route53_record

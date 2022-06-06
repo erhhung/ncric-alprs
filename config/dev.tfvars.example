@@ -58,8 +58,11 @@ ssh_keys = [{
 }]
 
 sftp_users = {
-  # NOTE: ed25519 keys are NOT supported
-  user_name = "ssh-rsa ... third-party"
+  # note that ed25519 keys are NOT supported
+  user_name = {
+    public_key = "ssh-rsa ... third-party"
+    home_dir   = "user_name"
+  }
 }
 
 AUTH0_M2M_CLIENT_ID     = "yVaBS1kv7281lbt1I3smwBv1Pk99bZkp"

@@ -92,7 +92,7 @@ EOF
 wait_service() {
   local name=$1 port=$2 count=12
   while ! nc -z localhost $port && [ $((count--)) -ge 0 ]; do
-    echo "[$(date "+%D %r")] Waiting for $name on port $port..."
+    echo "[`__ts`] Waiting for $name on port $port..."
     sleep 5
   done
   if [ $count -lt 0 ]; then
@@ -114,7 +114,7 @@ create_databases() {
   [ -d users ] && exit
   mkdir users
   cd users
-  for db in alprs atlas; do
+  for db in alprs atlas rundeck; do
     user="${db}_user"
     pass="${db}_pass"
     echo "${!pass}" > $user
@@ -123,10 +123,15 @@ CREATE USER $user WITH PASSWORD '${!pass}';
 EOT
   done
   chmod 400 *
+  for db in alprs rundeck; do
+    user="${db}_user"
+    psql <<EOT
+CREATE DATABASE $db WITH OWNER = $user;
+REVOKE ALL ON DATABASE $db FROM PUBLIC;
+GRANT  ALL ON DATABASE $db   TO $user;
+EOT
+  done
   psql <<'EOT'
-CREATE DATABASE alprs WITH OWNER = alprs_user;
-REVOKE ALL ON DATABASE alprs FROM PUBLIC;
-GRANT  ALL ON DATABASE alprs   TO alprs_user;
 ALTER USER atlas_user CREATEDB CREATEROLE;
 EOT
 }
@@ -138,7 +143,7 @@ create_db_objects() {
   cd init
   aws s3 cp $ALPRS_SQL alprs.sql.gz --no-progress
   gunzip -f alprs.sql.gz
-  sed -Ei "s|https://astrometrics\.us|$APP_URL|" alprs.sql
+  sed -Ei "s|https://astrometrics\\.us|$APP_URL|" alprs.sql
   psql alprs < alprs.sql
 }
 
@@ -149,7 +154,7 @@ create_backup_sh() {
 TEMP="/opt/postgresql/temp"
 
 # destination file will be overwritten multiple times per day by cron job
-dest="s3://$BACKUP_BUCKET/postgresql/pg_backup_\$(date +%Y-%m-%d).tar.bz"
+dest="s3://$BACKUP_BUCKET/postgresql/pg_backup_\$(date "+%Y-%m-%d").tar.bz"
 
 clean() {
   rm -rf \$TEMP/*

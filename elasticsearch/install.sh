@@ -92,7 +92,7 @@ EOF
 wait_service() {
   local name=$1 port=$2 count=12
   while ! nc -z localhost $port && [ $((count--)) -ge 0 ]; do
-    echo "[$(date "+%D %r")] Waiting for $name on port $port..."
+    echo "[`__ts`] Waiting for $name on port $port..."
     sleep 5
   done
   if [ $count -lt 0 ]; then

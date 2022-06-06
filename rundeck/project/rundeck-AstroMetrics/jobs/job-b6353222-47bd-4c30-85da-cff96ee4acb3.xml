@@ -2,27 +2,49 @@
   <job>
     <context>
       <options preserveOrder='true'>
-        <option name='ol_client_id' secure='true' storagePath='keys/project/NCRIC/ncric_at_openlattice/ol_client_id' valueExposed='true'>
+        <option name='region' secure='true' storagePath='keys/region' valueExposed='true'>
+          <description>AWS region</description>
           <hidden>true</hidden>
         </option>
-        <option name='ol_password' secure='true' storagePath='keys/project/NCRIC/ncric_at_openlattice/ol_password' valueExposed='true'>
+        <option name='s3_bucket' secure='true' storagePath='keys/s3_bucket' valueExposed='true'>
+          <description>SFTP bucket</description>
           <hidden>true</hidden>
         </option>
-        <option name='ol_user' secure='true' storagePath='keys/project/NCRIC/ncric_at_openlattice/ol_user' valueExposed='true'>
+        <option name='s3_prefix' secure='true' storagePath='keys/s3_prefix/boss4' valueExposed='true'>
+          <description>Bucket prefix</description>
+          <hidden>true</hidden>
+        </option>
+        <option name='api_url' secure='true' storagePath='keys/api_url' valueExposed='true'>
+          <description>API endpoint</description>
+          <hidden>true</hidden>
+        </option>
+        <option name='shuttle_args' secure='true' storagePath='keys/shuttle_args' valueExposed='true'>
+          <description>Shuttle CLI args</description>
           <hidden>true</hidden>
         </option>
       </options>
     </context>
     <defaultTab>nodes</defaultTab>
-    <description><![CDATA[Hourly job for Boss4 with entity sets broken out by agency
-- end datetime range is the bottom of the hour that the job is run. For a job at 9:10 am, covers 8-9 am.
-- all Boss4 data is in UTC time]]></description>
-    <executionEnabled>false</executionEnabled>
+    <description><![CDATA[Hourly job for BOSS4 into Aurora with entity sets broken out by agency
+* End datetime range is the bottom of the hour that the job is run. For a job at 9:10 am, covers 8-9 am.
+* All BOSS4 data is in UTC time]]></description>
+    <dispatch>
+      <excludePrecedence>true</excludePrecedence>
+      <keepgoing>false</keepgoing>
+      <rankOrder>ascending</rankOrder>
+      <successOnEmptyNodeFilter>false</successOnEmptyNodeFilter>
+      <threadcount>1</threadcount>
+    </dispatch>
+    <executionEnabled>true</executionEnabled>
     <id>b6353222-47bd-4c30-85da-cff96ee4acb3</id>
     <loglevel>INFO</loglevel>
     <multipleExecutions>true</multipleExecutions>
-    <name>Recurring Realtime: BOSS4 hourly</name>
+    <name>Recurring BOSS4: realtime - hourly</name>
     <nodeFilterEditable>false</nodeFilterEditable>
+    <nodefilters>
+      <filter>name: Worker</filter>
+    </nodefilters>
+    <nodesSelectedByDefault>true</nodesSelectedByDefault>
     <plugins />
     <schedule>
       <month month='*' />
@@ -30,17 +52,18 @@
       <weekday day='*' />
       <year year='*' />
     </schedule>
-    <scheduleEnabled>true</scheduleEnabled>
+    <scheduleEnabled>false</scheduleEnabled>
     <sequence keepgoing='false' strategy='node-first'>
       <command>
         <description>hourly</description>
-        <script><![CDATA[#!/opt/anaconda/envs/openlattice/bin/python
+        <script><![CDATA[#!/usr/bin/env python3
 
-import sys
-# sys.path.insert(0, "/opt/openlattice/pyntegrations_test/pyntegrations")
-import pyntegrationsncric
-# print(pyntegrations.__file__)
 from datetime import datetime, timedelta
+from pyntegrations.ca_ncric.boss4.integration_definitions import \
+  BOSS4Integration, BOSS4ImagesIntegration, BOSS4AgenciesIntegration, \
+  BOSS4ImageSourcesIntegration, BOSS4AgenciesStandardizedIntegration, \
+  BOSS4HotlistDaily
+import os
 
 agencies = [
   "Benicia PD",
@@ -69,7 +92,7 @@ agencies = [
   "Piedmont PD",
   "NCRIC",
   "San Leandro PD",
-  # "Santa Clara County Sheriff''s Office",
+  # "Santa Clara County Sheriff’s Office",
   "Los Altos PD",
   "Sunnyvale DPS",
   "Palo Alto PD",
@@ -77,133 +100,147 @@ agencies = [
   "Campbell PD"
 ]
 
-# End datetime is the beginning of the hr that the job starts in.
-dt_end=datetime.now().replace(microsecond=0, second=0, minute=0)
-dt_start=dt_end - timedelta(hours = 1)
+s3_bucket = "@option.s3_bucket@"
+s3_prefix = "@option.s3_prefix@"
+
+# End datetime is the beginning of the hour that the job starts in
+dt_end = datetime.now().replace(microsecond=0, second=0, minute=0)
+dt_start = dt_end - timedelta(hours=1)
 
 # This is now changed to "start hour" since the hour should not change here
-dt_end_str = f"{dt_end.year}-{dt_end.month}-{dt_end.day} {dt_end.hour}:{dt_end.minute}:00"
-dt_start_str = f"{dt_start.year}-{dt_start.month}-{dt_start.day} {dt_start.hour}:{dt_start.minute}:00"
+dt_end_str = f"{dt_end.year}-{dt_end.month}-{dt_end.day} {dt_end.hour}:00:00"
+dt_start_str = f"{dt_start.year}-{dt_start.month}-{dt_start.day} {dt_start.hour}:00:00"
 
-# NOTE: CHANGE s3_bucket and s3_prefix to fit the S3 bucket name your files are in
-print(f"Searching through {dt_start_str} and {dt_end_str} to integrate!")
-main_integration=pyntegrations.ca_ncric.boss4.integration_definitions.BOSS4Integration(date_start=dt_start_str,
-                                                                                        date_end=dt_end_str,
-                                                                                        raw_table_name="boss4_hr",
-                                                                                        raw_table_name_images="boss4_hr_images",
-                                                                                        s3_bucket="sftp.openlattice.com",
-                                                                                        s3_prefix="ncric")
-print("Integrating MAIN BOSS4 table!")
+print(f"Searching {dt_start_str} through {dt_end_str} to integrate!")
+main_integration = BOSS4Integration(
+    date_start=dt_start_str,
+    date_end=dt_end_str,
+    raw_table_name="boss4_hr",
+    raw_table_name_images="boss4_hr_images",
+    s3_bucket=s3_bucket,
+    s3_prefix=s3_prefix)
 
 main_table_name, images_table_name = main_integration.get_raw_data_from_s3()
+print(main_table_name, images_table_name)
 print("Got the raw data!")
 
-# NOTE: CHANGE base_url to fit your specifications in all of the integration definitions - "https://api.openlattice.com" will no longer exist
-images_integration = pyntegrations.ca_ncric.boss4.integration_definitions.BOSS4ImagesIntegration(sql=f"select * from {images_table_name}",
-                                                                                                clean_table_name_root="boss4_hourly_images_cleaned",
-                                                                                                base_url="https://api.openlattice.com")
-print("Integrating Images!")
-images_clean_table_name=images_integration.clean_and_upload()
+api_url = "@option.api_url@"
+images_integration = BOSS4ImagesIntegration(
+    sql=f"select * from {images_table_name}",
+    clean_table_name_root="boss4_hourly_images_cleaned",
+    base_url=api_url)
+
+images_clean_table_name = images_integration.clean_and_upload()
 print("Got the images data!")
 
-print(main_table_name, images_table_name)
+pyntegrations_path = os.environ.get("PYNTEGRATIONS_PATH")
+pyntegrations_path += "/ca_ncric"
+shuttle_path = os.environ.get("SHUTTLE_PATH")
+shuttle_args = "@option.shuttle_args@ @option.region@"
+
 try:
     for agency in agencies:
-        agency_no_space=agency.replace(" ", "").replace("\'", "")
-        print(f"Integrating MAIN table for {agency}!")
+        agency_no_space = agency.replace(" ", "").replace("'", "")
 
-    # integrate all with new tables
+        print(f"Integrating MAIN table for {agency}!")
+        # integrate all with new tables
         main_integration.integrate_table(
-            shuttle_path="opt/openlattice/shuttle/shuttle-0.0.4-SNAPSHOT/bin/shuttle",
-            shuttle_args=' --read-rate-limit 0 --shuttle-config openlattice-alpha-config us-gov-west-1 --data-store alpr',
-            flight_path=f"ca_ncric/ncric_flights/ncric_{agency_no_space}_flight.yaml",
-            sql=f"select * from {main_table_name} where standardized_agency_name = '{agency}'"
-            )
-        print("Passed: integrate_table main table")
+            sql=f"select * from {main_table_name} where standardized_agency_name = '{agency}'",
+            flight_path=pyntegrations_path+f"/ncric_flights/ncric_{agency_no_space}_flight.yaml",
+            memory_size=3,
+            shuttle_path=shuttle_path,
+            shuttle_args=shuttle_args)
+        print("Passed: integrate_table MAIN table")
 
         print(f"Integrating IMAGES table for {agency}!")
         # integrate images table
         images_integration.integrate_table(
-            sql = f"select * from {images_clean_table_name} where standardized_agency_name = '{agency}'",
-            flight_path=f"ca_ncric/ncric_image_flights/ncric_{agency_no_space}_images_flight.yaml",
+            sql=f"select * from {images_clean_table_name} where standardized_agency_name = '{agency}'",
+            flight_path=pyntegrations_path+f"/ncric_image_flights/ncric_{agency_no_space}_images_flight.yaml",
             memory_size=5,
-            shuttle_path="opt/openlattice/shuttle/shuttle-0.0.4-SNAPSHOT/bin/shuttle",
-            shuttle_args=' --s3 PRODUCTION --read-rate-limit 0 --shuttle-config openlattice-alpha-config us-gov-west-1 --data-store alpr'
-            )
-        print("Passed: images_integration main table")
+            shuttle_path=shuttle_path,
+            shuttle_args=shuttle_args+" --s3 PRODUCTION")
+        print("Passed: integrate_table IMAGES table")
 
     try:
         print("Integrating HOTLIST TABLE!")
-        h_integration=pyntegrations.ca_ncric.boss4.integration_definitions.BOSS4HotlistDaily(sql=f'''select hotlist_daily.*, {main_table_name}.* from hotlist_daily
-            inner join {main_table_name} on "plate" = "VehicleLicensePlateID";''',
-            base_url="https://api.openlattice.com",
-            drop_table_on_success=True)
-        h_integration.integrate_table(sql=f'''select hotlist_daily.*, {main_table_name}.* from hotlist_daily
-            inner join {main_table_name} on "plate" = "VehicleLicensePlateID";''',
-            shuttle_path="opt/openlattice/shuttle/shuttle-0.0.4-SNAPSHOT/bin/shuttle",
-            shuttle_args=' --read-rate-limit 0 --shuttle-config openlattice-alpha-config us-gov-west-1 --data-store alpr'
-        )
+        h_integration = BOSS4HotlistDaily(
+            sql=f'''select hotlist_daily.*, {main_table_name}.* from hotlist_daily
+                inner join {main_table_name} on "plate" = "VehicleLicensePlateID"
+                ''',
+            drop_table_on_success=True,
+            base_url=api_url)
+        h_integration.integrate_table(
+            sql=f'''select hotlist_daily.*, {main_table_name}.* from hotlist_daily
+                inner join {main_table_name} on "plate" = "VehicleLicensePlateID"
+                ''',
+            shuttle_path=shuttle_path,
+            shuttle_args=shuttle_args)
     except Exception as e:
         print(e)
 
     try:
-        print("Integrating HOTLIST IMAGES !")
-        hi_integration=pyntegrations.ca_ncric.boss4.integration_definitions.BOSS4ImagesIntegration(
-        clean_table_suffix="hotlist",
-        sql=f'''select hotlist_daily.*, {main_table_name}.* from hotlist_daily
-            inner join {main_table_name} on "plate" = "VehicleLicensePlateID"
-            inner join {images_clean_table_name} using("VehicleLicensePlateID");''')
-        hi_integration.integrate_table(sql=f'''select hotlist_daily.*, {main_table_name}.* from hotlist_daily
-            inner join {main_table_name} on "plate" = "VehicleLicensePlateID"
-            inner join {images_clean_table_name} using("VehicleLicensePlateID");''',
-            shuttle_path="opt/openlattice/shuttle/shuttle-0.0.4-SNAPSHOT/bin/shuttle",
-            shuttle_args=' --s3 PRODUCTION --read-rate-limit 0 --shuttle-config openlattice-alpha-config us-gov-west-1 --data-store alpr'
-        )
+        print("Integrating HOTLIST IMAGES!")
+        hi_integration = BOSS4ImagesIntegration(
+            sql=f'''select hotlist_daily.*, {main_table_name}.* from hotlist_daily
+                inner join {main_table_name} on "plate" = "VehicleLicensePlateID"
+                inner join {images_clean_table_name} using("VehicleLicensePlateID")
+                ''',
+            clean_table_suffix="hotlist")
+        hi_integration.integrate_table(
+            sql=f'''select hotlist_daily.*, {main_table_name}.* from hotlist_daily
+                inner join {main_table_name} on "plate" = "VehicleLicensePlateID"
+                inner join {images_clean_table_name} using("VehicleLicensePlateID")
+                ''',
+            shuttle_path=shuttle_path,
+            shuttle_args=shuttle_args+" --s3 PRODUCTION")
     except Exception as e:
         print(e)
 
     print("Integrating AGENCIES table!")
     # integrate agencies associate only
-    integration = pyntegrations.ca_ncric.boss4.integration_definitions.BOSS4AgenciesIntegration(sql = f'select distinct "agency_id", "agencyName", "datasource", "agencyAcronym" from {main_table_name}',
-                                                                                                clean_table_name_root="boss4_agencies_test",
-                                                                                                base_url="https://api.openlattice.com",
-                                                                                                drop_table_on_success=True)
-    table_name=integration.clean_and_upload()
+    integration = BOSS4AgenciesIntegration(
+        sql=f'select distinct "agency_id", "agencyName", "datasource", "agencyAcronym" from {main_table_name}',
+        clean_table_name_root="boss4_agencies_test",
+        drop_table_on_success=True,
+        base_url=api_url)
+    table_name = integration.clean_and_upload()
     integration.integrate_table(
         clean_table_name=table_name,
-        shuttle_path="opt/openlattice/shuttle/shuttle-0.0.4-SNAPSHOT/bin/shuttle",
-        shuttle_args=' --read-rate-limit 0 --shuttle-config openlattice-alpha-config us-gov-west-1 --data-store alpr'
-        )
+        shuttle_path=shuttle_path,
+        shuttle_args=shuttle_args)
 
     print("Integrating IMAGE SOURCES table!")
     # integrate image sources associate only
-    integration = pyntegrations.ca_ncric.boss4.integration_definitions.BOSS4ImageSourcesIntegration(sql=f'select distinct "camera_id", "LPRCameraName", "datasource" from {main_table_name}',
-                                                                                                    base_url="https://api.openlattice.com",
-                                                                                                    clean_table_name_root="boss4_imagesources_test",
-                                                                                                    drop_table_on_success=True)
-    table_name=integration.clean_and_upload()
+    integration = BOSS4ImageSourcesIntegration(
+        sql=f'select distinct "camera_id", "LPRCameraName", "datasource" from {main_table_name}',
+        clean_table_name_root="boss4_imagesources_test",
+        drop_table_on_success=True,
+        base_url=api_url)
+    table_name = integration.clean_and_upload()
     integration.integrate_table(
         clean_table_name=table_name,
-        shuttle_path="opt/openlattice/shuttle/shuttle-0.0.4-SNAPSHOT/bin/shuttle",
-        shuttle_args=' --read-rate-limit 0 --shuttle-config openlattice-alpha-config us-gov-west-1 --data-store alpr'
-        )
+        shuttle_path=shuttle_path,
+        shuttle_args=shuttle_args)
 
-    print("Integrating STANDARDIZED AGENCIES integration!")
-    sagency_integration=pyntegrations.ca_ncric.boss4.integration_definitions.BOSS4AgenciesStandardizedIntegration(
+    print("Integrating STANDARDIZED AGENCIES table!")
+    sagency_integration = BOSS4AgenciesStandardizedIntegration(
         sql="""select distinct standardized_agency_name from standardized_agency_names
-        where \"ol.datasource\" = 'BOSS4';""", drop_table_on_success= True)
+            where \"ol.datasource\" = 'BOSS4'
+            """,
+        drop_table_on_success=True,
+        base_url=api_url)
     sagency_integration.integrate_table(
         sql="""select distinct standardized_agency_name from standardized_agency_names
-        where \"ol.datasource\" = 'BOSS4';""",
-        shuttle_path="opt/openlattice/shuttle/shuttle-0.0.4-SNAPSHOT/bin/shuttle",
-        shuttle_args=' --read-rate-limit 0 --shuttle-config openlattice-alpha-config us-gov-west-1 --data-store alpr'
-        )
+            where \"ol.datasource\" = 'BOSS4'
+            """,
+        shuttle_path=shuttle_path,
+        shuttle_args=shuttle_args)
 
 except Exception as e:
     main_integration.drop_main_table()
     main_integration.drop_images_table()
-
-    raise RuntimeError(f"Something went wrong with the job! Error message: {str(e)}. Dropping tables.")
+    raise RuntimeError(f"Something went wrong with the job! Dropping tables. Error message: {str(e)}")
 
 main_integration.drop_main_table()
 main_integration.drop_images_table()]]></script>

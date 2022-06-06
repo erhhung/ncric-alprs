@@ -1,0 +1,10 @@
+// Flight
+digraph {
+	graph [splines=curved]
+	node [cellborder=0.5 cellpadding=0.5 cellspacing=1 color="#3399ff" fontcolor=white fontname=Helvetica fontsize=9 len=5 propertyfontcolor=gray shape=box style="filled,rounded" tableborder=0.5 tablebordercolor=white titlefontcolor=white]
+	vehiclerecords [label=<<table border="0.5" bgcolor="None" bordercolor="white" cellborder="0.5" cellspacing="1" cellpadding="0.5">    <tr><td>    <font color="white"><u><b>vehiclerecords (ol.vehicle)</b></u></font>    </td></tr>        </table>>]
+	node [cellborder=0.5 cellpadding=0.5 cellspacing=1 color="#3399ff" fontcolor=white fontname=Helvetica fontsize=9 len=5 propertyfontcolor=gray shape=box style="filled,rounded" tableborder=0.5 tablebordercolor=white titlefontcolor=white]
+	hits [label=<<table border="0.5" bgcolor="None" bordercolor="white" cellborder="0.5" cellspacing="1" cellpadding="0.5">    <tr><td>    <font color="white"><u><b>hits (ol.notification)</b></u></font>    </td></tr>        </table>>]
+	node [cellborder=0.5 cellpadding=0.5 cellspacing=1 color="#3399ff" concentrate=true fontcolor=black fontname=Helvetica fontsize=7 fqncolor="595F72" labeldistance=0 len=5 propertyfontcolor=gray shape=box style=square tablebgcolor=white tableborder=0.5 titlefontcolor=black]
+	vehiclerecords -> hits [label=resultsin1 cellborder=0.5 cellpadding=0.5 cellspacing=1 color="#3399ff" concentrate=true dir=forward fontcolor=black fontname=Helvetica fontsize=7 fqncolor="595F72" labeldistance=0 len=5 propertyfontcolor=gray shape=box style=square tablebgcolor=white tableborder=0.5 titlefontcolor=black]
+}

@@ -90,7 +90,7 @@ build_service() {
 wait_service() {
   local name=$1 host=$2 port=$3
   while ! nc -z $host $port; do
-    echo "[$(date "+%D %r")] Waiting for $name on $host:$port..."
+    echo "[`__ts`] Waiting for $name on $host:$port..."
     sleep 10
   done
 }
@@ -118,8 +118,8 @@ archive_build() (
   service=${HOST,,}
   src=${service}.tgz
   cd /opt/openlattice
-  [ -f $src ] || exit
-  dest="s3://$BACKUP_BUCKET/$service/${service}_$(date +%Y-%m-%d).tar.gz"
+  [ -f $src ] || exit 0
+  dest="s3://$BACKUP_BUCKET/$service/${service}_$(date "+%Y-%m-%d").tar.gz"
   aws s3 cp $src $dest --no-progress
 )
 

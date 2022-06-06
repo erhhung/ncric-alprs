@@ -18,7 +18,10 @@ TF_FILES=(
   conductor
   datastore
   indexer
+  rundeck
   worker
+  webapp
+  shared
 )
 [ "$1" ] && TF_FILES=("$@")
 

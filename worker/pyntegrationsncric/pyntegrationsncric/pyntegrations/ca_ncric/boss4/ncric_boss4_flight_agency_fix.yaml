@@ -1,0 +1,64 @@
+organizationId: 1446ff84-7112-42ec-828d-f181f45e4d20
+
+entityDefinitions:
+  vehiclerecords:
+    fqn: "ol.vehicle"
+    entitySetName: "NCRICVehicleRecords"
+    propertyDefinitions:
+      ol.id:
+        type:  "ol.id"
+        column: "vehicle_record_id"
+      publicsafety.agencyname:
+        type: "publicsafety.agencyname"
+        column: "standardized_agency_name"
+      ol.datelogged:
+        type: "ol.datelogged"
+        column: "eventDateTime"
+    updateType: "PartialReplace"
+    name: "vehiclerecords"
+
+  agencies:
+    fqn: "ol.agency"
+    entitySetName: "NCRICStandardizedAgencies"
+    propertyDefinitions:
+      ol.id:
+        type: "ol.id"
+        column: "standardized_agency_name"
+    name: "agencies"
+    associateOnly: true
+
+  imagesources:
+    fqn: "ol.imagesource"
+    entitySetName: "NCRICImageSources"
+    propertyDefinitions:
+      ol.id:
+        type:  "ol.id"
+        column: "camera_id"
+    name: "imagesources"
+    associateOnly: true
+
+associationDefinitions:
+  recordedby:
+    fqn: "ol.recordedby"
+    entitySetName: "NCRICRecordedBy"
+    src: "vehiclerecords"
+    dst: "agencies"
+    propertyDefinitions:
+      ol.datelogged:
+        type: "ol.datelogged"
+        column: "eventDateTime"
+      general.stringid:
+        type: "general.stringid"
+        column: "recordedby3_id"
+    name: "recordedby"
+
+  collectedby2:
+    fqn: "ol.collectedby"
+    entitySetName: "NCRICCollectedBy"
+    src: "imagesources"
+    dst: "agencies"
+    propertyDefinitions:
+      general.id:
+        type: "general.id"
+        column: "collectedby2_id"
+    name: "collectedby2"

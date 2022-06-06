@@ -1,0 +1,386 @@
+organizationId: 1446ff84-7112-42ec-828d-f181f45e4d20
+
+entityDefinitions:
+  vehicles:
+    fqn: "ol.vehicle"
+    entitySetName: "NCRICVehicles"
+    propertyDefinitions:
+      ol.id:
+        type: "ol.id"
+        column: "VehicleLicensePlateID"
+    name: "vehicles"
+    associateOnly: true
+
+  vehiclerecords:
+    fqn: "ol.vehicle"
+    entitySetName: "NCRICVehicleRecords"
+    propertyDefinitions:
+      ol.id:
+        type:  "ol.id"
+        column: "vehicle_record_id"
+      vehicle.licensenumber:
+        type: "vehicle.licensenumber"
+        column: "VehicleLicensePlateID"
+      ol.datelogged:
+        type: "ol.datelogged"
+        column: "eventDateTime"
+      ol.locationcoordinates:
+        type: "ol.locationcoordinates"
+        column: "latlon"
+      publicsafety.agencyname:
+        type: "publicsafety.agencyname"
+        column: "standardized_agency_name"
+      ol.agencyname:
+        type: "ol.agencyname"
+        column: "agencyName"
+      ol.resourceid:
+        type: "ol.resourceid"
+        column: "camera_id"
+      ol.datasource:
+        type: "ol.datasource"
+        column: "datasource"
+    name: "vehiclerecords"
+
+  imagesources:
+    fqn: "ol.imagesource"
+    entitySetName: "NCRICImageSources"
+    propertyDefinitions:
+      ol.id:
+        type:  "ol.id"
+        column: "camera_id"
+    name: "imagesources"
+    associateOnly: true
+
+  locations:
+    fqn: "ol.location"
+    entitySetName: "NCRICLocations"
+    propertyDefinitions:
+      general.id:
+        type: "general.id"
+        column: "location_id"
+      ol.locationcoordinates:
+        type: "ol.locationcoordinates"
+        column: "latlon"
+    name: "locations"
+
+  agencies:
+    fqn: "ol.agency"
+    entitySetName: "NCRICAgencies"
+    propertyDefinitions:
+      ol.id:
+        type: "ol.id"
+        column: "agency_id"
+    name: "agencies"
+    associateOnly: true
+
+  agencies2:
+    fqn: "ol.agency"
+    entitySetName: "NCRICStandardizedAgencies"
+    propertyDefinitions:
+      ol.id:
+        type: "ol.id"
+        column: "standardized_agency_name"
+    name: "agencies2"
+    associateOnly: true
+
+# SCSO entity sets
+  vehicles_scso:
+    fqn: "ol.vehicle"
+    entitySetName: "NCRICVehiclesSCSO"
+    propertyDefinitions:
+      ol.id:
+        type: "ol.id"
+        column: "VehicleLicensePlateID"
+    name: "vehicles_scso"
+    associateOnly: true
+
+  vehiclerecords_scso:
+    fqn: "ol.vehicle"
+    entitySetName: "NCRICVehicleRecordsSCSO"
+    propertyDefinitions:
+      ol.id:
+        type:  "ol.id"
+        column: "vehicle_record_id"
+      vehicle.licensenumber:
+        type: "vehicle.licensenumber"
+        column: "VehicleLicensePlateID"
+      ol.datelogged:
+        type: "ol.datelogged"
+        column: "eventDateTime"
+      ol.locationcoordinates:
+        type: "ol.locationcoordinates"
+        column: "latlon"
+      publicsafety.agencyname:
+        type: "publicsafety.agencyname"
+        column: "standardized_agency_name"
+      ol.agencyname:
+        type: "ol.agencyname"
+        column: "agencyName"
+      ol.resourceid:
+        type: "ol.resourceid"
+        column: "camera_id"
+      ol.datasource:
+        type: "ol.datasource"
+        column: "datasource"
+    updateType: "PartialReplace"
+    name: "vehiclerecords_scso"
+
+  imagesources_scso:
+    fqn: "ol.imagesource"
+    entitySetName: "NCRICImageSourcesSCSO"
+    propertyDefinitions:
+      ol.id:
+        type:  "ol.id"
+        column: "camera_id"
+    name: "imagesources_scso"
+    associateOnly: true
+
+  locations_scso:
+    fqn: "ol.location"
+    entitySetName: "NCRICLocationsSCSO"
+    propertyDefinitions:
+      general.id:
+        type: "general.id"
+        column: "location_id"
+      ol.locationcoordinates:
+        type: "ol.locationcoordinates"
+        column: "latlon"
+    name: "locations_scso"
+
+  agencies_scso:
+    fqn: "ol.agency"
+    entitySetName: "NCRICAgenciesSCSO"
+    propertyDefinitions:
+      ol.id:
+        type: "ol.id"
+        column: "agency_id"
+    name: "agencies_scso"
+    associateOnly: true
+
+  agencies_scso2:
+    fqn: "ol.agency"
+    entitySetName: "NCRICStandardizedAgenciesSCSO"
+    propertyDefinitions:
+      ol.id:
+        type: "ol.id"
+        column: "standardized_agency_name"
+    name: "agencies_scso2"
+    associateOnly: true
+
+associationDefinitions:
+  has:
+    fqn: "ol.has"
+    entitySetName: "NCRICHas"
+    src: "vehicles"
+    dst: "vehiclerecords"
+    propertyDefinitions:
+      ol.id:
+        type: "ol.id"
+        column: "has_id"
+    name: "has"
+
+  recordedby1:
+    fqn: "ol.recordedby"
+    entitySetName: "NCRICRecordedBy"
+    src: "vehiclerecords"
+    dst: "imagesources"
+    propertyDefinitions:
+      ol.datelogged:
+        type: "ol.datelogged"
+        column: "eventDateTime"
+      general.stringid:
+        type: "general.stringid"
+        column: "recordedby1_id"
+    name: "recordedby1"
+
+  recordedby2:
+    fqn: "ol.recordedby"
+    entitySetName: "NCRICRecordedBy"
+    src: "vehiclerecords"
+    dst: "agencies"
+    propertyDefinitions:
+      ol.datelogged:
+        type: "ol.datelogged"
+        column: "eventDateTime"
+      general.stringid:
+        type: "general.stringid"
+        column: "recordedby2_id"
+    name: "recordedby2"
+
+  recordedby3:
+    fqn: "ol.recordedby"
+    entitySetName: "NCRICRecordedBy"
+    src: "vehiclerecords"
+    dst: "agencies2"
+    propertyDefinitions:
+      ol.datelogged:
+        type: "ol.datelogged"
+        column: "eventDateTime"
+      general.stringid:
+        type: "general.stringid"
+        column: "recordedby3_id"
+    name: "recordedby3"
+
+  locatedat1:
+    fqn: "ol.locatedat"
+    entitySetName: "NCRICLocatedAt"
+    src: "imagesources"
+    dst: "locations"
+    propertyDefinitions:
+      general.id:
+        type: "general.id"
+        column: "locatedat1_id"
+    name: "locatedat1"
+
+  locatedat2:
+    fqn: "ol.locatedat"
+    entitySetName: "NCRICLocatedAt"
+    src: "vehiclerecords"
+    dst: "locations"
+    propertyDefinitions:
+      general.id:
+        type: "general.id"
+        column: "locatedat2_id"
+    name: "locatedat2"
+
+  locatedat3:
+    fqn: "ol.locatedat"
+    entitySetName: "NCRICLocatedAt"
+    src: "vehicles"
+    dst: "locations"
+    propertyDefinitions:
+      general.id:
+        type: "general.id"
+        column: "locatedat3_id"
+    name: "locatedat3"
+
+  collectedby:
+    fqn: "ol.collectedby"
+    entitySetName: "NCRICCollectedBy"
+    src: "imagesources"
+    dst: "agencies"
+    propertyDefinitions:
+      general.id:
+        type: "general.id"
+        column: "collectedby_id"
+    name: "collectedby"
+
+  collectedby2:
+    fqn: "ol.collectedby"
+    entitySetName: "NCRICCollectedBy"
+    src: "imagesources"
+    dst: "agencies2"
+    propertyDefinitions:
+      general.id:
+        type: "general.id"
+        column: "collectedby2_id"
+    name: "collectedby2"
+
+# SCSO associations
+  has_scso:
+    fqn: "ol.has"
+    entitySetName: "NCRICHasSCSO"
+    src: "vehicles_scso"
+    dst: "vehiclerecords_scso"
+    propertyDefinitions:
+      ol.id:
+        type: "ol.id"
+        column: "has_id"
+    name: "has_scso"
+
+  recordedby1_scso:
+    fqn: "ol.recordedby"
+    entitySetName: "NCRICRecordedBySCSO"
+    src: "vehiclerecords_scso"
+    dst: "imagesources_scso"
+    propertyDefinitions:
+      ol.datelogged:
+        type: "ol.datelogged"
+        column: "eventDateTime"
+      general.stringid:
+        type: "general.stringid"
+        column: "recordedby1_id"
+    name: "recordedby1_scso"
+
+  recordedby2_scso:
+    fqn: "ol.recordedby"
+    entitySetName: "NCRICRecordedBySCSO"
+    src: "vehiclerecords_scso"
+    dst: "agencies_scso"
+    propertyDefinitions:
+      ol.datelogged:
+        type: "ol.datelogged"
+        column: "eventDateTime"
+      general.stringid:
+        type: "general.stringid"
+        column: "recordedby2_id"
+    name: "recordedby2_scso"
+
+  recordedby3_scso:
+    fqn: "ol.recordedby"
+    entitySetName: "NCRICRecordedBySCSO"
+    src: "vehiclerecords_scso"
+    dst: "agencies_scso2"
+    propertyDefinitions:
+      ol.datelogged:
+        type: "ol.datelogged"
+        column: "eventDateTime"
+      general.stringid:
+        type: "general.stringid"
+        column: "recordedby3_id"
+    name: "recordedby3_scso"
+
+  locatedat1_scso:
+    fqn: "ol.locatedat"
+    entitySetName: "NCRICLocatedAtSCSO"
+    src: "imagesources_scso"
+    dst: "locations_scso"
+    propertyDefinitions:
+      general.id:
+        type: "general.id"
+        column: "locatedat1_id"
+    name: "locatedat1_scso"
+
+  locatedat2_scso:
+    fqn: "ol.locatedat"
+    entitySetName: "NCRICLocatedAtSCSO"
+    src: "vehiclerecords_scso"
+    dst: "locations_scso"
+    propertyDefinitions:
+      general.id:
+        type: "general.id"
+        column: "locatedat2_id"
+    name: "locatedat2_scso"
+
+  locatedat3_scso:
+    fqn: "ol.locatedat"
+    entitySetName: "NCRICLocatedAtSCSO"
+    src: "vehicles_scso"
+    dst: "locations_scso"
+    propertyDefinitions:
+      general.id:
+        type: "general.id"
+        column: "locatedat3_id"
+    name: "locatedat3_scso"
+
+  collectedby_scso:
+    fqn: "ol.collectedby"
+    entitySetName: "NCRICCollectedBySCSO"
+    src: "imagesources_scso"
+    dst: "agencies_scso"
+    propertyDefinitions:
+      general.id:
+        type: "general.id"
+        column: "collectedby_id"
+    name: "collectedby_scso"
+
+  collectedby2_scso:
+    fqn: "ol.collectedby"
+    entitySetName: "NCRICCollectedBySCSO"
+    src: "imagesources_scso"
+    dst: "agencies_scso2"
+    propertyDefinitions:
+      general.id:
+        type: "general.id"
+        column: "collectedby2_id"
+    name: "collectedby2_scso"

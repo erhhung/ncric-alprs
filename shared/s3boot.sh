@@ -37,7 +37,7 @@ if [[ "$(head -1 /bootstrap.sh)" =~ ^#\!/.+ ]]; then
   exec     /bootstrap.sh
 else
   mv /bootstrap.sh /bootstrap.log
-  echo >&2 -e "[$(date "+%D %r")] BOOT FAILED! Retrying in 10 seconds...\n$(< /bootstrap.log)"
+  echo >&2 -e "[$(date "+%Y-%m-%d %T")] BOOT FAILED! Retrying in 10 seconds...\n$(< /bootstrap.log)"
   sleep 10
   curl -so /boot.sh $URL/user-data
   chmod +x /boot.sh

@@ -30,6 +30,7 @@ find . -type f -exec touch -t 202201010000 "{}" \;
 # -9 compress harder
 # -T test integrity
 # -q quiet operation
-zip -rDX9Tq $JAR .
+# -x exclude files
+zip -rDX9Tq $JAR . -x \*.yaml
 
 echo -n '{"md5":"'$(md5 -q $JAR)'"}'

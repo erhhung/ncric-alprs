@@ -1,14 +1,14 @@
 upgrade_bash() {
-  [ ${BASH_VERSINFO[0]}${BASH_VERSINFO[1]} -ge 51 ] && return
-  yum groupinstall -y "Development Tools"
   cd /tmp
+  yum groupinstall -y "Development Tools"
   wget -q https://ftp.gnu.org/gnu/bash/bash-5.1.16.tar.gz
   tar xzf bash-5.1.16.tar.gz
   cd bash-5.1.16
   ./configure --prefix=/
   make && make install
-  rm -rf /tmp/bash-5.1.16*
-  echo "RESTARTING..."
+  set +x; cd /
+  rm  -rf /tmp/bash-5.1.16*
+  echo -e "\nRESTARTING...\n"
   hash -r; sleep 1
   exec /bootstrap.sh
 }
@@ -73,14 +73,19 @@ EOF
 
 upgrade_awscli() (
   cd /tmp
-  curl -so awscliv2.zip https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip
+  curl  -so awscliv2.zip https://awscli.amazonaws.com/awscli-exe-linux-$(uname -p).zip
   unzip -oq awscliv2.zip
-  ./aws/install
+  ./aws/install --update
   rm -rf /tmp/aws*
 )
 
 export_buckets() {
-  for bucket in "${ALL_BUCKETS[@]}"; do eval export $bucket; done
+  local bucket cmd
+  for bucket in "${ALL_BUCKETS[@]}"; do
+    cmd="export $bucket"
+    echo "$cmd"
+    eval "$cmd"
+  done
 }
 
 authorize_keys() {
@@ -88,12 +93,12 @@ authorize_keys() {
   while read key || [ "$key" ]; do
     grep -q "$key" authorized_keys || \
        echo "$key" >> authorized_keys
-  done < <(aws s3 cp $USR_S3_URL/shared/authorized_keys -)
+  done < <(aws s3 cp $S3_URL/shared/authorized_keys -)
 }
 
 user_dotfiles() {
-  aws s3 sync $USR_S3_URL/shared  . --exclude '*' --include '.*' --exclude '.bash*' --no-progress
-  aws s3 sync $USR_S3_URL/bastion . --exclude '*' --include '.*' --no-progress
+  aws s3 sync $S3_URL/shared  . --exclude '*' --include '.*' --exclude '.bash*' --no-progress
+  aws s3 sync $S3_URL/bastion . --exclude '*' --include '.*' --no-progress
 }
 
 root_dotfiles() (
@@ -115,14 +120,17 @@ $ES_IP${tab}elasticsearch
 EOF
 )
 
-run upgrade_bash
+if [ ${BASH_VERSINFO[0]}${BASH_VERSINFO[1]} -lt 51 ]; then
+  run upgrade_bash; exit
+fi
+export_buckets
+
 run set_hostname
 run set_timezone
 run custom_prompt
 run yum_install
 run motd_banner
 run upgrade_awscli
-run export_buckets
 run authorize_keys $USER
 run user_dotfiles  $USER
 run root_dotfiles

@@ -6,21 +6,27 @@
 # and "boot.sh", followed by its custom "install.sh",
 # and finally ending with "epilog.sh".
 
+__ts() {
+  date "+%Y-%m-%d %T"
+}
+export -f __ts
+
 cd /root 2> /dev/null
 script=$(basename "$0" .sh)
 exec > >(tee -a /$script.log | logger -t $script ) 2>&1
-echo -e "[$(date -R)] ===== BEGIN ${script^^} =====\n"
-echo "Bash version: ${BASH_VERSINFO[@]}"
-set -xeo pipefail
+echo -e "[`__ts`|root] ===== BEGIN ${script^^} =====\n"
+echo -e "Bash version: ${BASH_VERSINFO[@]}\n"
+set  -eo pipefail
 
-# run <func> [user]
+# run <func> [user] [args...]
 run() {
-  local func=$1 user=$2
-  echo "[${user:-root}] $func"
-  if [ $user ]; then
-    export -f $func
-    su $user -c "bash -c 'cd \$HOME; $func'"
+  local func=$1 user=${2:-root} args="${@:3}"
+  echo -e "\n[`__ts`|$user] $func $args"
+  export -f $func
+  if [ $user == 'root' ]; then
+    # always run in subshell
+    (set -x; $func "${@:3}")
   else
-    $func
+    su $user -c "bash -c 'cd \$HOME; set -x; $func $args'"
   fi
 }

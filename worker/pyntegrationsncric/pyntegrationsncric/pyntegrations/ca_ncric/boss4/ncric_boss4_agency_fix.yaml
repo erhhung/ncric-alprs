@@ -1,0 +1,17 @@
+organizationId: 1446ff84-7112-42ec-828d-f181f45e4d20
+
+entityDefinitions:
+  vehiclerecords:
+    fqn: "ol.vehicle"
+    entitySetName: "NCRICVehicleRecords"
+    propertyDefinitions:
+      ol.id:
+        type:  "ol.id"
+        column: "vehicle_record_id"
+      ol.agencyname:
+        type: "ol.agencyname"
+        column: "agencyName"
+    updateType: PartialReplace
+    name: "vehiclerecords"
+
+associationDefinitions: {}

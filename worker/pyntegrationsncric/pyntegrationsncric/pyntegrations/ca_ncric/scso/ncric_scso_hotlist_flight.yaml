@@ -1,0 +1,43 @@
+organizationId: 1446ff84-7112-42ec-828d-f181f45e4d20
+
+entityDefinitions:
+  vehicles:
+    fqn: "ol.vehicle"
+    entitySetName: "astrometrics_1446ff84711242ec828df181f45e4d20_apphotlistvehicles"
+    propertyDefinitions:
+      ol.id:
+        type: "ol.id"
+        column: "VehicleLicensePlateID"
+    name: "vehicles"
+
+  vehiclerecords:
+    fqn: "ol.vehicle"
+    entitySetName: "astrometrics_1446ff84711242ec828df181f45e4d20_apphotlistreads"
+    propertyDefinitions:
+      ol.id:
+        type:  "ol.id"
+        column: "vehicle_record_id"
+      vehicle.licensenumber:
+        type: "vehicle.licensenumber"
+        column: "VehicleLicensePlateID"
+      ol.datelogged:
+        type: "ol.datelogged"
+        column: "eventDateTime"
+      ol.locationcoordinates:
+        type: "ol.locationcoordinates"
+        column: "latlon"
+      publicsafety.agencyname:
+        type: "publicsafety.agencyname"
+        column: "standardized_agency_name"
+      ol.agencyname:
+        type: "ol.agencyname"
+        column: "agencyName"
+      ol.resourceid:
+        type: "ol.resourceid"
+        column: "camera_id"
+      ol.datasource:
+        type: "ol.datasource"
+        column: "datasource"
+    name: "vehiclerecords"
+
+associationDefinitions: {}

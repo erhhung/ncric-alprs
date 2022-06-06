@@ -49,9 +49,9 @@ EOF
 
 install_awscli() (
   cd /tmp
-  curl  -so awscliv2.zip https://awscli.amazonaws.com/awscli-exe-linux-aarch64.zip
+  curl  -so awscliv2.zip https://awscli.amazonaws.com/awscli-exe-linux-$(uname -p).zip
   unzip -oq awscliv2.zip
-  ./aws/install
+  ./aws/install --update
   rm -rf /tmp/aws*
   cd /home/$USER
   cat <<'EOF' >> .bashrc

@@ -2,25 +2,66 @@
   <job>
     <context>
       <options preserveOrder='true'>
-        <option name='ol_client_id' secure='true' storagePath='keys/project/NCRIC/ncric_at_openlattice/ol_client_id' valueExposed='true'>
+        <option name='region' secure='true' storagePath='keys/region' valueExposed='true'>
+          <description>AWS region</description>
           <hidden>true</hidden>
         </option>
-        <option name='ol_password' secure='true' storagePath='keys/project/NCRIC/ncric_at_openlattice/ol_password' valueExposed='true'>
+        <option name='s3_bucket' secure='true' storagePath='keys/s3_bucket' valueExposed='true'>
+          <description>SFTP bucket</description>
           <hidden>true</hidden>
         </option>
-        <option name='ol_user' secure='true' storagePath='keys/project/NCRIC/ncric_at_openlattice/ol_user' valueExposed='true'>
+        <option name='s3_prefix' secure='true' storagePath='keys/s3_prefix/boss4' valueExposed='true'>
+          <description>Bucket prefix</description>
+          <hidden>true</hidden>
+        </option>
+        <option name='api_url' secure='true' storagePath='keys/api_url' valueExposed='true'>
+          <description>API endpoint</description>
+          <hidden>true</hidden>
+        </option>
+        <option name='shuttle_args' secure='true' storagePath='keys/shuttle_args' valueExposed='true'>
+          <description>Shuttle CLI args</description>
+          <hidden>true</hidden>
+        </option>
+        <option name='db_host' secure='true' storagePath='keys/db_host' valueExposed='true'>
+          <description>PostgreSQL host</description>
+          <hidden>true</hidden>
+        </option>
+        <option name='db_name' secure='true' storagePath='keys/db_name' valueExposed='true'>
+          <description>NCRIC database</description>
+          <hidden>true</hidden>
+        </option>
+        <option name='db_user' secure='true' storagePath='keys/db_user' valueExposed='true'>
+          <description>PostgreSQL user</description>
+          <hidden>true</hidden>
+        </option>
+        <option name='db_pass' secure='true' storagePath='keys/db_pass' valueExposed='true'>
+          <description>PostgreSQL password</description>
           <hidden>true</hidden>
         </option>
       </options>
     </context>
     <defaultTab>nodes</defaultTab>
-    <description>Does the whole day for the day before yesterday</description>
-    <executionEnabled>false</executionEnabled>
+    <description><![CDATA[Catchup job for BOSS4 into Aurora with entity sets broken out by agency
+* End datetime range is the bottom of the hour that the job is run. For a job at 9:10 am, covers 8-9 am.
+* Does the whole day for the day before yesterday
+* All BOSS4 data is in UTC time]]></description>
+    <dispatch>
+      <excludePrecedence>true</excludePrecedence>
+      <keepgoing>false</keepgoing>
+      <rankOrder>ascending</rankOrder>
+      <successOnEmptyNodeFilter>false</successOnEmptyNodeFilter>
+      <threadcount>1</threadcount>
+    </dispatch>
+    <executionEnabled>true</executionEnabled>
     <id>042e1a98-2d42-48ed-ab8d-1cf092b2b727</id>
     <loglevel>INFO</loglevel>
     <multipleExecutions>true</multipleExecutions>
-    <name>Recurring asynchronous: BOSS4 - goes back two days </name>
+    <name>Recurring BOSS4: asynchronous - goes back two days</name>
     <nodeFilterEditable>false</nodeFilterEditable>
+    <nodefilters>
+      <filter>name: Worker</filter>
+    </nodefilters>
+    <nodesSelectedByDefault>true</nodesSelectedByDefault>
     <plugins />
     <schedule>
       <month month='*' />
@@ -28,17 +69,20 @@
       <weekday day='*' />
       <year year='*' />
     </schedule>
-    <scheduleEnabled>true</scheduleEnabled>
+    <scheduleEnabled>false</scheduleEnabled>
     <sequence keepgoing='false' strategy='node-first'>
       <command>
         <description>2 days ago</description>
-        <script><![CDATA[#!/opt/anaconda/envs/openlattice/bin/python
+        <script><![CDATA[#!/usr/bin/env python3
 
-import pyntegrationsncric
 from datetime import datetime, timedelta
-import math
-import sqlalchemy as sq
+from sqlalchemy import create_engine
+from pyntegrations.ca_ncric.boss4.integration_definitions import \
+  BOSS4Integration, BOSS4ImagesIntegration, BOSS4AgenciesIntegration, \
+  BOSS4ImageSourcesIntegration, BOSS4AgenciesStandardizedIntegration
 import pyntegrationsncric.pyntegrations.ca_ncric.utils.openlattice_functions as of
+import math
+import os
 
 agencies = [
   "Benicia PD",
@@ -61,13 +105,13 @@ agencies = [
   "Central Marin Police Authority",
   "Newark PD",
   "Suisun PD",
-  "Fremont PD",
+  # "Fremont PD",
   "San Francisco PD",
   "Vallejo PD",
   "Piedmont PD",
   "NCRIC",
   "San Leandro PD",
-  # "Santa Clara County Sheriff's Office",
+  # "Santa Clara County Sheriff’s Office",
   "Los Altos PD",
   "Sunnyvale DPS",
   "Palo Alto PD",
@@ -75,127 +119,143 @@ agencies = [
   "Campbell PD"
 ]
 
-# Include start date and end date - IN UTC
-end_date = datetime.now().replace(microsecond=0, second=0, minute=0, hour=0) - timedelta(days = 1)
-start_date = datetime.now().replace(microsecond=0, second=0, minute=0, hour=0) - timedelta(days = 2)
+s3_bucket = "@option.s3_bucket@"
+s3_prefix = "@option.s3_prefix@"
 
-# interval to search over - so if 2021-3-8 4:00:00 to 2021-3-8 14:00:00
+# Include start date and end date - IN UTC
+dt_end = datetime.now().replace(microsecond=0, second=0, minute=0, hour=0)
+dt_start = dt_end - timedelta(days=2)
+dt_end = dt_end - timedelta(days=1)
+print("dt_start:", dt_start)
+print("dt_end:", dt_end)
+
+# interval to search over, so if 2021-3-8 4:00:00 to 2021-3-8 14:00:00
 # hour interval is 2, then you would search 2021-3-8 4:00:00 - 6:00:00
-# and so on. The integration would run 5 times total.
-hour_interval = 3
-delta = end_date - start_date
+# and so on. The integration would run 5 times in total.
+hour_interval = 1
+delta = dt_end - dt_start
 # find the total number of hours between start date and end date
 total_hours, remainder = divmod(delta.seconds, 3600)
 total_hours += delta.days * 24
-print(total_hours)
+print("total_hours:", total_hours)
 
-# getting total number of 2 hour interval (or x number of interval)
-# between the start time and end time
-# rounded up so that you will always have "more search" over this
-# then taking the min b/w that and the end date so that it always
-# caps at the end_date
+# get total number of 1-hour intervals (or x number of intervals)
+# between the start time and end time rounded up so that you will
+# always have more search over this than taking the min b/w that
+# and the end date so that it always caps at the dt_end
 total_intervals = math.ceil(total_hours / hour_interval)
+print("total_intervals:", total_intervals)
+
+api_url = "@option.api_url@"
+
+pyntegrations_path = os.environ.get("PYNTEGRATIONS_PATH")
+pyntegrations_path += "/ca_ncric"
+shuttle_path = os.environ.get("SHUTTLE_PATH")
+shuttle_args = "@option.shuttle_args@ @option.region@"
+
+db_host = "@option.db_host@"
+db_name = "@option.db_name@"
+db_user = "@option.db_user@"
+db_pass = "@option.db_pass@"
+engine = create_engine(f"postgresql://{db_user}:{db_pass}@{db_host}:5432/{db_name}")
 
 for i in range(total_intervals):
-    sdate = start_date + timedelta(hours=i*hour_interval)
-    edate = min(start_date + timedelta(hours=(i+1)*hour_interval), end_date)
+    sdate = dt_start + timedelta(hours=i*hour_interval)
+    edate = min(dt_start + timedelta(hours=(i+1)*hour_interval), dt_end)
     print(f"Searching dates from {sdate} to {edate} to integrate MAIN BOSS4 table!")
 
-    # NOTE: CHANGE s3_bucket and s3_prefix to fit the S3 bucket name your files are in
-    main_integration = pyntegrations.ca_ncric.boss4.integration_definitions.BOSS4Integration(date_start=str(sdate),
-                                                                                            date_end=str(edate),
-                                                                                            raw_table_name="boss4_catchup",
-                                                                                            raw_table_name_images="boss4_catchup_images",
-                                                                                            s3_bucket="sftp.openlattice.com",
-                                                                                            s3_prefix="ncric")
+    main_integration = BOSS4Integration(
+        date_start=str(sdate),
+        date_end=str(edate),
+        raw_table_name="boss4_catchup",
+        raw_table_name_images="boss4_catchup_images",
+        s3_bucket=s3_bucket,
+        s3_prefix=s3_prefix)
+
     main_table_name, images_table_name = main_integration.get_raw_data_from_s3()
-
-    # NOTE you must insert your base_url in all of the integration definitions - "https://api.openlattice.com" will no longer exist
-    images_integration = pyntegrations.ca_ncric.boss4.integration_definitions.BOSS4ImagesIntegration(sql=f"select * from {images_table_name}",
-                                                                                                    clean_table_name_root="boss4_catchup_images_cleaned",
-                                                                                                    base_url="https://api.openlattice.com")
-    images_clean_table_name = images_integration.clean_and_upload()
-
     print(main_table_name, images_table_name)
+    print("Got the raw data!")
+
+    images_integration = BOSS4ImagesIntegration(
+        sql=f"select * from {images_table_name}",
+        clean_table_name_root="boss4_catchup_images_cleaned",
+        base_url=api_url)
+
+    images_clean_table_name = images_integration.clean_and_upload()
+    print("Got the images data!")
+
     try:
         for agency in agencies:
-            print(f"Integrating MAIN table for {agency}!")
-            agency_no_space = agency.replace(" ", "").replace("\'", "")
+            agency_no_space = agency.replace(" ", "").replace("'", "")
 
-        # integrate all with new tables
+            print(f"Integrating MAIN table for {agency}!")
+            # integrate all with new tables
             main_integration.integrate_table(
-                shuttle_path="opt/openlattice/shuttle/shuttle-0.0.4-SNAPSHOT/bin/shuttle",
-                shuttle_args=' --read-rate-limit 0 --shuttle-config openlattice-alpha-config us-gov-west-1 --data-store alpr',
-                flight_path=f"ca_ncric/ncric_flights/ncric_{agency_no_space}_flight.yaml",
                 sql=f"select * from {main_table_name} where standardized_agency_name = '{agency}'",
-                memory_size=3
-                )
+                flight_path=pyntegrations_path+f"/ncric_flights/ncric_{agency_no_space}_flight.yaml",
+                memory_size=3,
+                shuttle_path=shuttle_path,
+                shuttle_args=shuttle_args)
+            print("Passed: integrate_table MAIN table")
 
             print(f"Integrating IMAGES table for {agency}!")
             # integrate images table
             images_integration.integrate_table(
-                sql = f"select * from {images_clean_table_name} where standardized_agency_name = '{agency}'",
-                flight_path=f"ca_ncric/ncric_image_flights/ncric_{agency_no_space}_images_flight.yaml",
+                sql=f"select * from {images_clean_table_name} where standardized_agency_name = '{agency}'",
+                flight_path=pyntegrations_path+f"/ncric_image_flights/ncric_{agency_no_space}_images_flight.yaml",
                 memory_size=5,
-                shuttle_path="opt/openlattice/shuttle/shuttle-0.0.4-SNAPSHOT/bin/shuttle",
-                shuttle_args=' --s3 PRODUCTION --read-rate-limit 0 --shuttle-config openlattice-alpha-config us-gov-west-1 --data-store alpr'
-                )
+                shuttle_path=shuttle_path,
+                shuttle_args=shuttle_args+" --s3 PRODUCTION")
+            print("Passed: integrate_table IMAGES table")
 
         print("Integrating AGENCIES table!")
         # integrate agencies associate only
-        integration = pyntegrations.ca_ncric.boss4.integration_definitions.BOSS4AgenciesIntegration(sql=f'select distinct "agency_id", "agencyName", "datasource", "agencyAcronym" from {main_table_name}',
-                                                                                                    clean_table_name_root="boss4_agencies_2days",
-                                                                                                    base_url="https://api.openlattice.com")
+        integration = BOSS4AgenciesIntegration(
+            sql=f'select distinct "agency_id", "agencyName", "datasource", "agencyAcronym" from {main_table_name}',
+            clean_table_name_root="boss4_agencies_catchup",
+            base_url=api_url)
         agencies_table_name = integration.clean_and_upload()
         integration.integrate_table(
-            clean_table_name = agencies_table_name,
-            shuttle_path="opt/openlattice/shuttle/shuttle-0.0.4-SNAPSHOT/bin/shuttle",
-            shuttle_args=' --read-rate-limit 0 --shuttle-config openlattice-alpha-config us-gov-west-1 --data-store alpr'
-            )
+            clean_table_name=agencies_table_name,
+            shuttle_path=shuttle_path,
+            shuttle_args=shuttle_args)
 
         print("Integrating IMAGE SOURCES table!")
         # integrate image sources associate only
-        integration = pyntegrations.ca_ncric.boss4.integration_definitions.BOSS4ImageSourcesIntegration(sql=f'select distinct "camera_id", "LPRCameraName", "datasource" from {main_table_name}',
-                                                                                                        clean_table_name_root="boss4_imagesources_2days",
-                                                                                                        base_url="https://api.openlattice.com")
+        integration = BOSS4ImageSourcesIntegration(
+            sql=f'select distinct "camera_id", "LPRCameraName", "datasource" from {main_table_name}',
+            clean_table_name_root="boss4_imagesources_catchup",
+            base_url=api_url)
         image_sources_table = integration.clean_and_upload()
         integration.integrate_table(
-            clean_table_name = image_sources_table,
-            shuttle_path="opt/openlattice/shuttle/shuttle-0.0.4-SNAPSHOT/bin/shuttle",
-            shuttle_args=' --read-rate-limit 0 --shuttle-config openlattice-alpha-config us-gov-west-1 --data-store alpr'
-            )
+            clean_table_name=image_sources_table,
+            shuttle_path=shuttle_path,
+            shuttle_args=shuttle_args)
 
-        print("Integrating STANDARDIZED AGENCIES integration!")
-        sagency_integration=pyntegrations.ca_ncric.boss4.integration_definitions.BOSS4AgenciesStandardizedIntegration(
+        print("Integrating STANDARDIZED AGENCIES table!")
+        sagency_integration = BOSS4AgenciesStandardizedIntegration(
             sql="""select distinct standardized_agency_name from standardized_agency_names
-            where \"ol.datasource\" = 'BOSS4';""",
-            base_url="https://api.openlattice.com")
+                where \"ol.datasource\" = 'BOSS4'
+                """,
+            base_url=api_url)
         sagency_integration.integrate_table(
             sql="""select distinct standardized_agency_name from standardized_agency_names
-            where \"ol.datasource\" = 'BOSS4';""",
-            shuttle_path="opt/openlattice/shuttle/shuttle-0.0.4-SNAPSHOT/bin/shuttle",
-            shuttle_args=' --read-rate-limit 0 --shuttle-config openlattice-alpha-config us-gov-west-1 --data-store alpr'
-            )
+                where \"ol.datasource\" = 'BOSS4'
+                """,
+            shuttle_path=shuttle_path,
+            shuttle_args=shuttle_args)
 
     except Exception as e:
         main_integration.drop_main_table()
         main_integration.drop_images_table()
-
-        raise RuntimeError(f"Something went wrong with the job! Error message: {str(e)}. Dropping tables.")
+        raise RuntimeError(f"Something went wrong with the job! Dropping tables. Error message: {str(e)}")
 
     main_integration.drop_main_table()
     main_integration.drop_images_table()
 
     # Drop other tables after integration is complete
-    dbuser=os.environ.get("RD_OPTION_DB_USER") # Store credential within Rundeck "options" above, and name it "db_user". Retrieve here
-    dbpw=os.environ.get("RD_OPTION_DB_PASSWORD") # Store credential within Rundeck "options" above, and name it "db_password". Retrieve here
-    db="org_47b646d7a01a4232b25b15c880ea4046" # Insert your database name here
-    host="atlas.openlattice.com" # Insert your hostname here
-    engine=sq.create_engine(f'''postgresql://{dbuser}:{dbpw}@{host}:30001/{db}''')
-
     of.drop_table(engine, agencies_table_name)
-    of.drop_table(engine, image_sources_table)
-        ]]></script>
+    of.drop_table(engine, image_sources_table)]]></script>
         <scriptargs />
       </command>
     </sequence>

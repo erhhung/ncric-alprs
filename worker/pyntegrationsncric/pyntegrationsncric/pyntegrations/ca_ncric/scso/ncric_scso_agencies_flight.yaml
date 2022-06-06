@@ -1,0 +1,40 @@
+organizationId: 1446ff84-7112-42ec-828d-f181f45e4d20
+
+entityDefinitions:
+  agencies:
+    fqn: "ol.agency"
+    entitySetName: "NCRICAgencies"
+    propertyDefinitions:
+      ol.id:
+        type: "ol.id"
+        column: "agency_id"
+      ol.name:
+        type: "ol.name"
+        column: "agencyName"
+      ol.acronym:
+        type: "ol.acronym"
+        column: "agencyAcronym"
+      ol.datasource:
+        type: "ol.datasource"
+        column: "datasource"
+    name: "agencies"
+
+  agencies1:
+    fqn: "ol.agency"
+    entitySetName: "NCRICAgenciesSCSO"
+    propertyDefinitions:
+      ol.id:
+        type: "ol.id"
+        column: "agency_id"
+      ol.name:
+        type: "ol.name"
+        column: "agencyName"
+      ol.acronym:
+        type: "ol.acronym"
+        column: "agencyAcronym"
+      ol.datasource:
+        type: "ol.datasource"
+        column: "datasource"
+    name: "agencies1"
+
+associationDefinitions: {}

@@ -1,2 +1,1 @@
-set +x
-echo -e "\n[$(date -R)] ===== END ${script^^} ====="
+echo -e "\n[`__ts`|root] ===== END ${script^^} ====="

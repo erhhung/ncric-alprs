@@ -1,0 +1,30 @@
+organizationId: 1446ff84-7112-42ec-828d-f181f45e4d20
+
+entityDefinitions:
+  vehiclerecords:
+    fqn: "ol.vehicle"
+    entitySetName: "NCRICVehicleRecords"
+    propertyDefinitions:
+      ol.id:
+        type:  "ol.id"
+        column: "vehicle_records_id"
+      ol.locationcoordinates:
+        type: "ol.locationcoordinates"
+        column: "latlon"
+    updateType: PartialReplace
+    name: "vehiclerecords"
+
+  locations:
+    fqn: "ol.location"
+    entitySetName: "NCRICLocations"
+    propertyDefinitions:
+      general.id:
+        type: "general.id"
+        column: "location_id"
+      ol.locationcoordinates:
+        type: "ol.locationcoordinates"
+        column: "latlon"
+    updateType: PartialReplace
+    name: "locations"
+
+associationDefinitions: {}

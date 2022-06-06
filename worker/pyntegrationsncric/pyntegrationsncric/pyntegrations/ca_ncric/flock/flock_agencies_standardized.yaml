@@ -1,0 +1,28 @@
+organizationId: b28c0eaa-7273-45c9-b607-e4d1bba80076
+
+entityDefinitions:
+  agencies:
+    fqn: "ol.agency"
+    entitySetName: "NCRICStandardizedAgencies"
+    propertyDefinitions:
+      ol.id:
+        type: "ol.id"
+        column: "standardized_agency_name"
+      ol.name:
+        type: "ol.name"
+        column: "standardized_agency_name"
+    name: "agencies"
+
+  agencies2:
+    fqn: "ol.agency"
+    entitySetName: "NCRICStandardizedAgenciesFLOCK"
+    propertyDefinitions:
+      ol.id:
+        type: "ol.id"
+        column: "standardized_agency_name"
+      ol.name:
+        type: "ol.name"
+        column: "standardized_agency_name"
+    name: "agencies2"
+
+associationDefinitions: {}

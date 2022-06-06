@@ -1,0 +1,178 @@
+- defaultTab: nodes
+  description: |-
+    Flock images - large data stream slows down regular Flock integration, so this is done separately
+    Runs every 3 hours on 3-hour chunks of data:
+    * Chooses the bottom of the hour that the job starts in, 24 hours ago, as the end date, and 3 hours before that as the start date:
+      * e.g. A job started at 9 am 10/14 will cover 6-9 am 10/13.
+    * Flock data is pulled at midnight daily for the entire previous day
+  executionEnabled: true
+  id: a114931d-9012-4468-8046-0d79043e3c14
+  loglevel: INFO
+  multipleExecutions: true
+  name: 'Recurring Flock - Images: realtime - 3-hour'
+  nodeFilterEditable: false
+  nodefilters:
+    dispatch:
+      excludePrecedence: true
+      keepgoing: false
+      rankOrder: ascending
+      successOnEmptyNodeFilter: false
+      threadcount: '1'
+    filter: 'name: Worker'
+  nodesSelectedByDefault: true
+  options:
+  - description: AWS region
+    hidden: true
+    name: region
+    secure: true
+    storagePath: keys/region
+    valueExposed: true
+  - description: API endpoint
+    hidden: true
+    name: api_url
+    secure: true
+    storagePath: keys/api_url
+    valueExposed: true
+  - description: Shuttle CLI args
+    hidden: true
+    name: shuttle_args
+    secure: true
+    storagePath: keys/shuttle_args
+    valueExposed: true
+  - description: PostgreSQL host
+    hidden: true
+    name: db_host
+    secure: true
+    storagePath: keys/db_host
+    valueExposed: true
+  - description: NCRIC database
+    hidden: true
+    name: db_name
+    secure: true
+    storagePath: keys/db_name
+    valueExposed: true
+  - description: PostgreSQL user
+    hidden: true
+    name: db_user
+    secure: true
+    storagePath: keys/db_user
+    valueExposed: true
+  - description: PostgreSQL password
+    hidden: true
+    name: db_pass
+    secure: true
+    storagePath: keys/db_pass
+    valueExposed: true
+  - name: fetch_size
+    value: '5000'
+  - name: chunk_size
+    value: '40000'
+  plugins:
+    ExecutionLifecycle: null
+  schedule:
+    month: '*'
+    time:
+      hour: 0/3
+      minute: '20'
+      seconds: '0'
+    weekday:
+      day: '*'
+    year: '*'
+  scheduleEnabled: false
+  sequence:
+    commands:
+    - description: 3 hours a day ago
+      script: |-
+        #!/usr/bin/env python3
+
+        from datetime import datetime, timedelta
+        from sqlalchemy import create_engine
+        from pyntegrationsncric.pyntegrations.ca_ncric.flock.integration_definitions \
+          import FLOCKImagesIntegration
+        import pandas as pd
+        import math
+        import os
+
+        agencies = [
+          "Atherton PD",
+          "CHP",
+          "Danville PD",
+          "GGB Vista Point",
+          "Livermore PD",
+          "Napa PD",
+          "NCRIC",
+          "Piedmont PD",
+          "San Mateo PD",
+          "Vacaville PD",
+          "Vallejo PD"
+        ]
+
+        # End datetime is the beginning of the hour that the job starts in
+        dt_end = datetime.now().replace(microsecond=0, second=0, minute=0)
+        dt_end = dt_end - timedelta(hours=24)
+        dt_start = dt_end - timedelta(hours=3)
+
+        db_host = "@option.db_host@"
+        db_name = "@option.db_name@"
+        db_user = "@option.db_user@"
+        db_pass = "@option.db_pass@"
+        engine = create_engine(f"postgresql://{db_user}:{db_pass}@{db_host}:5432/{db_name}")
+
+        api_url = "@option.api_url@"
+        fsize = @option.fetch_size@
+        limit = @option.chunk_size@
+
+        pyntegrations_path = os.environ.get("PYNTEGRATIONS_PATH")
+        pyntegrations_path += "/ca_ncric"
+        shuttle_path = os.environ.get("SHUTTLE_PATH")
+        shuttle_args = "@option.shuttle_args@ @option.region@"
+        shuttle_args += f" --s3 PRODUCTION --fetchsize {fsize} --upload-size {fsize}"
+
+        try:
+            for agency in agencies:
+                agency_no_space = agency.replace(" ", "").replace("'", "")
+
+                print(f"Integrating IMAGES table for {agency}!")
+                result = engine.execute(f'''
+                    select count(*) from (
+                        select f.readid, f.image, s.standardized_agency_name
+                        from flock_reads f
+                        left join standardized_agency_names_flock s
+                        on cast(f.cameranetworkid as text) = s."ol.id"
+                        where "timestamp" >= '{dt_start}'
+                          and "timestamp" <= '{dt_end}'
+                          and s.standardized_agency_name = '{agency}'
+                    ) t''')
+                records = pd.DataFrame(result).loc[0, 0]
+                print(f"{records} records to process")
+                chunks = math.ceil(records / limit)
+
+                for i in range(chunks):
+                    print(f"Processing records {limit*i} through {limit*(i+1)}!")
+
+                    query = f'''
+                        select f.readid::text || '_FLOCK' as "vehicle_record_id",
+                            f.image as "LPRVehiclePlatePhoto",
+                            s.standardized_agency_name
+                        from flock_reads f
+                        left join standardized_agency_names_flock s
+                        on cast(f.cameranetworkid as text) = s."ol.id"
+                        where "timestamp" >= '{dt_start}'
+                          and "timestamp" <= '{dt_end}'
+                          and s.standardized_agency_name = '{agency}'
+                        order by f.readid
+                        limit {limit} offset {limit*i}
+                        '''
+                    images_integration = FLOCKImagesIntegration(sql=query, base_url=api_url)
+                    images_integration.integrate_table(sql=query, drop_table_on_success=True,
+                        flight_path=pyntegrations_path+f"/ncric_image_flights/ncric_{agency_no_space}_images_flight.yaml",
+                        memory_size=9,
+                        shuttle_path=shuttle_path,
+                        shuttle_args=shuttle_args)
+
+        except Exception as e:
+            raise RuntimeError(f"Something went wrong with the job! Error message: {str(e)}")
+    keepgoing: false
+    strategy: node-first
+  timeZone: America/Los_Angeles
+  uuid: a114931d-9012-4468-8046-0d79043e3c14

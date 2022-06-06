@@ -71,8 +71,11 @@ variable "ssh_keys" {
 }
 
 variable "sftp_users" {
-  description = "Map of SFTP users to public keys"
-  type        = map(string)
+  description = "Public keys and home dirs of SFTP users"
+  type = map(object({
+    public_key = string
+    home_dir   = optional(string)
+  }))
 }
 
 variable "AUTH0_M2M_CLIENT_ID" {

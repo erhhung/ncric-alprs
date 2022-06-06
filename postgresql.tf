@@ -43,7 +43,7 @@ locals {
     # once with the "edmsync" flag
     path = "postgresql/alprs.sql.gz"
     file = "${path.module}/postgresql/alprs.sql.gz"
-    data = null
+    type = "application/gzip"
     }, {
     path = "postgresql/bootstrap.sh"
     data = <<-EOT
@@ -58,6 +58,7 @@ ${templatefile("${path.module}/postgresql/boot.tftpl", {
     # passwords are created in keys.tf
     alprs_pass    = local.alprs_pass
     atlas_pass    = local.atlas_pass
+    rundeck_pass  = local.rundeck_pass
     BACKUP_BUCKET = var.buckets["backup"]
 })}
 ${file("${path.module}/shared/boot.sh")}
@@ -73,10 +74,10 @@ resource "aws_s3_object" "pg_user_data" {
 
   bucket       = data.aws_s3_bucket.user_data.id
   key          = "userdata/${each.value.path}"
-  content_type = regex("\\.\\w+$", each.value.path) == ".gz" ? "application/gzip" : "text/plain"
-  content      = each.value.data == null ? null : chomp(each.value.data)
-  source       = each.value.data != null ? null : each.value.file
-  source_hash  = each.value.data != null ? md5(each.value.data) : filemd5(each.value.file)
+  content_type = lookup(each.value, "type", "text/plain")
+  content      = lookup(each.value, "data", null) == null ? null : chomp(each.value.data)
+  source       = lookup(each.value, "file", null) == null ? null : each.value.file
+  source_hash  = lookup(each.value, "file", null) != null ? filemd5(each.value.file) : md5(each.value.data)
 }
 
 locals {

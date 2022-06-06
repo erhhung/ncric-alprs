@@ -1,0 +1,55 @@
+organizationId: 1446ff84-7112-42ec-828d-f181f45e4d20
+
+entityDefinitions:
+  vehiclerecords:
+    fqn: "ol.vehicle"
+    entitySetName: "NCRICVehicleRecords"
+    propertyDefinitions:
+      ol.id:
+        type: "ol.id"
+        column: "vehicle_records_id"
+      vehicle.licensenumber:
+        type: "vehicle.licensenumber"
+        column: "hts_VRM"
+      ol.datasource:
+        type: "ol.datasource"
+        column: "datasource"
+    name: "vehiclerecords"
+
+  hits:
+    fqn: "ol.notification"
+    entitySetName: "NCRICNotifications"
+    propertyDefinitions:
+      ol.id:
+        type: "ol.id"
+        column: "notifications_id"
+      ol.type:
+        type: "ol.type"
+        column: "hts_Hotlist"
+      general.datetime:
+        type: "general.datetime"
+        column: "hts_Timestamp"
+      ol.datasource:
+        type: "ol.datasource"
+        column: "datasource"
+    conditions:
+    - !<conditions.BooleanRegexCondition>
+      column: "hts_Hotlist"
+      pattern: "STOLEN VEHICLES DOJ|STOLEN PLATES DOJ"
+      reverse: false
+    name: "hits"
+
+associationDefinitions:
+  resultsin1:
+    fqn: "ol.resultsin"
+    entitySetName: "NCRICResultsIn"
+    src: "vehiclerecords"
+    dst: "hits"
+    propertyDefinitions:
+      ol.id:
+        type: "ol.id"
+        column: "resultsin1_id"
+      general.datetime:
+        type: "general.datetime"
+        column: "hts_Timestamp"
+    name: "resultsin1"

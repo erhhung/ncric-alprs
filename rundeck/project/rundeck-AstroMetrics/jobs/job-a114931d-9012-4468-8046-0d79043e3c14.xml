@@ -2,30 +2,61 @@
   <job>
     <context>
       <options preserveOrder='true'>
+        <option name='region' secure='true' storagePath='keys/region' valueExposed='true'>
+          <description>AWS region</description>
+          <hidden>true</hidden>
+        </option>
+        <option name='api_url' secure='true' storagePath='keys/api_url' valueExposed='true'>
+          <description>API endpoint</description>
+          <hidden>true</hidden>
+        </option>
+        <option name='shuttle_args' secure='true' storagePath='keys/shuttle_args' valueExposed='true'>
+          <description>Shuttle CLI args</description>
+          <hidden>true</hidden>
+        </option>
+        <option name='db_host' secure='true' storagePath='keys/db_host' valueExposed='true'>
+          <description>PostgreSQL host</description>
+          <hidden>true</hidden>
+        </option>
+        <option name='db_name' secure='true' storagePath='keys/db_name' valueExposed='true'>
+          <description>NCRIC database</description>
+          <hidden>true</hidden>
+        </option>
+        <option name='db_user' secure='true' storagePath='keys/db_user' valueExposed='true'>
+          <description>PostgreSQL user</description>
+          <hidden>true</hidden>
+        </option>
+        <option name='db_pass' secure='true' storagePath='keys/db_pass' valueExposed='true'>
+          <description>PostgreSQL password</description>
+          <hidden>true</hidden>
+        </option>
+        <option name='fetch_size' value='5000' />
         <option name='chunk_size' value='40000' />
-        <option name='fetch_upload' value='5000' />
-        <option name='ol_client_id' secure='true' storagePath='keys/project/NCRIC/ncric_at_openlattice/ol_client_id' valueExposed='true' />
-        <option name='ol_password' secure='true' storagePath='keys/project/NCRIC/ncric_at_openlattice/ol_password' valueExposed='true'>
-          <hidden>true</hidden>
-        </option>
-        <option name='ol_user' secure='true' storagePath='keys/project/NCRIC/ncric_at_openlattice/ol_user' valueExposed='true'>
-          <hidden>true</hidden>
-        </option>
       </options>
     </context>
     <defaultTab>nodes</defaultTab>
-    <description><![CDATA[Flock images - large data stream slows down the regular Flock integration, so is done separately.
-Runs every 3 hours, on 3-hr chunks of data
-- This job runs chooses the bottom of the hr that the job starts in (in PST), 24-hrs ago, as the end datetime and 3 hrs before that as the start date
-- e.g. A job started at 9 am 10/14 will cover 6-9 am 10/13.
-
-- Flock data is pulled at midnight daily, for the entire previous day.]]></description>
-    <executionEnabled>false</executionEnabled>
+    <description><![CDATA[Flock images - large data stream slows down regular Flock integration, so this is done separately
+Runs every 3 hours on 3-hour chunks of data:
+* Chooses the bottom of the hour that the job starts in, 24 hours ago, as the end date, and 3 hours before that as the start date:
+  * e.g. A job started at 9 am 10/14 will cover 6-9 am 10/13.
+* Flock data is pulled at midnight daily for the entire previous day]]></description>
+    <dispatch>
+      <excludePrecedence>true</excludePrecedence>
+      <keepgoing>false</keepgoing>
+      <rankOrder>ascending</rankOrder>
+      <successOnEmptyNodeFilter>false</successOnEmptyNodeFilter>
+      <threadcount>1</threadcount>
+    </dispatch>
+    <executionEnabled>true</executionEnabled>
     <id>a114931d-9012-4468-8046-0d79043e3c14</id>
     <loglevel>INFO</loglevel>
     <multipleExecutions>true</multipleExecutions>
-    <name>Recurring Realtime: Flock IMAGES (3-hr)</name>
+    <name>Recurring Flock - Images: realtime - 3-hour</name>
     <nodeFilterEditable>false</nodeFilterEditable>
+    <nodefilters>
+      <filter>name: Worker</filter>
+    </nodefilters>
+    <nodesSelectedByDefault>true</nodesSelectedByDefault>
     <plugins />
     <schedule>
       <month month='*' />
@@ -33,17 +64,19 @@ Runs every 3 hours, on 3-hr chunks of data
       <weekday day='*' />
       <year year='*' />
     </schedule>
-    <scheduleEnabled>true</scheduleEnabled>
+    <scheduleEnabled>false</scheduleEnabled>
     <sequence keepgoing='false' strategy='node-first'>
       <command>
-        <description>images</description>
-        <script><![CDATA[#!/opt/anaconda/envs/openlattice/bin/python
+        <description>3 hours a day ago</description>
+        <script><![CDATA[#!/usr/bin/env python3
 
-from pyntegrationsncric.pyntegrations.ca_ncric.flock.integration_definitions import FLOCKImagesIntegration
-import openlattice
+from datetime import datetime, timedelta
+from sqlalchemy import create_engine
+from pyntegrationsncric.pyntegrations.ca_ncric.flock.integration_definitions \
+  import FLOCKImagesIntegration
 import pandas as pd
 import math
-from datetime import datetime, time, timedelta
+import os
 
 agencies = [
   "Atherton PD",
@@ -59,59 +92,75 @@ agencies = [
   "Vallejo PD"
 ]
 
-# End datetime is the beginning of the hr that the job starts in.
-dt_end = datetime.now().replace(microsecond=0, second=0, minute=0) - timedelta(hours = 30)
-dt_start = dt_end - timedelta(hours = 3) #3
+# End datetime is the beginning of the hour that the job starts in
+dt_end = datetime.now().replace(microsecond=0, second=0, minute=0)
+dt_end = dt_end - timedelta(hours=24)
+dt_start = dt_end - timedelta(hours=3)
 
-for agency in agencies:
-    agency_no_space = agency.replace(" ", "")
+db_host = "@option.db_host@"
+db_name = "@option.db_name@"
+db_user = "@option.db_user@"
+db_pass = "@option.db_pass@"
+engine = create_engine(f"postgresql://{db_user}:{db_pass}@{db_host}:5432/{db_name}")
 
-    dbuser=os.environ.get("RD_OPTION_DB_USER") # Store credential within Rundeck "options" above, and name it "db_user". Retrieve here
-    dbpw=os.environ.get("RD_OPTION_DB_PASSWORD") # Store credential within Rundeck "options" above, and name it "db_password". Retrieve here
-    db="org_47b646d7a01a4232b25b15c880ea4046" # Insert your database name here
-    host="atlas.openlattice.com" # Insert your hostname here
-    eng=sq.create_engine(f'''postgresql://{dbuser}:{dbpw}@{host}:30001/{db}''')
+api_url = "@option.api_url@"
+fsize = @option.fetch_size@
+limit = @option.chunk_size@
 
-    res=eng.execute(f'''select count(*) from (
-                            select f.readid, f.image, s.standardized_agency_name
-                    from flock_reads f left join standardized_agency_names_flock s
-                    on cast(f.cameranetworkid AS TEXT) = s."ol.id"
-                                where "timestamp" >= '{dt_start}' and "timestamp" <= '{dt_end}' and
-            s.standardized_agency_name = '{agency}') t ;''')
-    records = pd.DataFrame(res).loc[0, 0]
-    print('''%s records to process''' % (str(records)))
-    limit = @option.chunk_size@
-    its = math.ceil(records/limit)
+pyntegrations_path = os.environ.get("PYNTEGRATIONS_PATH")
+pyntegrations_path += "/ca_ncric"
+shuttle_path = os.environ.get("SHUTTLE_PATH")
+shuttle_args = "@option.shuttle_args@ @option.region@"
+shuttle_args += f" --s3 PRODUCTION --fetchsize {fsize} --upload-size {fsize}"
 
-    sa = '''--upload-size @option.fetch_upload@ --fetchsize @option.fetch_upload@ --read-rate-limit 0 --s3 PRODUCTION --shuttle-config openlattice-alpha-config us-gov-west-1 --data-store alpr '''
+try:
+    for agency in agencies:
+        agency_no_space = agency.replace(" ", "").replace("'", "")
 
-    for i in range(its):
-        query = f'''select f.readid::text || '_FLOCK' as "vehicle_record_id", f.image as "LPRVehiclePlatePhoto", s.standardized_agency_name
-                    from flock_reads f left join standardized_agency_names_flock s
-                    on cast(f.cameranetworkid AS TEXT) = s."ol.id"
-                    where "timestamp" >= '{dt_start}' and "timestamp" <= '{dt_end}' and
-            s.standardized_agency_name = '{agency}'
-                    order by readid
-                    limit '{str(limit)}' offset '{str(limit*i)}';'''
+        print(f"Integrating IMAGES table for {agency}!")
+        result = engine.execute(f'''
+            select count(*) from (
+                select f.readid, f.image, s.standardized_agency_name
+                from flock_reads f
+                left join standardized_agency_names_flock s
+                on cast(f.cameranetworkid as text) = s."ol.id"
+                where "timestamp" >= '{dt_start}'
+                  and "timestamp" <= '{dt_end}'
+                  and s.standardized_agency_name = '{agency}'
+            ) t''')
+        records = pd.DataFrame(result).loc[0, 0]
+        print(f"{records} records to process")
+        chunks = math.ceil(records / limit)
 
-        print(query)
-        print(f"Processing records {(str(limit*i))} through {str(limit*(i+1))}")
+        for i in range(chunks):
+            print(f"Processing records {limit*i} through {limit*(i+1)}!")
 
-        # NOTE you must insert your base_url here - "https://api.openlattice.com" will no longer exist
-        images_integration=FLOCKImagesIntegration(sql=query, base_url="https://api.openlattice.com")
-        images_integration.integrate_table(
-            sql=query,
-            flight_path=f"ca_ncric/ncric_image_flights/ncric_{agency_no_space}_images_flight.yaml",
-            shuttle_path="opt/openlattice/shuttle/shuttle-0.0.4-SNAPSHOT/bin/shuttle",
-            drop_table_on_success=True,
-            memory_size=9,
-            shuttle_args=sa
-        )
-]]></script>
+            query = f'''
+                select f.readid::text || '_FLOCK' as "vehicle_record_id",
+                    f.image as "LPRVehiclePlatePhoto",
+                    s.standardized_agency_name
+                from flock_reads f
+                left join standardized_agency_names_flock s
+                on cast(f.cameranetworkid as text) = s."ol.id"
+                where "timestamp" >= '{dt_start}'
+                  and "timestamp" <= '{dt_end}'
+                  and s.standardized_agency_name = '{agency}'
+                order by f.readid
+                limit {limit} offset {limit*i}
+                '''
+            images_integration = FLOCKImagesIntegration(sql=query, base_url=api_url)
+            images_integration.integrate_table(sql=query, drop_table_on_success=True,
+                flight_path=pyntegrations_path+f"/ncric_image_flights/ncric_{agency_no_space}_images_flight.yaml",
+                memory_size=9,
+                shuttle_path=shuttle_path,
+                shuttle_args=shuttle_args)
+
+except Exception as e:
+    raise RuntimeError(f"Something went wrong with the job! Error message: {str(e)}")]]></script>
         <scriptargs />
       </command>
     </sequence>
-    <timeZone>PST</timeZone>
+    <timeZone>America/Los_Angeles</timeZone>
     <uuid>a114931d-9012-4468-8046-0d79043e3c14</uuid>
   </job>
 </joblist>

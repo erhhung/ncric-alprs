@@ -1,0 +1,16 @@
+// Flight
+digraph {
+	graph [splines=curved]
+	node [cellborder=0.5 cellpadding=0.5 cellspacing=1 color="#3399ff" fontcolor=white fontname=Helvetica fontsize=9 len=5 propertyfontcolor=gray shape=box style="filled,rounded" tableborder=0.5 tablebordercolor=white titlefontcolor=white]
+	"ol.vehicle" [label=<<table border="0.5" bgcolor="None" bordercolor="white" cellborder="0.5" cellspacing="1" cellpadding="0.5">    <tr><td>    <font color="white"><u><b>ol.vehicle</b></u></font>    </td></tr>        </table>>]
+	node [cellborder=0.5 cellpadding=0.5 cellspacing=1 color="#3399ff" fontcolor=white fontname=Helvetica fontsize=9 len=5 propertyfontcolor=gray shape=box style="filled,rounded" tableborder=0.5 tablebordercolor=white titlefontcolor=white]
+	"ol.imagesource" [label=<<table border="0.5" bgcolor="None" bordercolor="white" cellborder="0.5" cellspacing="1" cellpadding="0.5">    <tr><td>    <font color="white"><u><b>ol.imagesource</b></u></font>    </td></tr>        </table>>]
+	node [cellborder=0.5 cellpadding=0.5 cellspacing=1 color="#3399ff" fontcolor=white fontname=Helvetica fontsize=9 len=5 propertyfontcolor=gray shape=box style="filled,rounded" tableborder=0.5 tablebordercolor=white titlefontcolor=white]
+	"ol.agency" [label=<<table border="0.5" bgcolor="None" bordercolor="white" cellborder="0.5" cellspacing="1" cellpadding="0.5">    <tr><td>    <font color="white"><u><b>ol.agency</b></u></font>    </td></tr>        </table>>]
+	node [cellborder=0.5 cellpadding=0.5 cellspacing=1 color="#3399ff" concentrate=true fontcolor=black fontname=Helvetica fontsize=7 fqncolor="595F72" labeldistance=0 len=5 propertyfontcolor=gray shape=box style=square tablebgcolor=white tableborder=0.5 titlefontcolor=black]
+	"ol.vehicle" -> "ol.imagesource" [label="ol.recordedby" cellborder=0.5 cellpadding=0.5 cellspacing=1 color="#3399ff" concentrate=true dir=forward fontcolor=black fontname=Helvetica fontsize=7 fqncolor="595F72" labeldistance=0 len=5 propertyfontcolor=gray shape=box style=square tablebgcolor=white tableborder=0.5 titlefontcolor=black]
+	node [cellborder=0.5 cellpadding=0.5 cellspacing=1 color="#3399ff" concentrate=true fontcolor=black fontname=Helvetica fontsize=7 fqncolor="595F72" labeldistance=0 len=5 propertyfontcolor=gray shape=box style=square tablebgcolor=white tableborder=0.5 titlefontcolor=black]
+	"ol.vehicle" -> "ol.agency" [label="ol.recordedby" cellborder=0.5 cellpadding=0.5 cellspacing=1 color="#3399ff" concentrate=true dir=forward fontcolor=black fontname=Helvetica fontsize=7 fqncolor="595F72" labeldistance=0 len=5 propertyfontcolor=gray shape=box style=square tablebgcolor=white tableborder=0.5 titlefontcolor=black]
+	node [cellborder=0.5 cellpadding=0.5 cellspacing=1 color="#3399ff" concentrate=true fontcolor=black fontname=Helvetica fontsize=7 fqncolor="595F72" labeldistance=0 len=5 propertyfontcolor=gray shape=box style=square tablebgcolor=white tableborder=0.5 titlefontcolor=black]
+	"ol.imagesource" -> "ol.agency" [label="ol.collectedby" cellborder=0.5 cellpadding=0.5 cellspacing=1 color="#3399ff" concentrate=true dir=forward fontcolor=black fontname=Helvetica fontsize=7 fqncolor="595F72" labeldistance=0 len=5 propertyfontcolor=gray shape=box style=square tablebgcolor=white tableborder=0.5 titlefontcolor=black]
+}

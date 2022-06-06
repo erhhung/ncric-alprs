@@ -1,0 +1,197 @@
+- defaultTab: nodes
+  description: |-
+    The recurring Flock job scheduled for 2 am PST never runs - this runs it later on
+    * Unclear why the 2 am job never runs
+    * This job runs at noon, and selects the same 6-hour time window that the 2 am job should catch: 4-10 am UTC
+  executionEnabled: true
+  id: f4e877a4-06c0-4b34-8cac-1bbf35b84e06
+  loglevel: INFO
+  multipleExecutions: true
+  name: 'Recurring Flock: realtime - catchup'
+  nodeFilterEditable: false
+  nodefilters:
+    dispatch:
+      excludePrecedence: true
+      keepgoing: false
+      rankOrder: ascending
+      successOnEmptyNodeFilter: false
+      threadcount: '1'
+    filter: 'name: Worker'
+  nodesSelectedByDefault: true
+  options:
+  - description: AWS region
+    hidden: true
+    name: region
+    secure: true
+    storagePath: keys/region
+    valueExposed: true
+  - description: API endpoint
+    hidden: true
+    name: api_url
+    secure: true
+    storagePath: keys/api_url
+    valueExposed: true
+  - description: Shuttle CLI args
+    hidden: true
+    name: shuttle_args
+    secure: true
+    storagePath: keys/shuttle_args
+    valueExposed: true
+  - description: PostgreSQL host
+    hidden: true
+    name: db_host
+    secure: true
+    storagePath: keys/db_host
+    valueExposed: true
+  - description: NCRIC database
+    hidden: true
+    name: db_name
+    secure: true
+    storagePath: keys/db_name
+    valueExposed: true
+  - description: PostgreSQL user
+    hidden: true
+    name: db_user
+    secure: true
+    storagePath: keys/db_user
+    valueExposed: true
+  - description: PostgreSQL password
+    hidden: true
+    name: db_pass
+    secure: true
+    storagePath: keys/db_pass
+    valueExposed: true
+  - name: fetch_size
+    value: '10000'
+  - name: chunk_size
+    value: '20000'
+  plugins:
+    ExecutionLifecycle: null
+  schedule:
+    month: '*'
+    time:
+      hour: '12'
+      minute: '00'
+      seconds: '0'
+    weekday:
+      day: '*'
+    year: '*'
+  scheduleEnabled: false
+  sequence:
+    commands:
+    - description: 2 am catchup
+      script: |-
+        #!/usr/bin/env python3
+
+        from datetime import datetime, timedelta
+        from sqlalchemy import create_engine
+        from pyntegrationsncric.pyntegrations.ca_ncric.flock.integration_definitions import \
+            FLOCKIntegration, FLOCKImageSourceIntegration, FLOCKAgencyStandardizationIntegration
+        import pyntegrationsncric.pyntegrations.ca_ncric.utils.openlattice_functions as of
+        import pandas as pd
+        import math
+        import os
+
+        agencies = [
+          "Atherton PD",
+          "CHP",
+          "Danville PD",
+          "GGB Vista Point",
+          "Livermore PD",
+          "Napa PD",
+          "NCRIC",
+          "Piedmont PD",
+          "San Mateo PD",
+          "Vacaville PD",
+          "Vallejo PD"
+        ]
+
+        # End datetime is the beginning of the hour that the job starts in
+        dt_end = datetime.now().replace(microsecond=0, second=0, minute=0)
+        dt_end = dt_end - timedelta(hours=24)
+        dt_start = dt_end - timedelta(hours=6)
+
+        db_host = "@option.db_host@"
+        db_name = "@option.db_name@"
+        db_user = "@option.db_user@"
+        db_pass = "@option.db_pass@"
+        engine = create_engine(f"postgresql://{db_user}:{db_pass}@{db_host}:5432/{db_name}")
+
+        api_url = "@option.api_url@"
+        fsize = @option.fetch_size@
+        limit = @option.chunk_size@
+
+        pyntegrations_path = os.environ.get("PYNTEGRATIONS_PATH")
+        pyntegrations_path += "/ca_ncric"
+        shuttle_path = os.environ.get("SHUTTLE_PATH")
+        shuttle_args = "@option.shuttle_args@ @option.region@"
+
+        try:
+            for agency in agencies:
+                agency_no_space = agency.replace(" ", "").replace("'", "")
+
+                integration = FLOCKIntegration(sql=f'''
+                    select f."readid",f."timestamp", f."type", f."plate", f."confidence",
+                        f."latitude", f."longitude", f."cameraid", f."cameraname", f."platestate", f."speed",
+                        f."direction", f."model", f."hotlistid", f."hotlistname", f."cameralocationlat",
+                        f."cameralocationlon", f."cameranetworkid", f."cameranetworkname", s."standardized_agency_name"
+                    from flock_reads f
+                    left join standardized_agency_names_flock s
+                    on cast(f.cameranetworkid as text) = s."ol.id"
+                    where "timestamp" >= '{dt_start}'
+                      and "timestamp" <= '{dt_end}'
+                      and s.standardized_agency_name = '{agency}'
+                    ''',
+                    flight_path=pyntegrations_path+f"/ncric_flights/ncric_{agency_no_space}_flight.yaml",
+                    clean_table_name_suffix="recur",
+                    base_url=api_url)
+                main_table = integration.clean_and_upload()
+
+                print(f"Integrating MAIN table for {agency}!")
+                result = engine.execute(f"select count(*) from {main_table}")
+                records = pd.DataFrame(result).loc[0, 0]
+                print(f"{records} records to process")
+                chunks = math.ceil(records / limit)
+
+                for i in range(chunks):
+                    print(f"Processing records {limit*i} through {limit*(i+1)}!")
+
+                    integration.integrate_table(
+                        sql=f"select * from {main_table} limit {limit} offset {limit*i}",
+                        drop_table_on_success=False,
+                        memory_size=4,
+                        shuttle_path=shuttle_path,
+                        shuttle_args=shuttle_args+f" --fetchsize {fsize} --upload-size {fsize}")
+
+                of.drop_table(engine, main_table)
+
+            print("Integrating IMAGE SOURCE table!")
+            integration = FLOCKImageSourceIntegration(sql=f'''
+                select distinct "cameraid", "cameraname" from flock_reads
+                where "timestamp" >= '{dt_start}'
+                  and "timestamp" <= '{dt_end}'
+                ''',
+                base_url=api_url)
+            image_source_table = integration.clean_and_upload()
+            integration.integrate_table(
+                clean_table_name=image_source_table,
+                drop_table_on_success=True,
+                shuttle_path=shuttle_path,
+                shuttle_args=shuttle_args+f" --s3 PRODUCTION --fetchsize {fsize} --upload-size {fsize}")
+
+            print("Integrating STANDARDIZED AGENCY table!")
+            sagency_integration = FLOCKAgencyStandardizationIntegration(
+                sql="select * from standardized_agency_names",
+                base_url=api_url)
+            sagency_integration.integrate_table(
+                sql="select * from standardized_agency_names_flock",
+                drop_table_on_success=True,
+                shuttle_path=shuttle_path,
+                shuttle_args=shuttle_args)
+
+        except Exception as e:
+            raise RuntimeError(f"Something went wrong with the job! Error message: {str(e)}")
+    keepgoing: false
+    strategy: node-first
+  timeZone: America/Los_Angeles
+  uuid: f4e877a4-06c0-4b34-8cac-1bbf35b84e06

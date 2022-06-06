@@ -1,0 +1,259 @@
+- defaultTab: nodes
+  description: |-
+    Hourly job for BOSS4 into Aurora with entity sets broken out by agency
+    * End datetime range is the bottom of the hour that the job is run. For a job at 9:10 am, covers 8-9 am.
+    * All BOSS4 data is in UTC time
+  executionEnabled: true
+  id: b6353222-47bd-4c30-85da-cff96ee4acb3
+  loglevel: INFO
+  multipleExecutions: true
+  name: 'Recurring BOSS4: realtime - hourly'
+  nodeFilterEditable: false
+  nodefilters:
+    dispatch:
+      excludePrecedence: true
+      keepgoing: false
+      rankOrder: ascending
+      successOnEmptyNodeFilter: false
+      threadcount: '1'
+    filter: 'name: Worker'
+  nodesSelectedByDefault: true
+  options:
+  - description: AWS region
+    hidden: true
+    name: region
+    secure: true
+    storagePath: keys/region
+    valueExposed: true
+  - description: SFTP bucket
+    hidden: true
+    name: s3_bucket
+    secure: true
+    storagePath: keys/s3_bucket
+    valueExposed: true
+  - description: Bucket prefix
+    hidden: true
+    name: s3_prefix
+    secure: true
+    storagePath: keys/s3_prefix/boss4
+    valueExposed: true
+  - description: API endpoint
+    hidden: true
+    name: api_url
+    secure: true
+    storagePath: keys/api_url
+    valueExposed: true
+  - description: Shuttle CLI args
+    hidden: true
+    name: shuttle_args
+    secure: true
+    storagePath: keys/shuttle_args
+    valueExposed: true
+  plugins:
+    ExecutionLifecycle: null
+  schedule:
+    month: '*'
+    time:
+      hour: '00'
+      minute: '10'
+      seconds: '0'
+    weekday:
+      day: '*'
+    year: '*'
+  scheduleEnabled: false
+  sequence:
+    commands:
+    - description: hourly
+      script: |-
+        #!/usr/bin/env python3
+
+        from datetime import datetime, timedelta
+        from pyntegrations.ca_ncric.boss4.integration_definitions import \
+          BOSS4Integration, BOSS4ImagesIntegration, BOSS4AgenciesIntegration, \
+          BOSS4ImageSourcesIntegration, BOSS4AgenciesStandardizedIntegration, \
+          BOSS4HotlistDaily
+        import os
+
+        agencies = [
+          "Benicia PD",
+          "Chico PD",
+          "Rio Vista PD",
+          "Vacaville PD",
+          "HIDTA",
+          "Yosemite National Park",
+          "CHP",
+          "San Mateo PD",
+          "Solano County Sheriffs Office",
+          "Daly City PD",
+          "Brisbane PD",
+          "South San Francisco PD",
+          "Dixon PD",
+          "Atherton PD",
+          "Menlo Park PD",
+          "San Mateo VTTF",
+          "Bay Area Rapid Transit",
+          "Central Marin Police Authority",
+          "Newark PD",
+          "Suisun PD",
+          # "Fremont PD",
+          "San Francisco PD",
+          "Vallejo PD",
+          "Piedmont PD",
+          "NCRIC",
+          "San Leandro PD",
+          # "Santa Clara County Sheriff’s Office",
+          "Los Altos PD",
+          "Sunnyvale DPS",
+          "Palo Alto PD",
+          "Santa Clara PD",
+          "Campbell PD"
+        ]
+
+        s3_bucket = "@option.s3_bucket@"
+        s3_prefix = "@option.s3_prefix@"
+
+        # End datetime is the beginning of the hour that the job starts in
+        dt_end = datetime.now().replace(microsecond=0, second=0, minute=0)
+        dt_start = dt_end - timedelta(hours=1)
+
+        # This is now changed to "start hour" since the hour should not change here
+        dt_end_str = f"{dt_end.year}-{dt_end.month}-{dt_end.day} {dt_end.hour}:00:00"
+        dt_start_str = f"{dt_start.year}-{dt_start.month}-{dt_start.day} {dt_start.hour}:00:00"
+
+        print(f"Searching {dt_start_str} through {dt_end_str} to integrate!")
+        main_integration = BOSS4Integration(
+            date_start=dt_start_str,
+            date_end=dt_end_str,
+            raw_table_name="boss4_hr",
+            raw_table_name_images="boss4_hr_images",
+            s3_bucket=s3_bucket,
+            s3_prefix=s3_prefix)
+
+        main_table_name, images_table_name = main_integration.get_raw_data_from_s3()
+        print(main_table_name, images_table_name)
+        print("Got the raw data!")
+
+        api_url = "@option.api_url@"
+        images_integration = BOSS4ImagesIntegration(
+            sql=f"select * from {images_table_name}",
+            clean_table_name_root="boss4_hourly_images_cleaned",
+            base_url=api_url)
+
+        images_clean_table_name = images_integration.clean_and_upload()
+        print("Got the images data!")
+
+        pyntegrations_path = os.environ.get("PYNTEGRATIONS_PATH")
+        pyntegrations_path += "/ca_ncric"
+        shuttle_path = os.environ.get("SHUTTLE_PATH")
+        shuttle_args = "@option.shuttle_args@ @option.region@"
+
+        try:
+            for agency in agencies:
+                agency_no_space = agency.replace(" ", "").replace("'", "")
+
+                print(f"Integrating MAIN table for {agency}!")
+                # integrate all with new tables
+                main_integration.integrate_table(
+                    sql=f"select * from {main_table_name} where standardized_agency_name = '{agency}'",
+                    flight_path=pyntegrations_path+f"/ncric_flights/ncric_{agency_no_space}_flight.yaml",
+                    memory_size=3,
+                    shuttle_path=shuttle_path,
+                    shuttle_args=shuttle_args)
+                print("Passed: integrate_table MAIN table")
+
+                print(f"Integrating IMAGES table for {agency}!")
+                # integrate images table
+                images_integration.integrate_table(
+                    sql=f"select * from {images_clean_table_name} where standardized_agency_name = '{agency}'",
+                    flight_path=pyntegrations_path+f"/ncric_image_flights/ncric_{agency_no_space}_images_flight.yaml",
+                    memory_size=5,
+                    shuttle_path=shuttle_path,
+                    shuttle_args=shuttle_args+" --s3 PRODUCTION")
+                print("Passed: integrate_table IMAGES table")
+
+            try:
+                print("Integrating HOTLIST TABLE!")
+                h_integration = BOSS4HotlistDaily(
+                    sql=f'''select hotlist_daily.*, {main_table_name}.* from hotlist_daily
+                        inner join {main_table_name} on "plate" = "VehicleLicensePlateID"
+                        ''',
+                    drop_table_on_success=True,
+                    base_url=api_url)
+                h_integration.integrate_table(
+                    sql=f'''select hotlist_daily.*, {main_table_name}.* from hotlist_daily
+                        inner join {main_table_name} on "plate" = "VehicleLicensePlateID"
+                        ''',
+                    shuttle_path=shuttle_path,
+                    shuttle_args=shuttle_args)
+            except Exception as e:
+                print(e)
+
+            try:
+                print("Integrating HOTLIST IMAGES!")
+                hi_integration = BOSS4ImagesIntegration(
+                    sql=f'''select hotlist_daily.*, {main_table_name}.* from hotlist_daily
+                        inner join {main_table_name} on "plate" = "VehicleLicensePlateID"
+                        inner join {images_clean_table_name} using("VehicleLicensePlateID")
+                        ''',
+                    clean_table_suffix="hotlist")
+                hi_integration.integrate_table(
+                    sql=f'''select hotlist_daily.*, {main_table_name}.* from hotlist_daily
+                        inner join {main_table_name} on "plate" = "VehicleLicensePlateID"
+                        inner join {images_clean_table_name} using("VehicleLicensePlateID")
+                        ''',
+                    shuttle_path=shuttle_path,
+                    shuttle_args=shuttle_args+" --s3 PRODUCTION")
+            except Exception as e:
+                print(e)
+
+            print("Integrating AGENCIES table!")
+            # integrate agencies associate only
+            integration = BOSS4AgenciesIntegration(
+                sql=f'select distinct "agency_id", "agencyName", "datasource", "agencyAcronym" from {main_table_name}',
+                clean_table_name_root="boss4_agencies_test",
+                drop_table_on_success=True,
+                base_url=api_url)
+            table_name = integration.clean_and_upload()
+            integration.integrate_table(
+                clean_table_name=table_name,
+                shuttle_path=shuttle_path,
+                shuttle_args=shuttle_args)
+
+            print("Integrating IMAGE SOURCES table!")
+            # integrate image sources associate only
+            integration = BOSS4ImageSourcesIntegration(
+                sql=f'select distinct "camera_id", "LPRCameraName", "datasource" from {main_table_name}',
+                clean_table_name_root="boss4_imagesources_test",
+                drop_table_on_success=True,
+                base_url=api_url)
+            table_name = integration.clean_and_upload()
+            integration.integrate_table(
+                clean_table_name=table_name,
+                shuttle_path=shuttle_path,
+                shuttle_args=shuttle_args)
+
+            print("Integrating STANDARDIZED AGENCIES table!")
+            sagency_integration = BOSS4AgenciesStandardizedIntegration(
+                sql="""select distinct standardized_agency_name from standardized_agency_names
+                    where \"ol.datasource\" = 'BOSS4'
+                    """,
+                drop_table_on_success=True,
+                base_url=api_url)
+            sagency_integration.integrate_table(
+                sql="""select distinct standardized_agency_name from standardized_agency_names
+                    where \"ol.datasource\" = 'BOSS4'
+                    """,
+                shuttle_path=shuttle_path,
+                shuttle_args=shuttle_args)
+
+        except Exception as e:
+            main_integration.drop_main_table()
+            main_integration.drop_images_table()
+            raise RuntimeError(f"Something went wrong with the job! Dropping tables. Error message: {str(e)}")
+
+        main_integration.drop_main_table()
+        main_integration.drop_images_table()
+    keepgoing: false
+    strategy: node-first
+  timeZone: America/Los_Angeles
+  uuid: b6353222-47bd-4c30-85da-cff96ee4acb3

@@ -1,29 +1,44 @@
+# https://registry.terraform.io/providers/hashicorp/external/latest/docs/data-sources/data_source
+data "external" "pyntegrationsncric_whl" {
+  program = ["${path.module}/worker/mkwhl.sh"]
+}
+
 locals {
-  worker_bootstrap_sh = <<-EOT
+  worker_user_data = [{
+    path = "worker/pyntegrationsncric.whl"
+    file = "${path.module}/worker/pyntegrationsncric.whl"
+    type = "application/x-wheel+zip"
+    }, {
+    path = "worker/bootstrap.sh"
+    data = <<-EOT
 ${file("${path.module}/shared/prolog.sh")}
 ${templatefile("${path.module}/worker/boot.tftpl", {
-  ENV           = var.env
-  S3_URL        = local.user_data_s3_url
-  SFTP_BUCKET   = var.buckets["sftp"]
-  MEDIA_BUCKET  = var.buckets["media"]
-  BACKUP_BUCKET = var.buckets["backup"]
-  POSTGRESQL_IP = module.postgresql_server.private_ip
-  DATASTORE_IP  = module.datastore_server.private_ip
-  # public key is created in keys.tf
-  rundeck_key = chomp(tls_private_key.rundeck_worker.public_key_openssh)
+    ENV           = var.env
+    S3_URL        = local.user_data_s3_url
+    SFTP_BUCKET   = var.buckets["sftp"]
+    MEDIA_BUCKET  = var.buckets["media"]
+    BACKUP_BUCKET = var.buckets["backup"]
+    POSTGRESQL_IP = module.postgresql_server.private_ip
+    DATASTORE_IP  = module.datastore_server.private_ip
+    # public key is created in keys.tf
+    rundeck_key = chomp(tls_private_key.rundeck_worker.public_key_openssh)
 })}
 ${file("${path.module}/shared/boot.sh")}
 ${file("${path.module}/worker/install.sh")}
 ${file("${path.module}/shared/epilog.sh")}
 EOT
+}]
 }
 
-resource "aws_s3_object" "worker_bootstrap" {
+resource "aws_s3_object" "worker_user_data" {
+  for_each = { for obj in local.worker_user_data : basename(obj.path) => obj }
+
   bucket       = data.aws_s3_bucket.user_data.id
-  key          = "userdata/worker/bootstrap.sh"
-  content_type = "text/plain"
-  content      = chomp(local.worker_bootstrap_sh)
-  source_hash  = md5(local.worker_bootstrap_sh)
+  key          = "userdata/${each.value.path}"
+  content_type = lookup(each.value, "type", "text/plain")
+  content      = lookup(each.value, "data", null) == null ? null : chomp(each.value.data)
+  source       = lookup(each.value, "file", null) == null ? null : each.value.file
+  source_hash  = lookup(each.value, "file", null) != null ? filemd5(each.value.file) : md5(each.value.data)
 }
 
 locals {
@@ -41,7 +56,7 @@ module "worker_node" {
 
   depends_on = [
     aws_s3_object.shared_user_data,
-    aws_s3_object.worker_bootstrap,
+    aws_s3_object.worker_user_data,
   ]
   ami_id           = data.aws_ami.ubuntu_20arm.id
   instance_type    = var.instance_types["worker"]

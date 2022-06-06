@@ -3,6 +3,9 @@
 # and runs the lattice-org webapp and Rundeck server
 
 locals {
+  all_bucket_names = join(" ", [
+    for key, name in var.buckets : "'${upper(key)}_BUCKET=\"${name}\"'"
+  ])
   bastion_user_data = [{
     path = "bastion/.bash_aliases"
     data = file("${path.module}/bastion/.bash_aliases")
@@ -17,27 +20,12 @@ ${templatefile("${path.module}/bastion/boot.tftpl", {
     ENV         = var.env
     PG_IP       = module.postgresql_server.private_ip
     ES_IP       = module.elasticsearch_server.private_ip
-    USR_S3_URL  = local.user_data_s3_url
-    ALL_BUCKETS = join(" ", [for key, name in var.buckets : "'${upper(key)}_BUCKET=\"${name}\"'"])
-    })}
-${file("${path.module}/bastion/boot.sh")}
-${templatefile("${path.module}/rundeck/install.tftpl", {
-    # password and private key are created in keys.tf
-    rundeck_pass = local.rundeck_pass
-    rundeck_key  = chomp(tls_private_key.rundeck_worker.private_key_pem)
-    WORKER_IP    = module.worker_node.private_ip
-    WORKER_OS    = join("-", regex("/(ubuntu-.+)-arm64.+-(\\d+)", module.worker_node.ami_name))
-    })}
-${file("${path.module}/rundeck/install.sh")}
-${templatefile("${path.module}/webapp/install.tftpl", {
-    FA_TOKEN      = var.FONTAWESOME_NPM_TOKEN
-    MB_TOKEN      = var.MAPBOX_PUBLIC_TOKEN
-    AUTH0_ID      = var.AUTH0_SPA_CLIENT_ID
-    SUPPORT_EMAIL = var.ALPRS_SUPPORT_EMAIL
-    APP_URL       = "https://${local.app_domain}"
-    API_URL       = "https://${local.api_domain}"
+    S3_URL      = local.user_data_s3_url
+    ALL_BUCKETS = local.all_bucket_names
 })}
-${file("${path.module}/webapp/install.sh")}
+${file("${path.module}/bastion/boot.sh")}
+${local.webapp_bootstrap}
+${local.rundeck_bootstrap}
 ${file("${path.module}/shared/epilog.sh")}
 EOT
 }]
