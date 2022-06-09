@@ -29,6 +29,7 @@ provider "aws" {
 
 provider "aws" {
   alias   = "route53"
+  region  = "us-west-2"
   profile = "alprscom"
 
   default_tags {
