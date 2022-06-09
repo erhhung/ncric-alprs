@@ -34,12 +34,12 @@ buckets = {
 # t4g.2xlarge: ARM,  8 vCPUs,  32 GiB, EBS only,  5 Gb/s, $.2688/hr
 
 instance_types = {
-  bastion       = "t3.medium"
   postgresql    = "r6g.2xlarge"
   elasticsearch = "r6g.2xlarge"
   conductor     = "r6g.4xlarge"
   datastore     = "r6g.4xlarge"
   indexer       = "t4g.2xlarge"
+  bastion       = "t3.medium"
   worker        = "t4g.xlarge"
 }
 

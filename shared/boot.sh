@@ -21,9 +21,11 @@ EOF
 )
 
 wait_apt_get() {
-  while [ "$(pgrep apt-get)$(pgrep dpkg)" ]; do
-    echo "Waiting on apt-get/dpkg..."
-    sleep 10
+  while [ "$(lsof -t /var/lib/dpkg/lock \
+                     /var/lib/apt/lists/lock \
+                     /var/cache/apt/archives/lock)" ]; do
+    echo "Waiting on apt/dpkg..."
+    sleep 5
   done
 }
 
