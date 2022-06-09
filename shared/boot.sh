@@ -27,12 +27,18 @@ wait_apt_get() {
   done
 }
 
+apt_update() {
+  wait_apt_get
+  apt-get update
+}
+
 apt_install() {
+  apt_update
   add-apt-repository -y ppa:git-core/ppa
   wait_apt_get
   apt-get dist-upgrade -y
   wait_apt_get
-  apt-get install -y figlet emacs-nox moreutils most jq git unzip net-tools pwgen
+  apt-get install -y figlet emacs-nox moreutils most jq git unzip net-tools nmap pwgen
   snap install yq
 }
 
@@ -52,6 +58,7 @@ install_awscli() (
   curl  -so awscliv2.zip https://awscli.amazonaws.com/awscli-exe-linux-$(uname -p).zip
   unzip -oq awscliv2.zip
   ./aws/install --update
+  aws --version
   rm -rf /tmp/aws*
   cd /home/$USER
   cat <<'EOF' >> .bashrc
@@ -116,6 +123,9 @@ EOF
   rm server.pem cert.sh
   chmod 400 server.key
 )
+
+export -f wait_apt_get
+export -f apt_update
 
 run set_hostname
 run set_timezone

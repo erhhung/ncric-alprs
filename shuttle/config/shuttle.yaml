@@ -1,0 +1,7 @@
+postgres:
+  config:
+    jdbcUrl: jdbc:postgresql://${POSTGRESQL_HOST}:5432/alprs?sslmode=require
+    username: alprs_user
+    password: ${ALPRS_PASSWORD}
+    maximumPoolSize: 1
+    connectionTimeout: 120000

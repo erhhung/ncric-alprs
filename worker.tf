@@ -42,6 +42,31 @@ resource "aws_s3_object" "worker_user_data" {
 }
 
 locals {
+  worker_scripts_paths = [{
+    path = "${path.module}/shuttle/scripts"
+    dest = "shuttle"
+  }]
+  worker_scripts = flatten([
+    for scripts in local.worker_scripts_paths : [
+      for path in fileset(scripts.path, "**") : {
+        abs = abspath("${scripts.path}/${path}")
+        rel = lookup(scripts, "dest", null) == null ? path : "${scripts.dest}/${path}"
+      }
+    ]
+  ])
+}
+
+resource "aws_s3_object" "worker_scripts" {
+  for_each = { for file in local.worker_scripts : file.rel => file.abs }
+
+  bucket       = data.aws_s3_bucket.user_data.id
+  key          = "userdata/worker/scripts/${each.key}"
+  content_type = "text/plain"
+  source       = each.value
+  source_hash  = filemd5(each.value)
+}
+
+locals {
   worker_bootstrap = <<EOT
 ${templatefile("${path.module}/shared/boot.tftpl", {
   BUCKET = local.user_data_bucket
@@ -57,6 +82,7 @@ module "worker_node" {
   depends_on = [
     aws_s3_object.shared_user_data,
     aws_s3_object.worker_user_data,
+    aws_s3_object.worker_scripts,
   ]
   ami_id           = data.aws_ami.ubuntu_20arm.id
   instance_type    = var.instance_types["worker"]
@@ -67,6 +93,19 @@ module "worker_node" {
   instance_profile = aws_iam_instance_profile.alprs_worker.name
   key_name         = aws_key_pair.admin.key_name
   user_data        = chomp(local.worker_bootstrap)
+}
+
+module "shuttle_config" {
+  source = "./modules/config"
+
+  service = "shuttle"
+  path    = "${path.module}/shuttle/config"
+  bucket  = aws_s3_bucket.buckets["config"].id
+
+  values = merge(local.config_values, {
+    POSTGRESQL_HOST    = module.postgresql_server.private_domain
+    ELASTICSEARCH_HOST = module.elasticsearch_server.private_domain
+  })
 }
 
 output "worker_ami_id" {

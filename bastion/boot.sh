@@ -76,6 +76,7 @@ upgrade_awscli() (
   curl  -so awscliv2.zip https://awscli.amazonaws.com/awscli-exe-linux-$(uname -p).zip
   unzip -oq awscliv2.zip
   ./aws/install --update
+  aws --version
   rm -rf /tmp/aws*
 )
 
@@ -123,7 +124,10 @@ EOF
 if [ ${BASH_VERSINFO[0]}${BASH_VERSINFO[1]} -lt 51 ]; then
   run upgrade_bash; exit
 fi
+
 export_buckets
+
+export -f yum_update
 
 run set_hostname
 run set_timezone

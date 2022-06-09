@@ -46,10 +46,10 @@ install_delta() (
   rm git-delta*
 )
 
-init_destdir() (
+init_destdir() {
   mkdir -p /opt/openlattice
   chown -Rh openlattice:openlattice /opt/openlattice
-)
+}
 
 copy_scripts() {
   aws s3 sync $S3_URL/${HOST,,}/scripts scripts --no-progress

@@ -3,6 +3,8 @@
 # usage: build.sh [branch]
 # optional branch override (default is main)
 
+PROJECT=conductor
+
 if [ ! -d ~/openlattice ]; then
   echo >&2 'Git repo ~/openlattice not found!'
   exit 1
@@ -23,14 +25,12 @@ cd rhizome
 git pull origin develop
 cd ..
 
-./gradlew clean :conductor:distTar -x test
+./gradlew clean :$PROJECT:distTar -x test
 
-if [ -d /opt/openlattice/conductor ]; then
-  mv /opt/openlattice/conductor /opt/openlattice/conductor_$(date +"%Y-%m-%d_%H-%M-%S")
-else
-  mkdir -p /opt/openlattice
+if [ -d /opt/openlattice/$PROJECT ]; then
+  mv /opt/openlattice/$PROJECT /opt/openlattice/${PROJECT}_$(date +"%Y-%m-%d_%H-%M-%S")
 fi
-mv -f ./conductor/build/distributions/conductor.tgz /opt/openlattice/
+mv -f ./$PROJECT/build/distributions/$PROJECT.tgz /opt/openlattice/
 
 cd /opt/openlattice
-tar xzvf conductor.tgz
+tar xzvf $PROJECT.tgz

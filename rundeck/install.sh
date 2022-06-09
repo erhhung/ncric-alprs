@@ -1,6 +1,9 @@
 # This user data script is a continuation
 # of the bastion host's "boot.sh" script.
 
+export NCRIC_DB="org_1446ff84711242ec828df181f45e4d20"
+export SHUTTLE_ARGS="--shuttle-config $CONFIG_BUCKET --read-rate-limit 0"
+
 install_java() (
   hash java 2> /dev/null && exit
   amazon-linux-extras install -y java-openjdk11
@@ -235,6 +238,7 @@ config_worker() {
         }}]}'
 }
 
+export -f wait_service
 export -f eval_with_retry
 export -f set_property
 export -f curl_rundeck

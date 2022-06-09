@@ -1,6 +1,12 @@
 # This user data script is a continuation
 # of the shared "boot.sh" script.
 
+apt_install() {
+  apt_update
+  wait_apt_get
+  apt-get install -y libpq-dev
+}
+
 install_java() (
   hash java 2> /dev/null && exit
   wait_apt_get
@@ -18,19 +24,6 @@ install_python() (
   pip3 --version
 )
 
-install_pylibs() (
-  cd /tmp
-  lib=pyntegrationsncric
-  pip3 freeze | grep -q $lib && exit
-  pip3 install boto3 sqlalchemy pandas dask auth0-python
-  aws s3 cp "$S3_URL/worker/$lib.whl" . --no-progress
-  # rename file to conform to wheel naming convention
-  whl=$(unzip -l $lib.whl | sed -En "s|.+($lib-[0-9.]+)\.dist-info/WHEEL|\1-py3-none-any.whl|p")
-  mv  $lib.whl $whl
-  pip3 install $whl
-  rm $whl
-)
-
 install_delta() (
   cd /tmp
   hash delta 2> /dev/null && exit
@@ -38,6 +31,59 @@ install_delta() (
   wait_apt_get
   dpkg -i git-delta_0.12.0_arm64.deb
   rm git-delta*
+)
+
+init_destdir() {
+  mkdir -p /opt/openlattice
+  chown -Rh $USER:$USER /opt/openlattice
+}
+
+config_sshd() (
+  cd /etc/ssh
+  grep -q 'AcceptEnv RD_' sshd_config && exit
+  # accept RD_* environment variables from Rundeck
+  sed -i '/AcceptEnv/a AcceptEnv RD_*' sshd_config
+  service ssh reload
+)
+
+auth_ssh_key() {
+  cd .ssh
+  # $rundeck_key is public key here
+  grep -q "$rundeck_key" authorized_keys || \
+     echo "$rundeck_key" >> authorized_keys
+}
+
+copy_scripts() {
+  aws s3 sync $S3_URL/worker/scripts scripts --no-progress
+  find scripts -type f -name '*.sh' -exec chmod +x {} \;
+}
+
+clone_repos() {
+  rm -rf openlattice
+  git clone https://github.com/openlattice/openlattice.git
+  cd openlattice
+  rmdir neuron
+  git sub init
+  git sub deinit neuron
+  git clone https://github.com/openlattice/api-clients clients
+}
+
+install_pylibs() (
+  lib=pyntegrationsncric
+  pip3 freeze | grep -q $lib && exit
+  # install required packages: see appendix 2, "Setting
+  # up ETL Environment", in the "Data Integration Guide"
+  pip3 install boto3 psycopg2 sqlalchemy pandas pandarallel dask auth0-python geopy testresources
+  cd openlattice/clients/python
+  pip3 install .
+
+  mkdir -p ~/$lib
+  cd ~/$lib
+  aws s3 cp "$S3_URL/worker/$lib.whl" . --no-progress
+  # rename file to conform to wheel naming convention
+  whl=$(unzip -l $lib.whl | sed -En "s|.+($lib-[0-9.]+)\.dist-info/WHEEL|\1-py3-none-any.whl|p")
+  mv -f $lib.whl  $whl
+  pip3 install -I $whl
 )
 
 user_dotfiles() {
@@ -56,41 +102,26 @@ PYNTEGRATIONS_PATH="$PYNTEGRATIONS_PATH"
 EOF
 }
 
-auth_ssh_key() {
-  cd .ssh
-  # $rundeck_key is public key here
-  grep -q "$rundeck_key" authorized_keys || \
-     echo "$rundeck_key" >> authorized_keys
-}
-
-config_sshd() (
-  cd /etc/ssh
-  grep -q 'AcceptEnv RD_' sshd_config && exit
-  # accept RD_* environment variables from Rundeck
-  sed -i '/AcceptEnv/a AcceptEnv RD_*' sshd_config
-  service ssh reload
-)
-
-clone_repos() {
-  rm -rf shuttle
-  git clone https://github.com/openlattice/shuttle.git
-}
-
-build_shuttle() {
-  cd shuttle
-  ./gradlew clean :distTar -x test
-  SHUTTLE_PATH="/opt/openlattice/shuttle/shuttle-0.0.4-SNAPSHOT/bin/shuttle"
+build_shuttle() (
+  # build and then install
+  scripts/shuttle/build.sh develop
+  SHUTTLE_PATH=/opt/openlattice/shuttle/bin/shuttle
+  sudo ln -sf  $SHUTTLE_PATH /usr/local/bin/shuttle
+  grep -q SHUTTLE_PATH /etc/environment && exit
   cat <<EOF | sudo tee -a /etc/environment
 SHUTTLE_PATH="$SHUTTLE_PATH"
 EOF
-}
+)
 
+run apt_install
 run install_java
 run install_python
-run install_pylibs $USER
 run install_delta
-run user_dotfiles  $USER
-run auth_ssh_key   $USER
+run init_destdir
 run config_sshd
+run auth_ssh_key   $USER
+run copy_scripts   $USER
 run clone_repos    $USER
+run install_pylibs $USER
+run user_dotfiles  $USER
 run build_shuttle  $USER

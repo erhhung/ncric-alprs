@@ -26,21 +26,20 @@ locals {
   conductor_scripts_path = "${path.module}/conductor/scripts"
   conductor_scripts = [
     for path in fileset(local.conductor_scripts_path, "**") : {
-      abs  = abspath("${local.conductor_scripts_path}/${path}")
-      rel  = path
-      name = basename(path)
+      abs = abspath("${local.conductor_scripts_path}/${path}")
+      rel = path
     }
   ]
 }
 
 resource "aws_s3_object" "conductor_scripts" {
-  for_each = { for file in local.conductor_scripts : file.name => file }
+  for_each = { for file in local.conductor_scripts : file.rel => file.abs }
 
   bucket       = data.aws_s3_bucket.user_data.id
-  key          = "userdata/conductor/scripts/${each.value.rel}"
+  key          = "userdata/conductor/scripts/${each.key}"
   content_type = "text/plain"
-  source       = each.value.abs
-  source_hash  = filemd5(each.value.abs)
+  source       = each.value
+  source_hash  = filemd5(each.value)
 }
 
 locals {
@@ -76,7 +75,6 @@ module "conductor_config" {
   source = "./modules/config"
 
   depends_on = [
-    module.conductor_server,
     data.external.rhizome_jks,
   ]
   service = "conductor"

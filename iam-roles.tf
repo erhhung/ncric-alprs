@@ -305,6 +305,11 @@ resource "aws_iam_role_policy" "alprs_worker_backup_bucket" {
   role   = aws_iam_role.alprs_worker.id
   policy = data.aws_iam_policy_document.backup_bucket.json
 }
+resource "aws_iam_role_policy" "alprs_worker_config_bucket" {
+  name   = "config-bucket-access-policy"
+  role   = aws_iam_role.alprs_worker.id
+  policy = data.aws_iam_policy_document.config_bucket.json
+}
 
 resource "aws_iam_instance_profile" "alprs_worker" {
   name = "ALPRSWorkerInstanceProfile"

@@ -3,6 +3,8 @@
 # usage: build.sh [branch]
 # optional branch override (default is main)
 
+PROJECT=datastore
+
 if [ ! -d ~/openlattice ]; then
   echo >&2 'Git repo ~/openlattice not found!'
   exit 1
@@ -23,14 +25,12 @@ cd rhizome
 git pull origin develop
 cd ..
 
-./gradlew clean :datastore:distTar -x test
+./gradlew clean :$PROJECT:distTar -x test
 
-if [ -d /opt/openlattice/datastore ]; then
-  mv /opt/openlattice/datastore /opt/openlattice/datastore_$(date +"%Y-%m-%d_%H-%M-%S")
-else
-  mkdir -p /opt/openlattice
+if [ -d /opt/openlattice/$PROJECT ]; then
+  mv /opt/openlattice/$PROJECT /opt/openlattice/${PROJECT}_$(date +"%Y-%m-%d_%H-%M-%S")
 fi
-mv -f ./datastore/build/distributions/datastore.tgz /opt/openlattice/
+mv -f ./$PROJECT/build/distributions/$PROJECT.tgz /opt/openlattice/
 
 cd /opt/openlattice
-tar xzvf datastore.tgz
+tar xzvf $PROJECT.tgz

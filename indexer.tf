@@ -26,21 +26,20 @@ locals {
   indexer_scripts_path = "${path.module}/indexer/scripts"
   indexer_scripts = [
     for path in fileset(local.indexer_scripts_path, "**") : {
-      abs  = abspath("${local.indexer_scripts_path}/${path}")
-      rel  = path
-      name = basename(path)
+      abs = abspath("${local.indexer_scripts_path}/${path}")
+      rel = path
     }
   ]
 }
 
 resource "aws_s3_object" "indexer_scripts" {
-  for_each = { for file in local.indexer_scripts : file.name => file }
+  for_each = { for file in local.indexer_scripts : file.rel => file.abs }
 
   bucket       = data.aws_s3_bucket.user_data.id
-  key          = "userdata/indexer/scripts/${each.value.rel}"
+  key          = "userdata/indexer/scripts/${each.key}"
   content_type = "text/plain"
-  source       = each.value.abs
-  source_hash  = filemd5(each.value.abs)
+  source       = each.value
+  source_hash  = filemd5(each.value)
 }
 
 locals {
@@ -76,7 +75,6 @@ module "indexer_config" {
   source = "./modules/config"
 
   depends_on = [
-    module.conductor_server,
     data.external.rhizome_jks,
   ]
   service = "indexer"

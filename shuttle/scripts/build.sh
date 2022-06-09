@@ -3,7 +3,7 @@
 # usage: build.sh [branch]
 # optional branch override (default is main)
 
-PROJECT=indexer
+PROJECT=shuttle
 
 if [ ! -d ~/openlattice ]; then
   echo >&2 'Git repo ~/openlattice not found!'

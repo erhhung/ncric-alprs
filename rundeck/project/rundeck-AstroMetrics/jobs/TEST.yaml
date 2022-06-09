@@ -1,0 +1,50 @@
+- defaultTab: nodes
+  description: Testing global constants
+  executionEnabled: true
+  id: ee785a37-efd8-4c5a-87b0-8cefaeade7b0
+  loglevel: INFO
+  name: TEST
+  nodeFilterEditable: false
+  nodefilters:
+    dispatch:
+      excludePrecedence: true
+      keepgoing: false
+      rankOrder: ascending
+      successOnEmptyNodeFilter: false
+      threadcount: '1'
+    filter: 'name: Worker'
+  nodesSelectedByDefault: true
+  options:
+  - hidden: true
+    name: apiurl
+    required: true
+    secure: true
+    storagePath: keys/api_url
+    valueExposed: true
+  - hidden: true
+    name: region
+    required: true
+    secure: true
+    storagePath: keys/region
+    valueExposed: true
+  plugins:
+    ExecutionLifecycle: null
+  scheduleEnabled: true
+  sequence:
+    commands:
+    - script: |
+        #!/usr/bin/env -S bash -l
+
+        echo "\$(whoami):           $(whoami)"
+        echo "\$(hostname):         $(hostname)"
+        echo "\$RD_JOB_ID:          $RD_JOB_ID"
+        echo "\$RD_OPTION_REGION:   $RD_OPTION_REGION"
+        echo "\$RD_OPTION_APIURL:   $RD_OPTION_APIURL"
+        echo "@@option.region@@:     @option.region@"
+        echo "@@option.apiurl@@:     @option.apiurl@"
+        echo "@@option.dbname@@:     @option.dbname@"
+        echo "\$PYNTEGRATIONS_PATH: $PYNTEGRATIONS_PATH"
+        echo "\$SHUTTLE_PATH:       $SHUTTLE_PATH"
+    keepgoing: false
+    strategy: node-first
+  uuid: ee785a37-efd8-4c5a-87b0-8cefaeade7b0

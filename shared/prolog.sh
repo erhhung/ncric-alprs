@@ -9,7 +9,6 @@
 __ts() {
   date "+%Y-%m-%d %T"
 }
-export -f __ts
 
 cd /root 2> /dev/null
 script=$(basename "$0" .sh)
@@ -30,3 +29,5 @@ run() {
     su $user -c "bash -c 'cd \$HOME; set -x; $func $args'"
   fi
 }
+
+export -f __ts
