@@ -1,10 +1,7 @@
 locals {
-  ssm_policy_arns = var.env == "dev" ? [
-    "arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy",
-    "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore",
-    ] : [
-    "arn:aws-us-gov:iam::aws:policy/CloudWatchAgentServerPolicy",
-    "arn:aws-us-gov:iam::aws:policy/AmazonSSMManagedInstanceCore",
+  ssm_policy_arns = [
+    "arn:${var.accounts[var.env].partition}:iam::aws:policy/CloudWatchAgentServerPolicy",
+    "arn:${var.accounts[var.env].partition}:iam::aws:policy/AmazonSSMManagedInstanceCore",
   ]
 }
 
@@ -189,7 +186,7 @@ resource "aws_iam_role" "sftp_transfer" {
   assume_role_policy = data.aws_iam_policy_document.sftp_transfer.json
 }
 
-data "aws_iam_policy_document" "sftp_bucket" {
+data "aws_iam_policy_document" "sftp_bucket1" {
   statement {
     effect    = "Allow"
     actions   = ["s3:ListBucket", "s3:GetBucketLocation"]
@@ -205,7 +202,7 @@ data "aws_iam_policy_document" "sftp_bucket" {
 resource "aws_iam_role_policy" "sftp_bucket" {
   name   = "sftp-bucket-access-policy"
   role   = aws_iam_role.sftp_transfer.id
-  policy = data.aws_iam_policy_document.sftp_bucket.json
+  policy = data.aws_iam_policy_document.sftp_bucket1.json
 }
 
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/transfer_user
@@ -314,4 +311,58 @@ resource "aws_iam_role_policy" "alprs_worker_config_bucket" {
 resource "aws_iam_instance_profile" "alprs_worker" {
   name = "ALPRSWorkerInstanceProfile"
   role = aws_iam_role.alprs_worker.name
+}
+
+#################### LAMBDA ####################
+
+data "aws_iam_policy_document" "lambda_exec" {
+  statement {
+    effect  = "Allow"
+    actions = ["sts:AssumeRole"]
+
+    principals {
+      type        = "Service"
+      identifiers = ["lambda.amazonaws.com"]
+    }
+  }
+}
+
+# lambda exec role to allow sftp_lambda to copy
+# files from prod SFTP bucket to dev SFTP bucket
+
+locals {
+  sftp_lambda_role_arn = "arn:${var.accounts.prod.partition}:iam::${var.accounts.prod.id}:role/ALPRSSFTPLambdaRole"
+  dev_sftp_bucket_arn  = "arn:${var.accounts.dev.partition}:s3:::${replace(var.buckets["sftp"], "-prod", "-dev")}"
+}
+
+resource "aws_iam_role" "sftp_lambda" {
+  for_each = toset(var.env == "none" ? [""] : [])
+
+  name               = basename(local.sftp_lambda_role_arn)
+  assume_role_policy = data.aws_iam_policy_document.lambda_exec.json
+}
+
+# ERROR: MalformedPolicyDocument: Partition "aws" is not valid for resource "arn:aws:s3:::alprs-sftp-dev/*"
+# https://stackoverflow.com/questions/65924421/accessing-a-commercial-s3-bucket-from-a-govcloud-ec2-instance
+data "aws_iam_policy_document" "sftp_lambda" {
+  for_each = toset(var.env == "none" ? [""] : [])
+
+  statement {
+    effect    = "Allow"
+    actions   = ["s3:GetObject"]
+    resources = ["${aws_s3_bucket.buckets["sftp"].arn}/*"]
+  }
+  statement {
+    effect    = "Allow"
+    actions   = ["s3:PutObject"]
+    resources = ["${local.dev_sftp_bucket_arn}/*"]
+  }
+}
+
+resource "aws_iam_role_policy" "sftp_lambda" {
+  for_each = toset(var.env == "none" ? [""] : [])
+
+  name   = "sftp-buckets-access-policy"
+  role   = aws_iam_role.sftp_lambda[""].id
+  policy = data.aws_iam_policy_document.sftp_lambda[""].json
 }

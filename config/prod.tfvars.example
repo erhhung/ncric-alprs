@@ -6,6 +6,19 @@
 
 env = "prod"
 
+accounts = {
+  dev = {
+    id        = "123456789012"
+    region    = "us-west-2"
+    partition = "aws"
+  }
+  prod = {
+    id        = "123456789012"
+    region    = "us-gov-west-1"
+    partition = "aws-us-gov"
+  }
+}
+
 aws_provider = {
   profile = "alprsgov"
   region  = "us-gov-west-1"

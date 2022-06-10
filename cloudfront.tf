@@ -31,14 +31,14 @@ resource "aws_cloudfront_distribution" "app" {
     origin_id   = local.s3_origin_id
 
     dynamic "s3_origin_config" {
-      for_each = var.env == "dev" ? [0] : []
+      for_each = toset(var.env == "dev" ? [""] : [])
 
       content {
         origin_access_identity = one(aws_cloudfront_origin_access_identity.app[*].cloudfront_access_identity_path)
       }
     }
     dynamic "custom_origin_config" {
-      for_each = var.env == "prod" ? [0] : []
+      for_each = toset(var.env == "prod" ? [""] : [])
 
       content {
         http_port              = 80
@@ -53,7 +53,7 @@ resource "aws_cloudfront_distribution" "app" {
     # access by using Referer header secret token:
     # https://aws.amazon.com/premiumsupport/knowledge-center/cloudfront-serve-static-website/
     dynamic "custom_header" {
-      for_each = var.env == "prod" ? [0] : []
+      for_each = toset(var.env == "prod" ? [""] : [])
 
       content {
         name  = "Referer"
@@ -95,8 +95,8 @@ resource "aws_cloudfront_distribution" "app" {
   restrictions {
     geo_restriction {
       # https://www.iso.org/obp/ui/#search/code/
-#      restriction_type = "whitelist"
-#      locations        = ["US"]
+      #      restriction_type = "whitelist"
+      #      locations        = ["US"]
       restriction_type = "none"
       locations        = []
     }
@@ -105,20 +105,20 @@ resource "aws_cloudfront_distribution" "app" {
 
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/route53_record
 resource "aws_route53_record" "app" {
-  provider       = aws.route53
-  zone_id        = local.zone_id
-  name           = local.app_domain
-  type           = "A"
-#  set_identifier = "US"
+  provider = aws.route53
+  zone_id  = local.zone_id
+  name     = local.app_domain
+  type     = "A"
+  #  set_identifier = "US"
 
   alias {
     name                   = aws_cloudfront_distribution.app.domain_name
     zone_id                = aws_cloudfront_distribution.app.hosted_zone_id
     evaluate_target_health = true
   }
-#  geolocation_routing_policy {
-#    country = "US"
-#  }
+  #  geolocation_routing_policy {
+  #    country = "US"
+  #  }
 }
 
 output "app_cf_domain" {

@@ -8,6 +8,21 @@ variable "env" {
   }
 }
 
+variable "accounts" {
+  type = object({
+    dev = object({
+      id        = string
+      region    = string
+      partition = string # aws
+    })
+    prod = object({
+      id        = string
+      region    = string
+      partition = string # aws-us-gov
+    })
+  })
+}
+
 variable "aws_provider" {
   description = "AWS provider configuration"
   type = object({
