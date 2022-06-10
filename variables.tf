@@ -71,8 +71,8 @@ variable "data_volume_sizes" {
   })
 }
 
+# https://docs.aws.amazon.com/elasticloadbalancing/latest/classic/enable-access-logs.html
 variable "elb_account_id" {
-  # https://docs.aws.amazon.com/elasticloadbalancing/latest/classic/enable-access-logs.html
   description = "ELB account ID"
   type        = string
 }
@@ -91,6 +91,14 @@ variable "sftp_users" {
     public_key = string
     home_dir   = optional(string)
   }))
+}
+
+variable "auth0_user" {
+  description = "Headless user for Rundeck jobs"
+  type = object({
+    email    = string
+    password = string
+  })
 }
 
 variable "AUTH0_M2M_CLIENT_ID" {

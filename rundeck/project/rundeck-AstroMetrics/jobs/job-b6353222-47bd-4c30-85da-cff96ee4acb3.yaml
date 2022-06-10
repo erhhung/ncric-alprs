@@ -49,6 +49,48 @@
     secure: true
     storagePath: keys/shuttle_args
     valueExposed: true
+  - description: PostgreSQL host
+    hidden: true
+    name: db_host
+    secure: true
+    storagePath: keys/db_host
+    valueExposed: true
+  - description: NCRIC database
+    hidden: true
+    name: db_name
+    secure: true
+    storagePath: keys/db_name
+    valueExposed: true
+  - description: PostgreSQL user
+    hidden: true
+    name: db_user
+    secure: true
+    storagePath: keys/db_user
+    valueExposed: true
+  - description: PostgreSQL password
+    hidden: true
+    name: db_pass
+    secure: true
+    storagePath: keys/db_pass
+    valueExposed: true
+  - description: Auth0 client ID
+    hidden: true
+    name: client_id
+    secure: true
+    storagePath: keys/client_id
+    valueExposed: true
+  - description: Auth0 user email
+    hidden: true
+    name: ol_user
+    secure: true
+    storagePath: keys/ol_user
+    valueExposed: true
+  - description: Auth0 user password
+    hidden: true
+    name: ol_pass
+    secure: true
+    storagePath: keys/ol_pass
+    valueExposed: true
   plugins:
     ExecutionLifecycle: null
   schedule:

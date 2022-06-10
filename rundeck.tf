@@ -14,10 +14,13 @@ ${templatefile("${path.module}/rundeck/install.tftpl", {
   PG_HOST   = module.postgresql_server.private_domain
   WORKER_IP = module.worker_node.private_ip
   WORKER_OS = join("-", regex("/(ubuntu-.+)-arm64.+-(\\d+)", module.worker_node.ami_name))
+  CLIENT_ID = var.AUTH0_SPA_CLIENT_ID
   # password and private key created in keys.tf
   atlas_pass   = local.atlas_pass
   rundeck_pass = local.rundeck_pass
   rundeck_key  = chomp(tls_private_key.rundeck_worker.private_key_pem)
+  auth0_email  = var.auth0_user.email
+  auth0_pass   = var.auth0_user.password
 })}
 ${file("${path.module}/rundeck/install.sh")}
 EOT

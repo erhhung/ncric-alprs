@@ -61,6 +61,7 @@ data_volume_sizes = {
   elasticsearch = 1024
 }
 
+# account to allow writing ELB logs
 elb_account_id = "048591011584"
 
 ssh_keys = [{
@@ -76,6 +77,12 @@ sftp_users = {
     public_key = "ssh-rsa ... third-party"
     home_dir   = "user_name"
   }
+}
+
+# headless user for Rundeck jobs
+auth0_user = {
+  email = "ol@astrometrics.us"
+  password = ""
 }
 
 AUTH0_M2M_CLIENT_ID     = "Urmsy2aviz7STXGLjhq5sECnUgL0pu01"

@@ -181,18 +181,21 @@ config_project() {
     eval_with_retry "rd keys delete -p $path" &> /dev/null || true
     eval_with_retry "rd keys create -p $path -t password -f /tmp/$path"
   done <<EOT
-keys/api_url   $API_URL
-keys/db_host   $PG_HOST
-keys/db_name   $NCRIC_DB
-keys/db_user   atlas_user
-keys/db_pass   $atlas_pass
-keys/region    ${az:0:-1}
-keys/s3_bucket $SFTP_BUCKET
+keys/region            ${az:0:-1}
+keys/api_url           $API_URL
+keys/s3_bucket         $SFTP_BUCKET
 keys/s3_prefix/boss4   boss4
 keys/s3_prefix/scso    scso
 keys/s3_prefix/flock   flock
 keys/s3_prefix/hotlist hotlist
-keys/shuttle_args $SHUTTLE_ARGS
+keys/shuttle_args      $SHUTTLE_ARGS
+keys/db_host           $PG_HOST
+keys/db_name           $NCRIC_DB
+keys/db_user           atlas_user
+keys/db_pass           $atlas_pass
+keys/client_id         $CLIENT_ID
+keys/ol_user           $auth0_email
+keys/ol_pass           $auth0_pass
 EOT
   rm -rf /tmp/keys
 }

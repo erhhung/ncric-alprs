@@ -21,6 +21,8 @@ data "external" "rhizome_jks" {
   ]
 }
 
+#################### PostgreSQL ####################
+
 data "external" "old_pg_pass" {
   program = [
     "bash", "-c",
@@ -54,6 +56,8 @@ locals {
   # webapp bucket in GovCloud must be made public
   cf_referer = sha1("${local.alprs_pass}_${local.atlas_pass}")
 }
+
+#################### Rundeck ####################
 
 data "external" "old_rd_pass" {
   program = [

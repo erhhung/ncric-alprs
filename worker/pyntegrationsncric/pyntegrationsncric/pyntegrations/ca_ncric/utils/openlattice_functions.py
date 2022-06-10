@@ -8,15 +8,15 @@ def get_jwt(username=None, password=None, client_id=None, base_url='https://api.
     Gets the jwt token for a given usr/pw from a given url.
     """
 
-    domain = 'dev-elp-ybhu.us.auth0.com'
+    domain = 'maiveric.us.auth0.com'
     realm = 'Username-Password-Authentication'
     scope = 'openid email nickname roles user_id organizations'
 
     envvars = {
         'rundeck': {
             'user': os.environ.get("RD_OPTION_OL_USER"),
-            "password": os.environ.get("RD_OPTION_OL_PASSWORD"),
-            "client_id": os.environ.get("RD_OPTION_OL_CLIENT_ID")
+            "password": os.environ.get("RD_OPTION_OL_PASS"),
+            "client_id": os.environ.get("RD_OPTION_CLIENT_ID")
         },
         'local_to_local': {
             'user': os.environ.get("ol_user"),
@@ -44,7 +44,7 @@ def get_jwt(username=None, password=None, client_id=None, base_url='https://api.
     if client_id:
         env['client_id'] = client_id
     if not 'https://api.mychildcare.dss.ca.gov' in base_url:
-        base_url = 'https://openlattice.auth0.com/userinfo'
+        base_url = f'https://{domain}/userinfo'
 
     if not (env['user'] and env['password'] and env['client_id']):
         raise ValueError("Not all necessary variables for authentication are present !")

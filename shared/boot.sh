@@ -36,6 +36,7 @@ apt_update() {
 
 apt_install() {
   apt_update
+  wait_apt_get
   add-apt-repository -y ppa:git-core/ppa
   wait_apt_get
   apt-get dist-upgrade -y

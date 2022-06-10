@@ -66,6 +66,24 @@
     secure: true
     storagePath: keys/db_pass
     valueExposed: true
+  - description: Auth0 client ID
+    hidden: true
+    name: client_id
+    secure: true
+    storagePath: keys/client_id
+    valueExposed: true
+  - description: Auth0 user email
+    hidden: true
+    name: ol_user
+    secure: true
+    storagePath: keys/ol_user
+    valueExposed: true
+  - description: Auth0 user password
+    hidden: true
+    name: ol_pass
+    secure: true
+    storagePath: keys/ol_pass
+    valueExposed: true
   plugins:
     ExecutionLifecycle: null
   schedule:

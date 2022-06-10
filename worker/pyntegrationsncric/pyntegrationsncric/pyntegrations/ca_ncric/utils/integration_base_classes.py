@@ -27,7 +27,6 @@ db_user = os.environ.get("RD_OPTION_DB_USER")
 db_pass = os.environ.get("RD_OPTION_DB_PASS")
 db_host = os.environ.get("RD_OPTION_DB_HOST")
 db_name = os.environ.get("RD_OPTION_DB_NAME")
-db = "org_ab960cc5511b4fd7ad39e365ead19ba8"  # STAGING DATABASE NAME
 
 
 class Integration(object):
