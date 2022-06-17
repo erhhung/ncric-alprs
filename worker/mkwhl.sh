@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-# build "pyntegrationsncric.whl" and output
-# JSON for Terraform "external" data source
+# build specified Python wheel package (pyntegrationsncric.whl or
+# olpy.whl) and output JSON for Terraform's "external" data source
 
 _reqcmds() {
   local cmd
@@ -14,7 +14,9 @@ _reqcmds() {
 }
 _reqcmds md5 || exit $?
 
-cd $(dirname "$0")/pyntegrationsncric
+PROJECT=$1
+
+cd "$(dirname "$0")/$PROJECT"
 [ -f setup.py ] || exit $?
 
 clean_up() {
@@ -23,7 +25,7 @@ clean_up() {
 clean_up
 trap clean_up EXIT
 
-WHL=../../pyntegrationsncric.whl
+WHL=../../$PROJECT.whl
 rm -f $WHL
 
 python3 ./setup.py -q bdist_wheel &> /dev/null

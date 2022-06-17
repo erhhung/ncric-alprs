@@ -69,21 +69,23 @@ clone_repos() {
 }
 
 install_pylibs() (
-  lib=pyntegrationsncric
-  pip3 freeze | grep -q $lib && exit
+  wheels=(pyntegrationsncric olpy)
+  pip3 freeze | grep -q $wheels && exit
   # install required packages: see appendix 2, "Setting
   # up ETL Environment", in the "Data Integration Guide"
   pip3 install boto3 psycopg2 sqlalchemy pandas pandarallel dask auth0-python geopy testresources
   cd openlattice/clients/python
   pip3 install .
 
-  mkdir -p ~/$lib
-  cd ~/$lib
-  aws s3 cp "$S3_URL/worker/$lib.whl" . --no-progress
-  # rename file to conform to wheel naming convention
-  whl=$(unzip -l $lib.whl | sed -En "s|.+($lib-[0-9.]+)\.dist-info/WHEEL|\1-py3-none-any.whl|p")
-  mv -f $lib.whl  $whl
-  pip3 install -I $whl
+  mkdir -p ~/packages
+  cd ~/packages
+  aws s3 sync $S3_URL/worker . --exclude '*' --include '*.whl' --no-progress
+  for wheel in ${wheels[@]}; do
+    # rename file to conform to wheel naming convention
+    whl=$(unzip -l $wheel.whl | sed -En "s|.+($wheel-[0-9.]+)\.dist-info/WHEEL|\1-py3-none-any.whl|p")
+    mv -f $wheel.whl $whl
+    pip3  install -I $whl
+  done
 )
 
 user_dotfiles() {

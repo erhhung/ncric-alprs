@@ -1,6 +1,40 @@
 from auth0.v3.authentication import GetToken
 import openlattice
+import requests
+import json
 import os
+
+
+def post_jira(username, password, summary, description="", project=None, assignee=None,
+              issuetype="Task", points=1):
+    """
+    Posts a task to jira.
+    """
+
+    if assignee is None:
+        assignee = username
+    headers = {'Content-Type': 'application/json'}
+    url = "https://jira.openlattice.com/rest/api/2/issue"
+    data = {
+        "fields": {
+            "assignee": {
+                "name": assignee
+            },
+            "project": {
+                "key": "INTEGRATE"
+            },
+            "summary": summary,
+            "description": description,
+            "customfield_10119": points,  # storypoints
+            "issuetype": {
+                "name": issuetype
+            }
+        }
+    }
+    if not project is None:
+        data['fields']['components'] = [{"name": project}]
+    response = requests.post(url, headers=headers, data=json.dumps(data), auth=(username, password))
+    return response
 
 
 def get_jwt(username=None, password=None, client_id=None, base_url='https://api.astrometrics.us'):
@@ -73,11 +107,5 @@ def get_config(jwt=None, base_url='https://api.astrometrics.us'):
     return configuration
 
 
-def drop_table(engine, table_name):
-    """Drops a table. Useful for dropping intermediate tables
-    after they are used in an integration"""
-    try:
-        engine.execute(f"DROP TABLE {table_name};")
-        print(f"Dropped table {table_name}")
-    except Exception as e:
-        print(f"Could not drop main table due to {str(e)}")
+def get_fqn_string(fullQualifiedName):
+    return f'{fullQualifiedName.namespace}.{fullQualifiedName.name}'

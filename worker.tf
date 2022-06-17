@@ -1,14 +1,27 @@
+locals {
+  wheels = [
+    "pyntegrationsncric",
+    "olpy",
+  ]
+}
+
 # https://registry.terraform.io/providers/hashicorp/external/latest/docs/data-sources/data_source
-data "external" "pyntegrationsncric_whl" {
-  program = ["${path.module}/worker/mkwhl.sh"]
+data "external" "python_wheels" {
+  for_each = toset(local.wheels)
+
+  program = [
+    "${path.module}/worker/mkwhl.sh",
+    each.key,
+  ]
 }
 
 locals {
-  worker_user_data = [{
-    path = "worker/pyntegrationsncric.whl"
-    file = "${path.module}/worker/pyntegrationsncric.whl"
-    type = "application/x-wheel+zip"
-    }, {
+  worker_user_data = flatten([[
+    for wheel in local.wheels : {
+      path = "worker/${wheel}.whl"
+      file = "${path.module}/worker/${wheel}.whl"
+      type = "application/x-wheel+zip"
+    }], {
     path = "worker/bootstrap.sh"
     data = <<-EOT
 ${file("${path.module}/shared/prolog.sh")}
@@ -22,12 +35,12 @@ ${templatefile("${path.module}/worker/boot.tftpl", {
     DATASTORE_IP  = module.datastore_server.private_ip
     # public key is created in keys.tf
     rundeck_key = chomp(tls_private_key.rundeck_worker.public_key_openssh)
-})}
+  })}
 ${file("${path.module}/shared/boot.sh")}
 ${file("${path.module}/worker/install.sh")}
 ${file("${path.module}/shared/epilog.sh")}
 EOT
-}]
+}])
 }
 
 resource "aws_s3_object" "worker_user_data" {

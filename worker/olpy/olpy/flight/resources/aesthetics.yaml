@@ -1,0 +1,29 @@
+all:
+  color: '#3399ff'
+  fontname: Helvetica
+  shape: box
+  cellspacing: "1"
+  cellpadding: "0.5"
+  cellborder: "0.5"
+  tableborder: "0.5"
+  propertyfontcolor: gray
+  len: "5"
+entityDefinitions:
+  style: filled,rounded
+  fontcolor: white
+  fqncolor: #ffffff
+  tablebgcolor: null
+  titlefontcolor: white
+  fontsize: '9'
+  tablebordercolor: white
+associationDefinitions:
+  shape: box
+  style: square
+  fontcolor: black
+  fqncolor: 595F72
+  fontsize: '7'
+  titlefontcolor: black
+  tablebgcolor: white
+  tablebordercolor: #3399ff
+  labeldistance: "0"
+  concentrate: 'true'

@@ -14,7 +14,7 @@ _reqcmds() {
 }
 _reqcmds zip md5 || exit $?
 
-cd $(dirname "$0")/project
+cd "$(dirname "$0")/project"
 [ -d META-INF ] || exit $?
 
 JAR=../astrometrics.rdproject.jar
