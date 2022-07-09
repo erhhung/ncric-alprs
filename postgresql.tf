@@ -97,7 +97,7 @@ module "postgresql_server" {
     aws_s3_object.shared_user_data,
     aws_s3_object.pg_user_data,
   ]
-  ami_id           = data.aws_ami.ubuntu_20arm.id
+  ami_id           = local.applied_amis["ubuntu_20arm"].id
   instance_type    = var.instance_types["postgresql"]
   instance_name    = "PostgreSQL"
   root_volume_size = 32
@@ -115,14 +115,11 @@ resource "aws_volume_attachment" "postgresql_data" {
   device_name = "/dev/xvdb"
 }
 
-output "postgresql_ami_id" {
-  value = module.postgresql_server.ami_id
-}
-output "postgresql_ami_name" {
-  value = module.postgresql_server.ami_name
-}
 output "postgresql_instance_id" {
   value = module.postgresql_server.instance_id
+}
+output "postgresql_instance_ami" {
+  value = module.postgresql_server.instance_ami
 }
 output "postgresql_private_domain" {
   value = module.postgresql_server.private_domain

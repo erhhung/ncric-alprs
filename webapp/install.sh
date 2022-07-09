@@ -18,15 +18,25 @@ install_delta() (
   rm -f delta-*.tar.gz
 )
 
+git_clone() {
+  local url=$1 dest=$2
+  # supply token if cloning MaiVERIC private repo
+  if [[ "$url" == *//github.com/maiveric/* ]]; then
+    # https://github.blog/2012-09-21-easier-builds-and-deployments-using-git-over-https-and-oauth/
+    url=${url/\/\/github.com\//\/\/$GH_TOKEN:x-oauth-basic@github.com\/}
+  fi
+  git clone $url $dest
+}
+
 clone_repos() {
   rm -rf astrometrics
-  git clone https://github.com/openlattice/astrometrics.git
+  git_clone https://github.com/openlattice/astrometrics.git
   cd astrometrics
   git co develop
   git up
   cd $HOME
   rm -rf lattice-orgs
-  git clone https://github.com/openlattice/lattice-orgs.git
+  git_clone https://github.com/openlattice/lattice-orgs.git
   cd lattice-orgs
   git co develop
   git up
@@ -108,6 +118,7 @@ archive_build() {
   tar czf - -C $build . | aws s3 cp - $dest --no-progress
 }
 
+export -f git_clone
 export -f config_app
 export -f change_logo
 

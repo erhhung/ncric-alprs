@@ -13,7 +13,7 @@ locals {
 ${templatefile("${path.module}/rundeck/install.tftpl", {
   PG_HOST   = module.postgresql_server.private_domain
   WORKER_IP = module.worker_node.private_ip
-  WORKER_OS = join("-", regex("/(ubuntu-.+)-arm64.+-(\\d+)", module.worker_node.ami_name))
+  WORKER_OS = join("-", regex("/(ubuntu-.+)-arm64.+-(\\d+)", local.worker_ami))
   CLIENT_ID = var.AUTH0_SPA_CLIENT_ID
   # password and private key created in keys.tf
   atlas_pass   = local.atlas_pass

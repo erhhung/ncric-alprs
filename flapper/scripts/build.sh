@@ -3,7 +3,7 @@
 # usage: build.sh [branch]
 # optional branch override (default is main)
 
-PROJECT=shuttle
+PROJECT=flapper
 
 if [ ! -d ~/openlattice ]; then
   echo >&2 'Git repo "openlattice" not found!'
@@ -18,24 +18,19 @@ if [ ! -d $PROJECT ]; then
   exit 1
 fi
 
+cd $PROJECT
 git stash > /dev/null
 git checkout ${1:-main}
 git pull --rebase --prune
-git submodule update --recursive
 git stash pop 2> /dev/null || true
 
-cd rhizome
-# pull critical fix not yet
-# merged into parent module
-git pull origin develop
-cd ..
-
-./gradlew clean :$PROJECT:distTar -x test
+# don't build from the super-repo
+./gradlew clean :distTar -x test
 
 if [ -d /opt/openlattice/$PROJECT ]; then
   mv /opt/openlattice/$PROJECT /opt/openlattice/${PROJECT}_$(date +"%Y-%m-%d_%H-%M-%S")
 fi
-mv -f $PROJECT/build/distributions/$PROJECT.tgz /opt/openlattice/
+mv -f build/distributions/$PROJECT.tgz /opt/openlattice/
 
 cd /opt/openlattice
 tar xzvf $PROJECT.tgz

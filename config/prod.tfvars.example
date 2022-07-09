@@ -56,6 +56,8 @@ instance_types = {
   worker        = "t4g.xlarge"
 }
 
+lock_ami_versions = false
+
 data_volume_sizes = {
   postgresql    = 4096
   elasticsearch = 1024
@@ -85,10 +87,17 @@ auth0_user = {
   password = ""
 }
 
+# access to api.flocksafety.com
+flock_user = {
+  email = "eyuan@maiveric.com"
+  password = ""
+}
+
 AUTH0_M2M_CLIENT_ID     = "Urmsy2aviz7STXGLjhq5sECnUgL0pu01"
 AUTH0_M2M_CLIENT_SECRET = ""
 AUTH0_SPA_CLIENT_ID     = "uZXrWBfTt5LJEhtjDAKw1xgj6LqJWvWD"
 AUTH0_SPA_CLIENT_SECRET = ""
 FONTAWESOME_NPM_TOKEN   = ""
+GITHUB_ACCESS_TOKEN     = "ghp..."
 MAPBOX_PUBLIC_TOKEN     = "pk..."
 ALPRS_SUPPORT_EMAIL     = "alprs.support@maiveric.com"

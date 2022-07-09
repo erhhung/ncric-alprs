@@ -106,7 +106,7 @@ module "elasticsearch_server" {
     aws_s3_object.shared_user_data,
     aws_s3_object.es_user_data,
   ]
-  ami_id           = data.aws_ami.ubuntu_20arm.id
+  ami_id           = local.applied_amis["ubuntu_20arm"].id
   instance_type    = var.instance_types["elasticsearch"]
   instance_name    = "Elasticsearch"
   root_volume_size = 32
@@ -124,14 +124,11 @@ resource "aws_volume_attachment" "elasticsearch_data" {
   device_name = "/dev/xvdb"
 }
 
-output "elasticsearch_ami_id" {
-  value = module.elasticsearch_server.ami_id
-}
-output "elasticsearch_ami_name" {
-  value = module.elasticsearch_server.ami_name
-}
 output "elasticsearch_instance_id" {
   value = module.elasticsearch_server.instance_id
+}
+output "elasticsearch_instance_ami" {
+  value = module.elasticsearch_server.instance_ami
 }
 output "elasticsearch_private_domain" {
   value = module.elasticsearch_server.private_domain

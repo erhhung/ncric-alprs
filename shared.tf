@@ -60,6 +60,12 @@ resource "aws_s3_object" "shared_user_data" {
 
 locals {
   # sed -En 's/^.+\$\{([a-zA-Z0-9_]+)\}.*$/\1/p' *.yaml | sort | uniq
+  #
+  # NOTE: the reason why there are no _HOST config values here even though
+  # nearly all config files require POSTGRESQL_HOST and ELASTICSEARCH_HOST
+  # is because "enable.sh" and "disable.sh" can remove those corresponding
+  # .tf files from the deployment scope while keeping other hosts, causing
+  # dependency errors
   config_values = {
     AWS_REGION              = local.region
     APP_DOMAIN              = local.app_domain

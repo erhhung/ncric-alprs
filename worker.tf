@@ -28,9 +28,11 @@ ${file("${path.module}/shared/prolog.sh")}
 ${templatefile("${path.module}/worker/boot.tftpl", {
     ENV           = var.env
     S3_URL        = local.user_data_s3_url
+    GH_TOKEN      = var.GITHUB_ACCESS_TOKEN
     SFTP_BUCKET   = var.buckets["sftp"]
     MEDIA_BUCKET  = var.buckets["media"]
     BACKUP_BUCKET = var.buckets["backup"]
+    CONFIG_BUCKET = var.buckets["config"]
     POSTGRESQL_IP = module.postgresql_server.private_ip
     DATASTORE_IP  = module.datastore_server.private_ip
     # public key is created in keys.tf
@@ -58,6 +60,9 @@ locals {
   worker_scripts_paths = [{
     path = "${path.module}/shuttle/scripts"
     dest = "shuttle"
+    }, {
+    path = "${path.module}/flapper/scripts"
+    dest = "flapper"
   }]
   worker_scripts = flatten([
     for scripts in local.worker_scripts_paths : [
@@ -97,7 +102,7 @@ module "worker_node" {
     aws_s3_object.worker_user_data,
     aws_s3_object.worker_scripts,
   ]
-  ami_id           = data.aws_ami.ubuntu_20arm.id
+  ami_id           = local.applied_amis["ubuntu_20arm"].id
   instance_type    = var.instance_types["worker"]
   instance_name    = "Worker"
   root_volume_size = 32
@@ -106,6 +111,10 @@ module "worker_node" {
   instance_profile = aws_iam_instance_profile.alprs_worker.name
   key_name         = aws_key_pair.admin.key_name
   user_data        = chomp(local.worker_bootstrap)
+}
+
+locals {
+  worker_ami = module.worker_node.instance_ami.name
 }
 
 module "shuttle_config" {
@@ -121,14 +130,25 @@ module "shuttle_config" {
   })
 }
 
-output "worker_ami_id" {
-  value = module.worker_node.ami_id
+module "flapper_config" {
+  source = "./modules/config"
+
+  service = "flapper"
+  path    = "${path.module}/flapper/config"
+  bucket  = aws_s3_bucket.buckets["config"].id
+
+  values = merge(local.config_values, {
+    FLOCK_USER      = var.flock_user.email
+    FLOCK_PASSWORD  = var.flock_user.password
+    POSTGRESQL_HOST = module.postgresql_server.private_domain
+  })
 }
-output "worker_ami_name" {
-  value = module.worker_node.ami_name
-}
+
 output "worker_instance_id" {
   value = module.worker_node.instance_id
+}
+output "worker_instance_ami" {
+  value = module.worker_node.instance_ami
 }
 output "worker_private_domain" {
   value = module.worker_node.private_domain

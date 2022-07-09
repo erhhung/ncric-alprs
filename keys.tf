@@ -40,12 +40,12 @@ locals {
   old_pg_pass = data.external.old_pg_pass.result
   new_pg_pass = data.external.new_pg_pass.result
 
-  alprs_pass = coalesce(
-    lookup(local.old_pg_pass, "alprs_user", null),
+  alprs_pass = lookup(
+    local.old_pg_pass, "alprs_user",
     local.new_pg_pass["alprs_user"]
   )
-  atlas_pass = coalesce(
-    lookup(local.old_pg_pass, "atlas_user", null),
+  atlas_pass = lookup(
+    local.old_pg_pass, "atlas_user",
     local.new_pg_pass["atlas_user"]
   )
 }

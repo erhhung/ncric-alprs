@@ -1,0 +1,13 @@
+name: flock
+description: pull Flock reads
+datalakes:
+  - name: atlas
+    url: jdbc:postgresql://${POSTGRESQL_HOST}:5432/org_00000000000000010000000000000000
+    username: atlas_user
+    password: ${ATLAS_PASSWORD}
+    driver: org.postgresql.Driver
+  - name: flock
+    url: https://api.flocksafety.com/api
+    username: ${FLOCK_USER}
+    password: ${FLOCK_PASSWORD}
+    driver: com.flocksafety

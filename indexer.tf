@@ -4,6 +4,7 @@ ${file("${path.module}/shared/prolog.sh")}
 ${templatefile("${path.module}/indexer/boot.tftpl", {
   ENV           = var.env
   S3_URL        = local.user_data_s3_url
+  GH_TOKEN      = var.GITHUB_ACCESS_TOKEN
   BACKUP_BUCKET = var.buckets["backup"]
   CONFIG_BUCKET = var.buckets["config"]
   DATASTORE_IP  = module.datastore_server.private_ip
@@ -60,7 +61,7 @@ module "indexer_server" {
     aws_s3_object.indexer_bootstrap,
     aws_s3_object.indexer_scripts,
   ]
-  ami_id           = data.aws_ami.ubuntu_20arm.id
+  ami_id           = local.applied_amis["ubuntu_20arm"].id
   instance_type    = var.instance_types["indexer"]
   instance_name    = "Indexer"
   root_volume_size = 48
@@ -88,14 +89,11 @@ module "indexer_config" {
   })
 }
 
-output "indexer_ami_id" {
-  value = module.indexer_server.ami_id
-}
-output "indexer_ami_name" {
-  value = module.indexer_server.ami_name
-}
 output "indexer_instance_id" {
   value = module.indexer_server.instance_id
+}
+output "indexer_instance_ami" {
+  value = module.indexer_server.instance_ami
 }
 output "indexer_private_domain" {
   value = module.indexer_server.private_domain

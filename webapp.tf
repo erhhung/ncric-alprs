@@ -2,6 +2,7 @@ locals {
   webapp_bootstrap = <<-EOT
 ${templatefile("${path.module}/webapp/install.tftpl", {
   FA_TOKEN      = var.FONTAWESOME_NPM_TOKEN
+  GH_TOKEN      = var.GITHUB_ACCESS_TOKEN
   MB_TOKEN      = var.MAPBOX_PUBLIC_TOKEN
   AUTH0_ID      = var.AUTH0_SPA_CLIENT_ID
   SUPPORT_EMAIL = var.ALPRS_SUPPORT_EMAIL

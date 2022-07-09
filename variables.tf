@@ -63,6 +63,12 @@ variable "instance_types" {
   }
 }
 
+variable "lock_ami_versions" {
+  description = "Don't upgrade AMIs if true"
+  type        = bool
+  default     = false
+}
+
 variable "data_volume_sizes" {
   description = "Data volume sizes in GiB"
   type = object({
@@ -101,6 +107,14 @@ variable "auth0_user" {
   })
 }
 
+variable "flock_user" {
+  description = "Access to api.flocksafety.com"
+  type = object({
+    email    = string
+    password = string
+  })
+}
+
 variable "AUTH0_M2M_CLIENT_ID" {
   description = "Auth0 Machine-to-Machine client ID"
   type        = string
@@ -119,6 +133,10 @@ variable "AUTH0_SPA_CLIENT_SECRET" {
 }
 variable "FONTAWESOME_NPM_TOKEN" {
   description = "Font Awesome NPM auth token"
+  type        = string
+}
+variable "GITHUB_ACCESS_TOKEN" {
+  description = "GitHub personal access token"
   type        = string
 }
 variable "MAPBOX_PUBLIC_TOKEN" {

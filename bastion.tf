@@ -60,7 +60,7 @@ module "bastion_host" {
     aws_s3_object.bastion_user_data,
     aws_s3_object.rd_user_data,
   ]
-  ami_id           = data.aws_ami.amazon_linux2.id
+  ami_id           = local.applied_amis["amazon_linux2"].id
   instance_type    = var.instance_types["bastion"]
   instance_name    = "Bastion Host"
   root_volume_size = 32
@@ -71,12 +71,9 @@ module "bastion_host" {
   user_data        = chomp(local.bastion_bootstrap)
 }
 
-output "bastion_ami_id" {
-  value = module.bastion_host.ami_id
-}
-output "bastion_ami_name" {
-  value = module.bastion_host.ami_name
-}
 output "bastion_instance_id" {
   value = module.bastion_host.instance_id
+}
+output "bastion_instance_ami" {
+  value = module.bastion_host.instance_ami
 }

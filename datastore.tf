@@ -4,6 +4,7 @@ ${file("${path.module}/shared/prolog.sh")}
 ${templatefile("${path.module}/datastore/boot.tftpl", {
   ENV           = var.env
   S3_URL        = local.user_data_s3_url
+  GH_TOKEN      = var.GITHUB_ACCESS_TOKEN
   FROM_EMAIL    = local.alprs_sender_email
   BACKUP_BUCKET = var.buckets["backup"]
   CONFIG_BUCKET = var.buckets["config"]
@@ -61,7 +62,7 @@ module "datastore_server" {
     aws_s3_object.datastore_bootstrap,
     aws_s3_object.datastore_scripts,
   ]
-  ami_id           = data.aws_ami.ubuntu_20arm.id
+  ami_id           = local.applied_amis["ubuntu_20arm"].id
   instance_type    = var.instance_types["datastore"]
   instance_name    = "Datastore"
   root_volume_size = 32
@@ -95,14 +96,11 @@ resource "aws_lb_target_group_attachment" "api" {
   target_id        = module.datastore_server.instance_id
 }
 
-output "datastore_ami_id" {
-  value = module.datastore_server.ami_id
-}
-output "datastore_ami_name" {
-  value = module.datastore_server.ami_name
-}
 output "datastore_instance_id" {
   value = module.datastore_server.instance_id
+}
+output "datastore_instance_ami" {
+  value = module.datastore_server.instance_ami
 }
 output "datastore_private_domain" {
   value = module.datastore_server.private_domain

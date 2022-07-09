@@ -58,14 +58,26 @@ copy_scripts() {
   find scripts -type f -name '*.sh' -exec chmod +x {} \;
 }
 
+git_clone() {
+  local url=$1 dest=$2
+  # supply token if cloning MaiVERIC private repo
+  if [[ "$url" == *//github.com/maiveric/* ]]; then
+    # https://github.blog/2012-09-21-easier-builds-and-deployments-using-git-over-https-and-oauth/
+    url=${url/\/\/github.com\//\/\/$GH_TOKEN:x-oauth-basic@github.com\/}
+  fi
+  git clone $url $dest
+}
+
 clone_repos() {
+  rm -rf clients
+  git_clone https://github.com/openlattice/api-clients clients
   rm -rf openlattice
-  git clone https://github.com/openlattice/openlattice.git
+  git_clone https://github.com/openlattice/openlattice.git
   cd openlattice
   rmdir neuron
   git sub init
   git sub deinit neuron
-  git clone https://github.com/openlattice/api-clients clients
+  git_clone https://github.com/maiveric/flapper.git
 }
 
 install_pylibs() (
@@ -74,7 +86,7 @@ install_pylibs() (
   # install required packages: see appendix 2, "Setting
   # up ETL Environment", in the "Data Integration Guide"
   pip3 install boto3 psycopg2 sqlalchemy pandas pandarallel dask auth0-python geopy testresources
-  cd openlattice/clients/python
+  cd clients/python
   pip3 install .
 
   mkdir -p ~/packages
@@ -88,8 +100,9 @@ install_pylibs() (
   done
 )
 
-user_dotfiles() {
+user_dotfiles() (
   cat <<EOF >> .bashrc
+export CONFIG_BUCKET="$CONFIG_BUCKET"
 export MEDIA_BUCKET="$MEDIA_BUCKET"
 export SFTP_BUCKET="$SFTP_BUCKET"
 EOF
@@ -102,18 +115,34 @@ EOF
   cat <<EOF | sudo tee -a /etc/environment
 PYNTEGRATIONS_PATH="$PYNTEGRATIONS_PATH"
 EOF
-}
+)
 
-build_shuttle() (
+build_cli_app() (
   # build and then install
-  scripts/shuttle/build.sh develop
-  SHUTTLE_PATH=/opt/openlattice/shuttle/bin/shuttle
-  sudo ln -sf  $SHUTTLE_PATH /usr/local/bin/shuttle
-  grep -q SHUTTLE_PATH /etc/environment && exit
+  app=$1 path="${1^^}_PATH"
+  scripts/$app/build.sh develop
+  eval $path=/opt/openlattice/$app/bin/$app
+  [ -f ${!path} ] || exit $?
+  sudo ln -sf ${!path} /usr/local/bin/$app
+  grep -q $path /etc/environment && exit
   cat <<EOF | sudo tee -a /etc/environment
-SHUTTLE_PATH="$SHUTTLE_PATH"
+$path="${!path}"
 EOF
 )
+
+config_flapper() (
+  path=/opt/openlattice/flapper/conf
+  FLAPPER_CONF="$path/flapper.yaml"
+  mkdir -p $path
+  aws s3 sync s3://$CONFIG_BUCKET/flapper $path --no-progress
+  [ -f $FLAPPER_CONF ] || exit $?
+  grep -q $path /etc/environment && exit
+  cat <<EOF | sudo tee -a /etc/environment
+FLAPPER_CONF="$FLAPPER_CONF"
+EOF
+)
+
+export -f git_clone
 
 run apt_install
 run install_java
@@ -126,4 +155,6 @@ run copy_scripts   $USER
 run clone_repos    $USER
 run install_pylibs $USER
 run user_dotfiles  $USER
-run build_shuttle  $USER
+run build_cli_app  $USER shuttle
+run build_cli_app  $USER flapper
+run config_flapper $USER

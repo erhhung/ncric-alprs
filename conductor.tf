@@ -4,6 +4,7 @@ ${file("${path.module}/shared/prolog.sh")}
 ${templatefile("${path.module}/conductor/boot.tftpl", {
   ENV           = var.env
   S3_URL        = local.user_data_s3_url
+  GH_TOKEN      = var.GITHUB_ACCESS_TOKEN
   FROM_EMAIL    = local.alprs_sender_email
   BACKUP_BUCKET = var.buckets["backup"]
   CONFIG_BUCKET = var.buckets["config"]
@@ -60,7 +61,7 @@ module "conductor_server" {
     aws_s3_object.conductor_bootstrap,
     aws_s3_object.conductor_scripts,
   ]
-  ami_id           = data.aws_ami.ubuntu_20arm.id
+  ami_id           = local.applied_amis["ubuntu_20arm"].id
   instance_type    = var.instance_types["conductor"]
   instance_name    = "Conductor"
   root_volume_size = 32
@@ -88,14 +89,11 @@ module "conductor_config" {
   })
 }
 
-output "conductor_ami_id" {
-  value = module.conductor_server.ami_id
-}
-output "conductor_ami_name" {
-  value = module.conductor_server.ami_name
-}
 output "conductor_instance_id" {
   value = module.conductor_server.instance_id
+}
+output "conductor_instance_ami" {
+  value = module.conductor_server.instance_ami
 }
 output "conductor_private_domain" {
   value = module.conductor_server.private_domain
