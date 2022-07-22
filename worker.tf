@@ -47,7 +47,8 @@ EOT
 }
 
 resource "aws_s3_object" "worker_user_data" {
-  for_each = { for obj in local.worker_user_data : basename(obj.path) => obj }
+  for_each   = { for obj in local.worker_user_data : basename(obj.path) => obj }
+  depends_on = [data.external.python_wheels]
 
   bucket       = data.aws_s3_bucket.user_data.id
   key          = "userdata/${each.value.path}"
