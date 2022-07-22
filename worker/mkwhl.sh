@@ -18,14 +18,14 @@ _reqcmds() {
 _reqcmds md5 || exit $?
 
 clean_up() {
-  cd /tmp; rm -rf $PROJECT
+  cd /tmp; rm -rf $tmp_dir
 }
 trap clean_up EXIT
 
+tmp_dir="$(mktemp -d)"
 prj_dir="$(realpath "$(dirname "$0")/$PROJECT")"
-rm -rf /tmp/$PROJECT
-cp -a  "$prj_dir" /tmp
-cd /tmp/$PROJECT
+cp -a $prj_dir/ $tmp_dir
+cd $tmp_dir
 
 [ -f setup.py ] || exit $?
 
@@ -33,7 +33,9 @@ cd /tmp/$PROJECT
 BASE_URL='https://api.openlattice.com'
 while read file; do
   sed -i '' "s|$BASE_URL|$API_URL|" $file
-done < <(grep -rl $BASE_URL)
+done < <(
+  grep -rl $BASE_URL
+)
 
 WHL="${prj_dir}.whl"
 rm -f $WHL
