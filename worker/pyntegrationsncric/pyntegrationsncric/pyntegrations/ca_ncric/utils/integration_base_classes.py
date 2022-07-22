@@ -44,7 +44,7 @@ class Integration(object):
                  standardize_clean_table_name=True,
                  if_exists="fail",
                  flight_path=None,
-                 base_url="https://api.mychildcare.dss.ca.gov",
+                 base_url="https://api.openlattice.com",
                  rowwise=None,
                  cleaning_required=True,
                  shuttle_path=None,
@@ -122,7 +122,7 @@ class Integration(object):
 
         # finish setup
         token = of.get_jwt(ol_user, ol_pass, client_id)
-        self.configuration = of.get_config(jwt=token, base_url='https://api.mychildcare.dss.ca.gov')
+        self.configuration = of.get_config(jwt=token, base_url="https://api.openlattice.com")
         self.flight = flight.Flight(configuration=self.configuration)
         self.flight.deserialize(self.flight_path)
         self.engine = sqlalchemy.create_engine(
@@ -291,7 +291,7 @@ class Integration(object):
 
         environment = {
             "http://localhost:8080": "LOCAL",
-            'https://api.mychildcare.dss.ca.gov': "PROD_INTEGRATION",
+            "https://api.openlattice.com": "PROD_INTEGRATION",
         }
 
         host = environment[self.configuration.host]

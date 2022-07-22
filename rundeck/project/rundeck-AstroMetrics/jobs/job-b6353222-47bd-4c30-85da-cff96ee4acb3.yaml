@@ -110,8 +110,8 @@
         #!/usr/bin/env python3
 
         from datetime import datetime, timedelta
-        from pyntegrations.ca_ncric.boss4.integration_definitions import \
-          BOSS4Integration, BOSS4ImagesIntegration, BOSS4AgenciesIntegration, \
+        from pyntegrationsncric.pyntegrations.ca_ncric.boss4.integration_definitions \
+          import BOSS4Integration, BOSS4ImagesIntegration, BOSS4AgenciesIntegration, \
           BOSS4ImageSourcesIntegration, BOSS4AgenciesStandardizedIntegration, \
           BOSS4HotlistDaily
         import os

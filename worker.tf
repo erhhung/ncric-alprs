@@ -12,6 +12,7 @@ data "external" "python_wheels" {
   program = [
     "${path.module}/worker/mkwhl.sh",
     each.key,
+    "https://${local.api_domain}",
   ]
 }
 

@@ -87,8 +87,8 @@
         <script><![CDATA[#!/usr/bin/env python3
 
 from datetime import datetime, timedelta
-from pyntegrations.ca_ncric.scso.integration_definitions import \
-  SCSOIntegration, SCSOImagesIntegration, SCSOAgenciesIntegration, \
+from pyntegrationsncric.pyntegrations.ca_ncric.scso.integration_definitions \
+  import SCSOIntegration, SCSOImagesIntegration, SCSOAgenciesIntegration, \
   SCSOImageSourcesIntegration, SCSOAgenciesStandardizedIntegration
 import os
 

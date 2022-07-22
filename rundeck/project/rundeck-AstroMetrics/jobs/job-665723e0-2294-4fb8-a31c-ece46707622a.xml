@@ -89,8 +89,8 @@
 
 from datetime import datetime, timedelta
 from sqlalchemy import create_engine
-from pyntegrations.ca_ncric.boss4.integration_definitions import \
-  BOSS4Integration, BOSS4ImagesIntegration, BOSS4AgenciesIntegration, \
+from pyntegrationsncric.pyntegrations.ca_ncric.boss4.integration_definitions \
+  import BOSS4Integration, BOSS4ImagesIntegration, BOSS4AgenciesIntegration, \
   BOSS4ImageSourcesIntegration, BOSS4AgenciesStandardizedIntegration
 import pyntegrationsncric.pyntegrations.ca_ncric.utils.openlattice_functions as of
 import os
