@@ -215,13 +215,13 @@ data "aws_iam_policy_document" "sftp_user" {
     condition {
       test     = "StringLike"
       variable = "s3:prefix"
-      values   = ["$${Transfer:UserName}", "$${Transfer:UserName}/*"]
+      values   = ["$${Transfer:HomeDirectory}", "$${Transfer:HomeDirectory}/*"]
     }
   }
   statement {
     effect    = "Allow"
     actions   = ["s3:GetObject", "s3:PutObject"]
-    resources = ["${aws_s3_bucket.buckets["sftp"].arn}/$${Transfer:UserName}/*"]
+    resources = ["${aws_s3_bucket.buckets["sftp"].arn}/$${Transfer:HomeDirectory}/*"]
   }
 }
 
