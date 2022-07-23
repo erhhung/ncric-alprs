@@ -206,22 +206,23 @@ resource "aws_iam_role_policy" "sftp_bucket" {
 }
 
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/transfer_user
+# https://docs.aws.amazon.com/transfer/latest/userguide/users-policies.html#users-policies-scope-down
 data "aws_iam_policy_document" "sftp_user" {
   statement {
     effect    = "Allow"
     actions   = ["s3:ListBucket"]
-    resources = [aws_s3_bucket.buckets["sftp"].arn]
+    resources = ["arn:${var.accounts[var.env].partition}:s3:::$${transfer:HomeBucket}"]
 
     condition {
       test     = "StringLike"
       variable = "s3:prefix"
-      values   = ["$${Transfer:HomeDirectory}", "$${Transfer:HomeDirectory}/*"]
+      values   = ["$${Transfer:HomeFolder}", "$${Transfer:HomeFolder}/*"]
     }
   }
   statement {
     effect    = "Allow"
     actions   = ["s3:GetObject", "s3:PutObject"]
-    resources = ["${aws_s3_bucket.buckets["sftp"].arn}/$${Transfer:HomeDirectory}/*"]
+    resources = ["arn:${var.accounts[var.env].partition}:s3:::$${transfer:HomeDirectory}/*"]
   }
 }
 
