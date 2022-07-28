@@ -12,6 +12,7 @@ _reqcmds() {
     fi
   done
 }
+# envsubst is part of "gettext"
 _reqcmds envsubst jq || exit $?
 
 file="$1"; shift

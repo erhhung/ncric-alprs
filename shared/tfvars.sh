@@ -15,4 +15,17 @@ _reqcmds() {
 }
 _reqcmds yq || exit $?
 
-sed -E 's/^ *([a-z0-9]+) *= */\1: /' "$1" | yq r -j -
+_altcmd() {
+  local cmd
+  for cmd in "$@"; do
+    if hash $cmd 2> /dev/null; then
+      printf $cmd && return
+    fi
+  done
+  return 1
+}
+# use yq v4 syntax
+yq=$(_altcmd yq4 yq)
+
+sed -E 's/^ *([a-z0-9]+) *= */\1: /' "$1" | \
+  "$yq" -o=json -I=0 -M -
