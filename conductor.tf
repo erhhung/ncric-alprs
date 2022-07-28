@@ -27,14 +27,14 @@ locals {
   conductor_scripts_path = "${path.module}/conductor/scripts"
   conductor_scripts = [
     for path in fileset(local.conductor_scripts_path, "**") : {
-      abs = abspath("${local.conductor_scripts_path}/${path}")
-      rel = path
+      path = "${local.conductor_scripts_path}/${path}"
+      rel  = path
     }
   ]
 }
 
 resource "aws_s3_object" "conductor_scripts" {
-  for_each = { for file in local.conductor_scripts : file.rel => file.abs }
+  for_each = { for file in local.conductor_scripts : file.rel => file.path }
 
   bucket       = data.aws_s3_bucket.user_data.id
   key          = "userdata/conductor/scripts/${each.key}"

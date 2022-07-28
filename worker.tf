@@ -69,15 +69,15 @@ locals {
   worker_scripts = flatten([
     for scripts in local.worker_scripts_paths : [
       for path in fileset(scripts.path, "**") : {
-        abs = abspath("${scripts.path}/${path}")
-        rel = lookup(scripts, "dest", null) == null ? path : "${scripts.dest}/${path}"
+        path = "${scripts.path}/${path}"
+        rel  = lookup(scripts, "dest", null) == null ? path : "${scripts.dest}/${path}"
       }
     ]
   ])
 }
 
 resource "aws_s3_object" "worker_scripts" {
-  for_each = { for file in local.worker_scripts : file.rel => file.abs }
+  for_each = { for file in local.worker_scripts : file.rel => file.path }
 
   bucket       = data.aws_s3_bucket.user_data.id
   key          = "userdata/worker/scripts/${each.key}"

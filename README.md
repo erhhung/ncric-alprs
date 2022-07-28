@@ -52,7 +52,9 @@ _Due to some `for_each` values that depend on resource attributes that cannot be
 # download dev.tfvars from S3 bucket if you don't have one
 aws s3 cp s3://alprs-tfstate-dev/tfstate/dev.tfvars config/
 
+# explicit -target is only necessary if provisioning the tfstate for the first time
 terraform apply -var-file config/dev.tfvars -target aws_ses_domain_dkim.astrometrics
+
 terraform apply -var-file config/dev.tfvars
 ```
 

@@ -28,14 +28,14 @@ locals {
   datastore_scripts_path = "${path.module}/datastore/scripts"
   datastore_scripts = [
     for path in fileset(local.datastore_scripts_path, "**") : {
-      abs = abspath("${local.datastore_scripts_path}/${path}")
-      rel = path
+      path = "${local.datastore_scripts_path}/${path}"
+      rel  = path
     }
   ]
 }
 
 resource "aws_s3_object" "datastore_scripts" {
-  for_each = { for file in local.datastore_scripts : file.rel => file.abs }
+  for_each = { for file in local.datastore_scripts : file.rel => file.path }
 
   bucket       = data.aws_s3_bucket.user_data.id
   key          = "userdata/datastore/scripts/${each.key}"

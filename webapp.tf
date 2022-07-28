@@ -13,11 +13,17 @@ ${file("${path.module}/webapp/install.sh")}
 EOT
 }
 
+locals {
+  webapp_images_path = "${path.module}/webapp"
+  webapp_images = {
+    for name in fileset(local.webapp_images_path, "*.png") :
+    name => "${local.webapp_images_path}/${name}"
+  }
+}
+
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_object
 resource "aws_s3_object" "images" {
-  for_each = { for name in fileset("${path.module}/webapp", "*.png") :
-    name => abspath("${path.module}/webapp/${name}")
-  }
+  for_each = local.webapp_images
 
   bucket       = aws_s3_bucket.buckets["webapp"].id
   key          = each.key

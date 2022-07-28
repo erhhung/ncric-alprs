@@ -27,14 +27,14 @@ locals {
   indexer_scripts_path = "${path.module}/indexer/scripts"
   indexer_scripts = [
     for path in fileset(local.indexer_scripts_path, "**") : {
-      abs = abspath("${local.indexer_scripts_path}/${path}")
-      rel = path
+      path = "${local.indexer_scripts_path}/${path}"
+      rel  = path
     }
   ]
 }
 
 resource "aws_s3_object" "indexer_scripts" {
-  for_each = { for file in local.indexer_scripts : file.rel => file.abs }
+  for_each = { for file in local.indexer_scripts : file.rel => file.path }
 
   bucket       = data.aws_s3_bucket.user_data.id
   key          = "userdata/indexer/scripts/${each.key}"
