@@ -13,6 +13,7 @@ _reqcmds() {
     fi
   done
 }
+# yq: brew install yq
 _reqcmds yq || exit $?
 
 _altcmd() {

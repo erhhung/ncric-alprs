@@ -35,7 +35,9 @@ mkdir -p /tmp/.ssh && cp -a ~/$config ~/$known /tmp/.ssh/
 
 printf 'Retrieving Terraform output variables...'
 env=$(terraform output -raw env)
-# use gsed on BSD/macOS
+
+# use GNU sed on BSD/macOS
+# gsed: brew install gnu-sed
 sed=$(_altcmd gsed sed)
 
 old_host_ids() {

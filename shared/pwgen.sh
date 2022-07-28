@@ -18,6 +18,7 @@ _reqcmds() {
     fi
   done
 }
+# pwgen: brew install pwgen
 _reqcmds pwgen jq || exit $?
 
 n=$1

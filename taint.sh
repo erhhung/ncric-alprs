@@ -29,7 +29,8 @@ _altcmd() {
   return 1
 }
 
-# use ggrep on BSD/macOS
+# use GNU grep on BSD/macOS
+# ggrep: brew install grep
 grep=$(_altcmd ggrep grep)
 
 full_addr() {
