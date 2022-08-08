@@ -29,34 +29,34 @@ Host alprsprod*
 # the instance IDs of the following hosts can be updated by the
 # "upssh.sh" script when run after those instances get recreated
 Host alprsdevbast*
-  HostName i-0123456789abcdef0
+  HostName i-0ca3a779702d187f1
 Host alprsdevpg*
-  HostName i-0123456789abcdef0
+  HostName i-0af11cee35be3b40b
 Host alprsdeves*
-  HostName i-0123456789abcdef0
+  HostName i-0863173ea096fda34
 Host alprsdevcond*
-  HostName i-0123456789abcdef0
+  HostName i-005499a2b39a34dda
 Host alprsdevdata*
-  HostName i-0123456789abcdef0
+  HostName i-09b178d5f410ff9dc
 Host alprsdevidx*
-  HostName i-0123456789abcdef0
+  HostName i-01ab44fce72b64894
 Host alprsdevwork*
-  HostName i-0123456789abcdef0
+  HostName i-062599caf04193f3b
 
 Host alprsprodbast*
-  HostName i-0123456789abcdef0
+  HostName i-034459244121fa8ed
 Host alprsprodpg*
-  HostName i-0123456789abcdef0
+  HostName i-0d5b04d02ae364f18
 Host alprsprodes*
-  HostName i-0123456789abcdef0
+  HostName i-093d921a52278ae5e
 Host alprsprodcond*
-  HostName i-0123456789abcdef0
+  HostName i-076aecbb7ba4c207f
 Host alprsproddata*
-  HostName i-0123456789abcdef0
+  HostName i-0827538d97bd410a8
 Host alprsprodidx*
-  HostName i-0123456789abcdef0
+  HostName i-092f89392e2164a0c
 Host alprsprodwork*
-  HostName i-0123456789abcdef0
+  HostName i-0e43df93c7f0c8062
 
 Host alprs*bast*
   User ec2-user
