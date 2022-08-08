@@ -66,6 +66,9 @@ data_volume_sizes = {
 # account to allow writing ELB logs
 elb_account_id = "048591011584"
 
+# ssh_keys[0] is used to create the required EC2 key pair
+# for SSH access to each instance; the remaining keys are
+# simply added to each host's ~/.ssh/authorized_keys file
 ssh_keys = [{
   key_name   = "alprsgov-admin"
   public_key = "ssh-ed25519 ... alprsgov-admin"

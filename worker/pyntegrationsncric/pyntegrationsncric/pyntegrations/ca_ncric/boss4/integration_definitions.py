@@ -49,7 +49,6 @@ class BOSS4Integration(ALPRIntegration):
             date_end=date_end,
             col_list=col_list,
             datasource="BOSS4"
-
         )
 
     def drop_main_table(self):
