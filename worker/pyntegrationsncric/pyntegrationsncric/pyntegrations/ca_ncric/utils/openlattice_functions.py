@@ -57,7 +57,7 @@ def get_jwt(username=None, password=None, client_id=None, base_url='https://api.
         password=env['password'],
         scope=scope,
         realm=realm,
-        audience=base_url,
+        audience=f'https://{domain}/userinfo',
         grant_type='http://auth0.com/oauth/grant-type/password-realm'
     )
     return token['id_token']
