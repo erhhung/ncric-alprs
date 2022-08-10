@@ -37,13 +37,14 @@ class Integration(object):
     def __init__(self,
                  integration_config=None,
                  sql=None,
-                 file_path=None,
+                 # file_path=None, #kim changed
                  raw_table_name="tmp_raw",
                  append_raw_table_name=None,
                  clean_table_name_root="tmp",
                  standardize_clean_table_name=True,
                  if_exists="fail",
                  flight_path=None,
+                 # atlas_organization_id=None, # kim added
                  base_url="https://api.openlattice.com",
                  rowwise=None,
                  cleaning_required=True,
@@ -79,13 +80,13 @@ class Integration(object):
                 raise ValueError("SQL query specified twice.")
         else:
             self.sql = sql
-        if "file_path" in self.__dict__:
-            if file_path:
-                raise ValueError("File path specified twice.")
-        else:
-            self.file_path = file_path
+        # if "file_path" in self.__dict__:                      #KIM COMMENTED OUT
+        #     if file_path:
+        #         raise ValueError("File path specified twice.")
+        # else:
+        #     self.file_path = file_path
 
-        if "clean_table_name_root" not in local_config:
+        if "clean_table_name_root" not in self.__dict__: # KIM CHANGED local_config:
             self.clean_table_name_root = clean_table_name_root
         if "standardize_clean_table_name" not in self.__dict__:
             self.standardize_clean_table_name = standardize_clean_table_name
@@ -112,17 +113,17 @@ class Integration(object):
         if "done_folder" not in local_config:
             self.done_folder = done_folder
 
-        # check completeness of integration definition
-        if bool(self.file_path) == bool(self.sql):
-            raise ValueError("Exactly one of {file_path, sql} must be specified.")
+        # check completeness of integration definition                  #KIM COMMENTED OUT
+        # if bool(self.file_path) == bool(self.sql):
+        #     raise ValueError("Exactly one of {file_path, sql} must be specified.")
         if not self.clean_table_name_root:
             raise ValueError("No clean table name specified")
-        if not self.flight_path:
-            raise ValueError("No flight_path specified")
+        # if not self.flight_path:
+        #     raise ValueError("No flight_path specified")
 
         # finish setup
         token = of.get_jwt(ol_user, ol_pass, client_id)
-        self.configuration = of.get_config(jwt=token, base_url="https://api.openlattice.com")
+        self.configuration = of.get_config(jwt=token, base_url="https://api.dev.astrometrics.us")
         self.flight = flight.Flight(configuration=self.configuration)
         self.flight.deserialize(self.flight_path)
         self.engine = sqlalchemy.create_engine(

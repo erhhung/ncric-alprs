@@ -19,14 +19,14 @@ class ALPRIntegration(Integration):
         limit=None,
         date_start=None,
         date_end=None,
-        atlas_organization_id="1446ff84-7112-42ec-828d-f181f45e4d20",
+        # atlas_organization_id="1446ff84-7112-42ec-828d-f181f45e4d20",
         standardized_agency_table="standardized_agency_names",
         col_list=None
     ):
 
         super().__init__(
             if_exists="replace",
-            base_url="https://api.openlattice.com")
+            base_url="https://api.dev.astrometrics.us")
             # atlas_organization_id=atlas_organization_id)
 
         self.s3_bucket = s3_bucket
