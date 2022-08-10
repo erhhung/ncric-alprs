@@ -6,7 +6,12 @@ import json
 import pandas as pd
 import pytz
 import sqlalchemy
+import os
 
+db_user = os.environ.get("RD_OPTION_DB_USER")
+db_pass = os.environ.get("RD_OPTION_DB_PASS")
+db_host = os.environ.get("RD_OPTION_DB_HOST")
+db_name = os.environ.get("RD_OPTION_DB_NAME")
 
 class ALPRIntegration(Integration):
     def __init__(
@@ -19,15 +24,15 @@ class ALPRIntegration(Integration):
         limit=None,
         date_start=None,
         date_end=None,
-        # atlas_organization_id="1446ff84-7112-42ec-828d-f181f45e4d20",
+        atlas_organization_id="1446ff84-7112-42ec-828d-f181f45e4d20",
         standardized_agency_table="standardized_agency_names",
         col_list=None
     ):
 
         super().__init__(
             if_exists="replace",
-            base_url="https://api.dev.astrometrics.us")
-            # atlas_organization_id=atlas_organization_id)
+            base_url="https://api.dev.astrometrics.us",
+            atlas_organization_id=atlas_organization_id)
 
         self.s3_bucket = s3_bucket
         self.s3_prefix = s3_prefix
@@ -138,7 +143,7 @@ class ALPRIntegration(Integration):
         return pd.Series(newdict)
 
     def get_raw_data_from_s3(self):
-        session = boto3.session.Session(region_name="us-gov-west-1")
+        session = boto3.session.Session(region_name="us-west-2")
         s3 = session.resource('s3')
         bucket = s3.Bucket(name=self.s3_bucket)
 
@@ -210,7 +215,9 @@ class ALPRIntegration(Integration):
                         print(f"Could not parse file {file} correctly due to {err}. Check again.")
                     pass
 
-        engine = self.flight.get_atlas_engine_for_organization()
+        engine = sqlalchemy.create_engine(
+            f"postgresql://{db_user}:{db_pass}@{db_host}:5432/{db_name}")
+        # engine = self.flight.get_atlas_engine_for_organization()
 
         # exit cleanly if there are any issues...
         if len(df.index) == 0:

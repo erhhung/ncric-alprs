@@ -44,8 +44,8 @@ class Integration(object):
                  standardize_clean_table_name=True,
                  if_exists="fail",
                  flight_path=None,
-                 # atlas_organization_id=None, # kim added
-                 base_url="https://api.openlattice.com",
+                 atlas_organization_id=None, # kim added
+                 base_url="https://api.dev.astrometrics.us",
                  rowwise=None,
                  cleaning_required=True,
                  shuttle_path=None,
@@ -118,6 +118,8 @@ class Integration(object):
         #     raise ValueError("Exactly one of {file_path, sql} must be specified.")
         if not self.clean_table_name_root:
             raise ValueError("No clean table name specified")
+        if atlas_organization_id is None and self.flight_path is None:          #KIM ADDED
+            raise ValueError("At least one organization ID or flight path must be specified!")
         # if not self.flight_path:
         #     raise ValueError("No flight_path specified")
 
@@ -125,7 +127,10 @@ class Integration(object):
         token = of.get_jwt(ol_user, ol_pass, client_id)
         self.configuration = of.get_config(jwt=token, base_url="https://api.dev.astrometrics.us")
         self.flight = flight.Flight(configuration=self.configuration)
-        self.flight.deserialize(self.flight_path)
+        if self.flight_path is not None:                #KIM ADDED
+            self.flight.deserialize(self.flight_path)
+        else:                                               #KIM ADDED
+            self.flight.organization_id = atlas_organization_id
         self.engine = sqlalchemy.create_engine(
             f"postgresql://{db_user}:{db_pass}@{db_host}:5432/{db_name}")
 
