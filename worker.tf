@@ -13,6 +13,7 @@ data "external" "python_wheels" {
     "${path.module}/worker/mkwhl.sh",
     each.key,
     "https://${local.api_domain}",
+    "${local.region}"
   ]
 }
 
