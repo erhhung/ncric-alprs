@@ -6,7 +6,7 @@ entityDefinitions:
     entitySetName: "NCRICVehicleRecordsSouthSanFranciscoPD"
     propertyDefinitions:
       ol.id:
-        type:  "ol.id"
+        type: "ol.id"
         column: "vehicle_record_id"
       ol.licenseplateimage:
         type: "ol.licenseplateimage"

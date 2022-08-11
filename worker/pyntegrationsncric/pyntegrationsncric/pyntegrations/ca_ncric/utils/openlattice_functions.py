@@ -3,7 +3,7 @@ import openlattice
 import os
 
 
-def get_jwt(username=None, password=None, client_id=None, base_url='https://api.astrometrics.us'):
+def get_jwt(username=None, password=None, client_id=None, base_url='https://api.openlattice.com'):
     """
     Gets the jwt token for a given usr/pw from a given url.
     """
@@ -43,7 +43,7 @@ def get_jwt(username=None, password=None, client_id=None, base_url='https://api.
         env['password'] = password
     if client_id:
         env['client_id'] = client_id
-    if not 'astrometrics.us' in base_url:
+    if 'astrometrics.us' in base_url:
         base_url = f'https://{domain}/userinfo'
 
     if not (env['user'] and env['password'] and env['client_id']):
@@ -57,13 +57,13 @@ def get_jwt(username=None, password=None, client_id=None, base_url='https://api.
         password=env['password'],
         scope=scope,
         realm=realm,
-        audience=f'https://{domain}/userinfo',
+        audience=base_url,
         grant_type='http://auth0.com/oauth/grant-type/password-realm'
     )
     return token['id_token']
 
 
-def get_config(jwt=None, base_url='https://api.astrometrics.us'):
+def get_config(jwt=None, base_url='https://api.openlattice.com'):
     if not jwt:
         jwt = get_jwt(base_url=base_url)
     configuration = openlattice.Configuration()

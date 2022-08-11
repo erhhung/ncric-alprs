@@ -16,7 +16,7 @@ entityDefinitions:
     entitySetName: "NCRICVehicleRecords"
     propertyDefinitions:
       ol.id:
-        type:  "ol.id"
+        type: "ol.id"
         column: "vehicle_record_id"
       vehicle.licensenumber:
         type: "vehicle.licensenumber"
@@ -49,7 +49,7 @@ entityDefinitions:
     entitySetName: "NCRICImageSources"
     propertyDefinitions:
       ol.id:
-        type:  "ol.id"
+        type: "ol.id"
         column: "camera_id"
     name: "imagesources"
     associateOnly: true
