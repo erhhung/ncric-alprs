@@ -37,12 +37,17 @@ locals {
     path = "postgresql/pg_hba.conf"
     data = data.external.pg_hba_conf.result.text
     }, {
-    # "alprs.sql" contains the exported EDM (entity
-    # data model) that was originally imported from
-    # api.openlattice.com by starting the conductor
+    # "alprs.sql" contains the exported EDM (entity data model) that was
+    # originally imported from api.openlattice.com by starting Conductor
     # once with the "edmsync" flag
     path = "postgresql/alprs.sql.gz"
     file = "${path.module}/postgresql/alprs.sql.gz"
+    type = "application/gzip"
+    }, {
+    # "ncric.sql.gz" contains the "integrations.standardized_agency_names"
+    # lookup table in the "org_1446ff84711242ec828df181f45e4d20" database
+    path = "postgresql/ncric.sql.gz"
+    file = "${path.module}/postgresql/ncric.sql.gz"
     type = "application/gzip"
     }, {
     path = "postgresql/bootstrap.sh"
@@ -55,6 +60,7 @@ ${templatefile("${path.module}/postgresql/boot.tftpl", {
     PG_CONF   = "${local.user_data_s3_url}/postgresql/postgresql.conf"
     PG_HBA    = "${local.user_data_s3_url}/postgresql/pg_hba.conf"
     ALPRS_SQL = "${local.user_data_s3_url}/postgresql/alprs.sql.gz"
+    NCRIC_SQL = "${local.user_data_s3_url}/postgresql/ncric.sql.gz"
     # passwords are created in keys.tf
     alprs_pass    = local.alprs_pass
     atlas_pass    = local.atlas_pass

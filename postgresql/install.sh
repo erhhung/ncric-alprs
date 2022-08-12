@@ -146,6 +146,9 @@ create_db_objects() {
   gunzip -f alprs.sql.gz
   sed -Ei "s|https://astrometrics\\.us|$APP_URL|" alprs.sql
   psql alprs < alprs.sql
+  aws s3 cp $NCRIC_SQL ncric.sql.gz --no-progress
+  gunzip -f ncric.sql.gz
+  psql < ncric.sql
 }
 
 create_backup_sh() {

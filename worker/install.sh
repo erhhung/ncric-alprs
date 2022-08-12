@@ -33,6 +33,17 @@ install_delta() (
   rm git-delta*
 )
 
+install_psql() (
+  curl -s https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add -
+  cd /etc/apt/sources.list.d
+  cat <<EOF > postgresql-pgdg.list
+deb https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main
+EOF
+  apt-get update
+  wait_apt_get
+  apt-get install -y postgresql-client-14
+)
+
 init_destdir() {
   mkdir -p /opt/openlattice
   chown -Rh $USER:$USER /opt/openlattice
@@ -148,6 +159,7 @@ run apt_install
 run install_java
 run install_python
 run install_delta
+run install_psql
 run init_destdir
 run config_sshd
 run auth_ssh_key   $USER
