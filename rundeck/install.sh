@@ -18,7 +18,9 @@ install_rundeck() (
   # https://docs.rundeck.com/docs/administration/install/linux-rpm.html#installing-rundeck
   curl https://raw.githubusercontent.com/rundeck/packaging/main/scripts/rpm-setup.sh \
     2> /dev/null | bash -s rundeck
-  yum install -y rundeck rundeck-cli
+  # rundeck-4.5.0.20220811-1 fails
+  # to start due to database error
+  yum install -y rundeck-4.4.0.20220714-1 rundeck-cli
 )
 
 # args: [stage]
@@ -174,13 +176,9 @@ config_project() {
 
   shopt -s expand_aliases
   . .bash_aliases
-  local path value az=$(myaz)
-  while read path value; do
-    mkdir -p /tmp/$(dirname $path)
-    printf "%s" "$value" > /tmp/$path
-    eval_with_retry "rd keys delete -p $path" &> /dev/null || true
-    eval_with_retry "rd keys create -p $path -t password -f /tmp/$path"
-  done <<EOT
+  cd rundeck
+  local az=$(myaz)
+  cat <<EOF > keys.txt
 keys/region            ${az:0:-1}
 keys/api_url           $API_URL
 keys/s3_bucket         $SFTP_BUCKET
@@ -196,7 +194,14 @@ keys/db_pass           $atlas_pass
 keys/client_id         $CLIENT_ID
 keys/ol_user           $auth0_email
 keys/ol_pass           $auth0_pass
-EOT
+EOF
+  local path value
+  while read path value; do
+    mkdir -p /tmp/$(dirname $path)
+    printf "%s" "$value" > /tmp/$path
+    eval_with_retry "rd keys delete -p $path" &> /dev/null || true
+    eval_with_retry "rd keys create -p $path -t password -f /tmp/$path"
+  done < keys.txt
   rm -rf /tmp/keys
 }
 

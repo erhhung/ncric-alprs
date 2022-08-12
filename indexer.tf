@@ -8,6 +8,10 @@ ${templatefile("${path.module}/indexer/boot.tftpl", {
   BACKUP_BUCKET = var.buckets["backup"]
   CONFIG_BUCKET = var.buckets["config"]
   DATASTORE_IP  = module.datastore_server.private_ip
+  CLIENT_ID     = var.AUTH0_SPA_CLIENT_ID
+  # passwords are created in keys.tf
+  auth0_email = var.auth0_user.email
+  auth0_pass  = var.auth0_user.password
 })}
 ${file("${path.module}/shared/boot.sh")}
 ${file("${path.module}/shared/install.sh")}

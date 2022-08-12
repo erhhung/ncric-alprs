@@ -27,6 +27,7 @@ EOF
   cd /home/$USER
   cat <<'EOF' >> .bash_aliases
 
+
 psql() {
   [ "$USER" == 'postgres' ] && $(which psql) "$@" || \
     \sudo -E su postgres -c   "$(which psql)  $@"

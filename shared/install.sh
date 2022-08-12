@@ -133,6 +133,28 @@ archive_build() (
   aws s3 cp $src $dest --no-progress
 )
 
+# invoke REST API that triggers indexing of all EDM objects
+# since Elasticsearch will have no content when provisioned
+trigger_index() (
+  [ $HOST == INDEXER ] || exit 0
+  sleep 30
+  params=(
+    client_id=$CLIENT_ID
+    grant_type=password
+    username=$auth0_email
+    password=$auth0_pass
+    audience=https://$auth0_domain/userinfo
+    scope=openid
+  )
+  jwt=$(curl -sX POST https://$auth0_domain/oauth/token \
+    -H 'Content-Type: application/x-www-form-urlencoded' \
+    -d "$(IFS=\&; echo "${params[*]}")" | jq -r .id_token)
+  set -x
+  curl -H "Authorization: Bearer $jwt" \
+    -so /dev/null -w '%{http_code}\n' \
+    http://$DATASTORE_IP:8080/datastore/search/edm/index
+)
+
 export -f git_clone
 export -f wait_service
 
@@ -146,3 +168,4 @@ run config_service openlattice
 run build_service  openlattice
 run start_service  openlattice
 run archive_build
+run trigger_index
