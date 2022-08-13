@@ -1,6 +1,17 @@
 # This user data script is a continuation
 # of the shared "boot.sh" script.
 
+etc_hosts() (
+  cd /etc
+  grep -q postgresql hosts && exit
+  tab=$(printf "\t")
+  cat <<EOF >> hosts
+
+$POSTGRESQL_IP${tab}postgresql
+$DATASTORE_IP${tab}datastore
+EOF
+)
+
 apt_install() {
   apt_update
   wait_apt_get
@@ -31,6 +42,17 @@ install_delta() (
   wait_apt_get
   dpkg -i git-delta_0.12.0_arm64.deb
   rm git-delta*
+)
+
+install_psql() (
+  curl -s https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add -
+  cd /etc/apt/sources.list.d
+  cat <<EOF > postgresql-pgdg.list
+deb https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main
+EOF
+  apt-get update
+  wait_apt_get
+  apt-get install -y postgresql-client-14
 )
 
 init_destdir() {
@@ -144,10 +166,12 @@ EOF
 
 export -f git_clone
 
+run etc_hosts
 run apt_install
 run install_java
 run install_python
 run install_delta
+run install_psql
 run init_destdir
 run config_sshd
 run auth_ssh_key   $USER

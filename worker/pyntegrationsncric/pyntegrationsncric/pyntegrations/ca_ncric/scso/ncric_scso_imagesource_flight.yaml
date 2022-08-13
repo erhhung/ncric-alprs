@@ -6,7 +6,7 @@ entityDefinitions:
     entitySetName: "NCRICImageSources"
     propertyDefinitions:
       ol.id:
-        type:  "ol.id"
+        type: "ol.id"
         column: "camera_id"
       ol.name:
         type: "ol.name"
@@ -21,7 +21,7 @@ entityDefinitions:
     entitySetName: "NCRICImageSourcesSCSO"
     propertyDefinitions:
       ol.id:
-        type:  "ol.id"
+        type: "ol.id"
         column: "camera_id"
       ol.name:
         type: "ol.name"

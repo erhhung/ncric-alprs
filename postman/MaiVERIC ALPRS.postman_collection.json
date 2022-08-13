@@ -2,7 +2,8 @@
 	"info": {
 		"_postman_id": "e92f38e4-f6d1-4db4-b0bc-f3b39996741a",
 		"name": "MaiVERIC ALPRS",
-		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "6849833"
 	},
 	"item": [
 		{
@@ -53,6 +54,11 @@
 					"mode": "urlencoded",
 					"urlencoded": [
 						{
+							"key": "client_id",
+							"value": "{{auth0_client_id}}",
+							"type": "text"
+						},
+						{
 							"key": "grant_type",
 							"value": "password",
 							"type": "text"
@@ -75,16 +81,6 @@
 						{
 							"key": "scope",
 							"value": "openid",
-							"type": "text"
-						},
-						{
-							"key": "client_id",
-							"value": "{{auth0_client_id}}",
-							"type": "text"
-						},
-						{
-							"key": "client_secret",
-							"value": "{{auth0_client_secret}}",
 							"type": "text"
 						}
 					]
@@ -327,6 +323,65 @@
 			"response": []
 		},
 		{
+			"name": "Update Org Role Grants",
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"grantType\": \"Automatic\",\n    \"mappings\": [],\n    \"attribute\": \"\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{datastore_endpoint}}/organizations/{{ncric_org_id}}/principals/roles/{{role_id}}/grant",
+					"host": [
+						"{{datastore_endpoint}}"
+					],
+					"path": [
+						"organizations",
+						"{{ncric_org_id}}",
+						"principals",
+						"roles",
+						"{{role_id}}",
+						"grant"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update Org Auth Connections",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "[\n    \"NCRIC\"\n]",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{datastore_endpoint}}/organizations/{{ncric_org_id}}/connections",
+					"host": [
+						"{{datastore_endpoint}}"
+					],
+					"path": [
+						"organizations",
+						"{{ncric_org_id}}",
+						"connections"
+					]
+				}
+			},
+			"response": []
+		},
+		{
 			"name": "Get AstroMetrics App Roles",
 			"request": {
 				"method": "GET",
@@ -383,6 +438,25 @@
 							"key": "id",
 							"value": "{{astrometrics_app_id}}"
 						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Trigger All EDM Index",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{datastore_endpoint}}/search/edm/index",
+					"host": [
+						"{{datastore_endpoint}}"
+					],
+					"path": [
+						"search",
+						"edm",
+						"index"
 					]
 				}
 			},
@@ -477,6 +551,21 @@
 		{
 			"key": "astrometrics_app_id",
 			"value": "b74cf7dd-1a03-4799-b863-ec1cc50c2007",
+			"type": "string"
+		},
+		{
+			"key": "READ_role_id",
+			"value": "4c066609-f84a-447a-83e8-2e067715c8fe",
+			"type": "string"
+		},
+		{
+			"key": "WRITE_role_id",
+			"value": "8f475ded-544b-40ac-8355-3046ad753efd",
+			"type": "string"
+		},
+		{
+			"key": "role_id",
+			"value": "SELECT_READ_OR_WRITE",
 			"type": "string"
 		}
 	]

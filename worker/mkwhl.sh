@@ -4,7 +4,8 @@
 # olpy.whl) and output JSON for Terraform's "external" data source
 
 PROJECT=$1 # pyntegrationsncric|olpy
-API_URL=$2 # https://api.astrometrics.us
+API_URL=$2 # https://api.[dev.]astrometrics.us
+ REGION=$3 # us-gov-west-1|us-west-2
 
 _reqcmds() {
   local cmd
@@ -30,11 +31,19 @@ cd $tmp_dir
 [ -f setup.py ] || exit $?
 
 # replace "base_url" parameter values
-BASE_URL='https://api.openlattice.com'
+_URL='https://api.openlattice.com'
 while read file; do
-  sed -i '' "s|$BASE_URL|$API_URL|" $file
+  sed -i '' "s|$_URL|$API_URL|" $file
 done < <(
-  grep -rl $BASE_URL
+  grep -rl $_URL
+)
+
+# replace AWS region parameter values
+_REGION='us-gov-west-1'
+while read file; do
+  sed -i '' "s/$_REGION/$REGION/" $file
+done < <(
+  grep -rl $_REGION
 )
 
 WHL="${prj_dir}.whl"

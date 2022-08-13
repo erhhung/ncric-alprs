@@ -13,6 +13,7 @@ db_pass = os.environ.get("RD_OPTION_DB_PASS")
 db_host = os.environ.get("RD_OPTION_DB_HOST")
 db_name = os.environ.get("RD_OPTION_DB_NAME")
 
+
 class ALPRIntegration(Integration):
     def __init__(
         self,
@@ -31,7 +32,7 @@ class ALPRIntegration(Integration):
 
         super().__init__(
             if_exists="replace",
-            base_url="https://api.dev.astrometrics.us",
+            base_url="https://api.openlattice.com",
             atlas_organization_id=atlas_organization_id)
 
         self.s3_bucket = s3_bucket
@@ -143,7 +144,7 @@ class ALPRIntegration(Integration):
         return pd.Series(newdict)
 
     def get_raw_data_from_s3(self):
-        session = boto3.session.Session(region_name="us-west-2")
+        session = boto3.session.Session(region_name="us-gov-west-1")
         s3 = session.resource('s3')
         bucket = s3.Bucket(name=self.s3_bucket)
 

@@ -15,7 +15,7 @@ entityDefinitions:
     entitySetName: "astrometrics_1446ff84711242ec828df181f45e4d20_apphotlistreads"
     propertyDefinitions:
       ol.id:
-        type:  "ol.id"
+        type: "ol.id"
         column: "vehicle_record_id"
       vehicle.licensenumber:
         type: "vehicle.licensenumber"
