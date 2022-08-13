@@ -304,7 +304,7 @@ class Integration(object):
 
         environment = {
             "http://localhost:8080": "LOCAL",
-            "https://api.dev.astrometrics.us": "PROD_INTEGRATION",
+            "https://api.openlattice.com": "PROD_INTEGRATION",
             "https://api.staging.openlattice.com": "STAGING_INTEGRATION"
         }
 
