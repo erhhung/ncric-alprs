@@ -11,9 +11,7 @@ data "external" "python_wheels" {
 
   program = [
     "${path.module}/worker/mkwhl.sh",
-    each.key,
-    "https://${local.api_domain}",
-    "${local.region}"
+    each.key, local.api_url, local.region
   ]
 }
 
@@ -30,6 +28,7 @@ ${file("${path.module}/shared/prolog.sh")}
 ${templatefile("${path.module}/worker/boot.tftpl", {
     ENV           = var.env
     S3_URL        = local.user_data_s3_url
+    API_URL       = local.api_url
     GH_TOKEN      = var.GITHUB_ACCESS_TOKEN
     SFTP_BUCKET   = var.buckets["sftp"]
     MEDIA_BUCKET  = var.buckets["media"]

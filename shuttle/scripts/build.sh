@@ -30,6 +30,10 @@ cd rhizome
 git pull origin develop
 cd ..
 
+# change hardcoded base and integration URLs to $API_URL (exported externally)
+sed -Ei "s#https://(api|integration)(\.\w+)?\.openlattice\.com/?#$API_URL/#" \
+  ./api/src/main/java/com/openlattice/client/RetrofitFactory.java
+
 ./gradlew clean :$PROJECT:distTar -x test
 
 if [ -d /opt/openlattice/$PROJECT ]; then
