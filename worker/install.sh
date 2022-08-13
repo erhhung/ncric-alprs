@@ -1,6 +1,17 @@
 # This user data script is a continuation
 # of the shared "boot.sh" script.
 
+etc_hosts() (
+  cd /etc
+  grep -q postgresql hosts && exit
+  tab=$(printf "\t")
+  cat <<EOF >> hosts
+
+$POSTGRESQL_IP${tab}postgresql
+$DATASTORE_IP${tab}datastore
+EOF
+)
+
 apt_install() {
   apt_update
   wait_apt_get
@@ -155,6 +166,7 @@ EOF
 
 export -f git_clone
 
+run etc_hosts
 run apt_install
 run install_java
 run install_python

@@ -116,6 +116,7 @@ etc_hosts() (
   grep -q postgresql hosts && exit
   tab=$(printf "\t")
   cat <<EOF >> hosts
+
 $PG_IP${tab}postgresql
 $ES_IP${tab}elasticsearch
 EOF
