@@ -102,3 +102,8 @@ discovery.type: single-node
 # Refer to the following documentation for instructions.
 #
 # https://www.elastic.co/guide/en/elasticsearch/reference/7.16/configuring-stack-security.html
+#
+# ----------------------------------- Tuning -----------------------------------
+#
+# https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping-settings-limit.html
+index.mapping.total_fields.limit: 5000
