@@ -22,7 +22,7 @@ run() {
   local func=$1 user=${2:-root} args="${@:3}"
   echo -e "\n[`__ts`|$user] $func $args"
   export -f $func
-  if [ $user == 'root' ]; then
+  if [ $user == root ]; then
     # always run in subshell
     (set -x; $func "${@:3}")
   else

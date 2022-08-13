@@ -44,49 +44,62 @@ EOF
 )
 
 config_elasticsearch() (
-  cd /etc/security/limits.d
-  cat <<'EOF' > 10-defaults.conf
+  case "$1" in
+    before_start)
+      cd /etc/security/limits.d
+      cat <<'EOF' > 10-defaults.conf
 * soft nofile  300000
 * hard nofile  300000
 * hard memlock unlimited
 * soft memlock unlimited
 EOF
-  cat <<'EOF' > 90-elasticsearch.conf
+      cat <<'EOF' > 90-elasticsearch.conf
 elasticsearch soft memlock unlimited
 elasticsearch hard memlock unlimited
 EOF
-  cd /etc/systemd/system
-  mkdir -p elasticsearch.service.d
-  cd elasticsearch.service.d
-  cat <<'EOF' > override.conf
+      cd /etc/systemd/system
+      mkdir -p elasticsearch.service.d
+      cd elasticsearch.service.d
+      cat <<'EOF' > override.conf
 [Service]
 LimitMEMLOCK=infinity
 LimitNOFILE=300000
 EOF
-  cd /opt/elasticsearch
-  if [ ! -d data ]; then
-    mkdir data logs
-    ln -s /etc/elasticsearch conf
-    ln -s /usr/share/elasticsearch/bin
-    ln -s /usr/share/elasticsearch/plugins
-  fi
+      cd /opt/elasticsearch
+      if [ ! -d data ]; then
+        mkdir data logs
+        ln -s /etc/elasticsearch conf
+        ln -s /usr/share/elasticsearch/bin
+        ln -s /usr/share/elasticsearch/plugins
+      fi
 
-  cd conf
-  mv elasticsearch.yml elasticsearch-default.yml
-  aws s3 cp $ES_YML elasticsearch.yml --no-progress
-  heap_size=$(awk '/MemTotal.*kB/ {print int($2 /1024/1024 / 2)}' /proc/meminfo)
-  cat <<EOF > jvm.options.d/heap.options
+      cd conf
+      mv elasticsearch.yml elasticsearch-default.yml
+      aws s3 cp $ES_YML elasticsearch.yml --no-progress
+      heap_size=$(awk '/MemTotal.*kB/ {print int($2 /1024/1024 / 2)}' /proc/meminfo)
+      cat <<EOF > jvm.options.d/heap.options
 -Xms${heap_size}g
 -Xmx${heap_size}g
 EOF
-  chown -Rh elasticsearch:elasticsearch \
-    /opt/elasticsearch /etc/elasticsearch
+      chown -Rh elasticsearch:elasticsearch \
+        /opt/elasticsearch /etc/elasticsearch
 
-  cd /etc/kibana
-  mv kibana.yml kibana-default.yml
-  aws s3 cp $KB_YML kibana.yml --no-progress
-  chmod 660 kibana.yml
-  chown root:kibana *
+      cd /etc/kibana
+      mv kibana.yml kibana-default.yml
+      aws s3 cp $KB_YML kibana.yml --no-progress
+      chmod 660 kibana.yml
+      chown root:kibana *
+      ;;
+    after_start)
+      cd /opt/elasticsearch/conf
+      # create index template to apply common settings
+      aws s3 cp $ES_TEMPLATE template.json --no-progress
+      # https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping-settings-limit.html
+      curl -sX PUT http://localhost:9201/_template/common \
+        -H 'Content-Type: application/json' \
+        -d @template.json | jq
+      ;;
+  esac
 )
 
 wait_service() {
@@ -110,17 +123,9 @@ restart_service() {
   systemctl status  ${1,,} --no-pager
 }
 
-elasticsearch_settings() {
-  # https://www.elastic.co/guide/en/elasticsearch/reference/7.17/modules-cluster.html#misc-cluster-settings
-  curl -sX PUT http://localhost:9201/_cluster/settings \
-    -H 'Content-Type: application/json' \
-    -d '{"persistent":{"cluster.max_shards_per_node":"10000"}}' | jq
-}
-
 start_elasticsearch() {
   systemctl daemon-reload
   restart_service Elasticsearch 9201 9301
-  elasticsearch_settings
   restart_service Kibana 5601
 }
 
@@ -177,7 +182,8 @@ start_nginx() {
 run install_java
 run create_xfs_volume
 run install_elasticsearch
-run config_elasticsearch
+run config_elasticsearch root before_start
 run start_elasticsearch
+run config_elasticsearch root after_start
 run config_nginx
 run start_nginx
