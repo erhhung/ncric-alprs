@@ -43,7 +43,7 @@ class ALPRIntegration(Integration):
         self.standardized_agency_table = standardized_agency_table
         self.col_list = col_list
 
-        self.image_cols = ["LPREventID", "standardized_agency_name",
+        self.image_cols = ["LPREventID", #"standardized_agency_name",
                            "VehicleLicensePlateID", "LPRVehiclePlatePhoto", "LPRAdditionalPhoto"]
         utc = pytz.UTC
 
@@ -111,7 +111,7 @@ class ALPRIntegration(Integration):
         newdict['agencyAcronym'] = row.agencyAcronym
         newdict['datasource'] = self.datasource
         newdict['LPRCameraName'] = row.LPRCameraName
-        newdict['standardized_agency_name'] = row.standardized_agency_name
+        # newdict['standardized_agency_name'] = row.standardized_agency_name      #PUT BACK WHEN TABLE EXISTS
 
         if self.datasource == "BOSS4":
             datasource = "None"
@@ -128,11 +128,11 @@ class ALPRIntegration(Integration):
         newdict['recordedby2_id'] = self.join_string(
             filter(lambda x: x != "None", [str(row.LPREventID), str(row.agencyOriNumber), datasource]))
         newdict['recordedby3_id'] = self.join_string(
-            filter(lambda x: x != "None", [str(row.LPREventID), str(row.standardized_agency_name), datasource]))
+            filter(lambda x: x != "None", [str(row.LPREventID), str(row.agencyName), datasource])) #row.standardized_agency_name
         newdict['collectedby_id'] = self.join_string(
             filter(lambda x: x != "None", [str(row.LPRCameraID), str(row.agencyOriNumber), datasource]))
         newdict['collectedby2_id'] = self.join_string(
-            filter(lambda x: x != "None", [str(row.LPRCameraID), str(row.standardized_agency_name), datasource]))
+            filter(lambda x: x != "None", [str(row.LPRCameraID), str(row.agencyName), datasource])) #row.standardized_agency_name
         newdict['locatedat1_id'] = self.join_string(
             filter(lambda x: x != "None" and x is not None, [str(row.LPRCameraID), newdict['location_id'], datasource]))
         newdict['locatedat2_id'] = self.join_string(
@@ -217,7 +217,6 @@ class ALPRIntegration(Integration):
 
         engine = sqlalchemy.create_engine(
             f"postgresql://{db_user}:{db_pass}@{db_host}:5432/{db_name}")
-        # engine = self.flight.get_atlas_engine_for_organization()
 
         # exit cleanly if there are any issues...
         if len(df.index) == 0:
@@ -245,25 +244,26 @@ class ALPRIntegration(Integration):
 
         df = df[(pd.notnull(df['LPREventID'])) & (df['LPREventID'] != "${read.id}")]
 
+        #RE-COMMENT BACK IN WHEN WE HAVE A STANDARDIZED TABLE
         # grab the standardized agency table and left join
-        standardized_agency_table = pd.read_sql(
-            f"""select * from {self.standardized_agency_table} where "ol.datasource" = '{self.datasource}';""", engine)
-        df = df.merge(standardized_agency_table, left_on="agencyName", right_on="ol.name", how="left")
+        # standardized_agency_table = pd.read_sql(
+        #     f"""select * from {self.standardized_agency_table} where "ol.datasource" = '{self.datasource}';""", engine)
+        # df = df.merge(standardized_agency_table, left_on="agencyName", right_on="ol.name", how="left")
 
-        add_agency = pd.DataFrame()
+        # add_agency = pd.DataFrame()
 
         # find all the agencies that are not part of the standardized agency name
         # unfortunately BOSS4 ends up getting a lot of NA values, so we need an extra check to make sure
         # there also exists an agency name - otherwise, I'm getting lots of Nones appended
-        agency_names = df[(pd.isnull(df['standardized_agency_name'])) & (pd.notnull(df['agencyName']))][['agencyName']]
-        if len(agency_names) > 0:
-            # make the standardized agency name the same as the actual agency name (at least temporarily)
-            print("Adding new agency!")
-            add_agency = agency_names.drop_duplicates()
-            add_agency = add_agency.rename({"agencyName": "ol.name"}, axis=1)
-            add_agency['standardized_agency_name'] = add_agency['ol.name']
-            add_agency['ol.datasource'] = self.datasource
-            add_agency = add_agency[['ol.name', 'standardized_agency_name', 'ol.datasource']]
+        # agency_names = df[(pd.isnull(df['standardized_agency_name'])) & (pd.notnull(df['agencyName']))][['agencyName']]
+        # if len(agency_names) > 0:
+        #     # make the standardized agency name the same as the actual agency name (at least temporarily)
+        #     print("Adding new agency!")
+        #     add_agency = agency_names.drop_duplicates()
+        #     add_agency = add_agency.rename({"agencyName": "ol.name"}, axis=1)
+        #     add_agency['standardized_agency_name'] = add_agency['ol.name']
+        #     add_agency['ol.datasource'] = self.datasource
+        #     add_agency = add_agency[['ol.name', 'standardized_agency_name', 'ol.datasource']]
 
         # check difference between sets and add if sets are different
 
@@ -305,14 +305,14 @@ class ALPRIntegration(Integration):
                 else:
                     print(f"Uploaded {len(df.index)} rows of data to {self.raw_table_name}!")
 
-                if len(add_agency.index) > 0:
-                    add_agency.to_sql(
-                        self.standardized_agency_table,
-                        connection,
-                        if_exists='append',
-                        index=False
-                    )
-                    print(f"Uploaded {len(add_agency.index)} rows to {self.standardized_agency_table}!")
+                # if len(add_agency.index) > 0:
+                #     add_agency.to_sql(
+                #         self.standardized_agency_table,
+                #         connection,
+                #         if_exists='append',
+                #         index=False
+                #     )
+                #     print(f"Uploaded {len(add_agency.index)} rows to {self.standardized_agency_table}!")
 
         return self.raw_table_name, self.raw_table_name_images
 
@@ -343,7 +343,7 @@ class ALPRImagesIntegration(Integration):
                 newdict['LPRAdditionalPhoto'] = None
                 pass
         newdict['vehicle_record_id'] = f"{row.LPREventID}_{datasource}"
-        newdict['standardized_agency_name'] = row.standardized_agency_name
+        # newdict['standardized_agency_name'] = row.standardized_agency_name
         newdict['VehicleLicensePlateID'] = str(row.VehicleLicensePlateID)
         return pd.Series(newdict)
 
@@ -355,14 +355,6 @@ class ALPRImageSourcesIntegration(Integration):
         newdict['LPRCameraName'] = row.LPRCameraName
         newdict['datasource'] = row.datasource
         return pd.Series(newdict)
-
-# class ALPRVehiclesIntegration(Integration):
-#     def clean_row(cls, row):
-#         newdict = {}
-#         newdict['VehicleLicensePlateID'] = row.VehicleLicensePlateID
-#         newdict['datasource'] = row.datasource
-#         newdict['standardized_agency_name'] = row.standardized_agency_name
-#         return pd.Series(newdict)
 
 
 class ALPRAgenciesIntegration(Integration):

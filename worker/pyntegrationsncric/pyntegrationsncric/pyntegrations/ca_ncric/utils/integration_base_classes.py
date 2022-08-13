@@ -10,6 +10,7 @@ import sqlalchemy
 import pandas as pd
 from pytz import timezone
 from urllib.parse import unquote
+from pkg_resources import resource_filename
 from pyntegrationsncric.pyntegrations.ca_ncric.utils import flight
 import pyntegrationsncric.pyntegrations.ca_ncric.utils.openlattice_functions as of
 
@@ -293,12 +294,26 @@ class Integration(object):
         return clean_table_name
 
     def integrate_table(self, clean_table_name=None, shuttle_path=None, shuttle_args=None, drop_table_on_success=None,
-                        memory_size=None, local=False, sql=None):
+                        memory_size=None, local=False, sql=None, flight_path=None):
+
+        if sql:
+            data = pd.read_sql(sql, self.engine)
+            if len(data.index) == 0:
+                print(f"No data to upload for sql query {sql}")
+                return
 
         environment = {
             "http://localhost:8080": "LOCAL",
-            "https://api.openlattice.com": "PROD_INTEGRATION",
+            "https://api.dev.astrometrics.us": "PROD_INTEGRATION",
+            "https://api.staging.openlattice.com": "STAGING_INTEGRATION"
         }
+
+        # for ncric, make sure there's an __init__.py file if the yaml file is in a different place!
+        if flight_path is not None:
+            self.flight_path = flight_path
+        if self.flight_path is None or not os.path.isfile(self.flight_path):
+            print(self.flight_path)
+            raise ValueError("Flight path has not been specified or is incorrect!")
 
         host = environment[self.configuration.host]
         if local:
@@ -364,10 +379,12 @@ class Integration(object):
                         print(output.strip().decode())
                 retval = process.poll()
             except Exception as e:
+                print(e)
                 process.kill()
                 raise
             process.kill()
         except Exception as e:
+            print(e)
             track = traceback.format_exc()
             print(track)
             os.remove(tmp_mapper_path)

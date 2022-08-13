@@ -635,6 +635,7 @@ class Flight(object):
         """
 
         entities = list(self.entity_definitions.values()) + list(self.association_definitions.values())
+        print(entities)
         datatypes = [
             {"column": propertydef.column, "datatype": propertydef.get_property_type().datatype}
             for ent
@@ -642,6 +643,7 @@ class Flight(object):
             for propertydef
             in ent.property_definitions.values()
         ]
+        print(datatypes) #kim
         # make sure that each column has one unique datatype
         deduped = pd.DataFrame(datatypes).drop_duplicates().set_index('column')
         counter = dict(Counter(deduped.index))
