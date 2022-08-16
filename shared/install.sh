@@ -1,6 +1,19 @@
 # This user data script is a continuation
 # of the shared "boot.sh" script.
 
+etc_hosts() (
+  cd /etc
+  [ "$CONDUCTOR_IP" ] && host=conductor ip=$CONDUCTOR_IP
+  [ "$DATASTORE_IP" ] && host=datastore ip=$DATASTORE_IP
+  [ "$host" ] || exit 0
+  grep -q $host hosts && exit
+  tab=$(printf "\t")
+  cat <<EOF >> hosts
+
+$ip${tab}$host
+EOF
+)
+
 create_user() (
   cd /home/$USER
   egrep -q '^openlattice:' /etc/passwd && exit
@@ -119,6 +132,7 @@ EOT
     DATASTORE) wait_service CONDUCTOR $CONDUCTOR_IP 5701 ;;
     INDEXER)   wait_service DATASTORE $DATASTORE_IP 8080 ;;
   esac
+  sleep 30
   # optional flags, like edmsync, may
   # be defined by individual services
   scripts/start.sh "${SVC_FLAGS[@]}"
@@ -158,6 +172,7 @@ trigger_index() (
 export -f git_clone
 export -f wait_service
 
+run etc_hosts
 run create_user
 run install_java
 run install_delta
