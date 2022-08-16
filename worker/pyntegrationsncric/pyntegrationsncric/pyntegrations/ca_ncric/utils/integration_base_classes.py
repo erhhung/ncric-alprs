@@ -45,7 +45,7 @@ class Integration(object):
                  if_exists="fail",
                  flight_path=None,
                  atlas_organization_id=None,  # KIM ADDED
-                 base_url="https://api.dev.astrometrics.us",
+                 base_url="https://api.openlattice.com",
                  rowwise=None,
                  cleaning_required=True,
                  shuttle_path=None,
@@ -125,7 +125,7 @@ class Integration(object):
 
         # finish setup
         token = of.get_jwt(ol_user, ol_pass, client_id)
-        self.configuration = of.get_config(jwt=token, base_url="https://api.dev.astrometrics.us")
+        self.configuration = of.get_config(jwt=token, base_url="https://api.openlattice.com")
         self.flight = flight.Flight(configuration=self.configuration)
         if self.flight_path is not None:  # KIM ADDED
             self.flight.deserialize(self.flight_path)

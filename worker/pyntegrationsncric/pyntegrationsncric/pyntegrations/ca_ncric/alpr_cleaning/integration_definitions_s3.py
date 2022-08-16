@@ -37,7 +37,7 @@ class ALPRIntegration(Integration):
 
         super().__init__(
             if_exists="replace",
-            base_url="https://api.dev.astrometrics.us",
+            base_url="https://api.openlattice.com",
             atlas_organization_id=atlas_organization_id)
 
         self.s3_bucket = s3_bucket
