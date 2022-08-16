@@ -37,7 +37,7 @@ class Integration(object):
     def __init__(self,
                  integration_config=None,
                  sql=None,
-                 file_path=None,  # KIM COMMENTED OUT
+                 file_path=None,
                  raw_table_name="tmp_raw",
                  append_raw_table_name=None,
                  clean_table_name_root="tmp",
@@ -80,13 +80,13 @@ class Integration(object):
                 raise ValueError("SQL query specified twice.")
         else:
             self.sql = sql
-        if "file_path" in self.__dict__:  # KIM COMMENTED OUT
+        if "file_path" in self.__dict__:
             if file_path:
                 raise ValueError("File path specified twice.")
         else:
             self.file_path = file_path
 
-        if "clean_table_name_root" not in self.__dict__:  # KIM CHANGED
+        if "clean_table_name_root" not in self.__dict__:
             self.clean_table_name_root = clean_table_name_root
         if "standardize_clean_table_name" not in self.__dict__:
             self.standardize_clean_table_name = standardize_clean_table_name
@@ -278,8 +278,8 @@ class Integration(object):
                     clean_table_name,
                     connection,
                     if_exists='append',
-                    dtype={col: (dtypes[col] if col in dtypes.keys() else sqlalchemy.sql.sqltypes.String) for col in
-                           cleaned_chunk.columns},
+                    dtype={col: (dtypes[col] if col in dtypes.keys() else sqlalchemy.sql.sqltypes.String)
+                           for col in cleaned_chunk.columns},
                     index=False,
                     chunksize=1000,
                     method='multi'
@@ -303,9 +303,15 @@ class Integration(object):
         print(f"{clean_table_name}")
         return clean_table_name
 
-    def integrate_table(self, clean_table_name=None, shuttle_path=None, shuttle_args=None, drop_table_on_success=None,
-                        memory_size=None, local=False, sql=None, flight_path=None):
-
+    def integrate_table(self,
+                        clean_table_name=None,
+                        shuttle_path=None,
+                        shuttle_args=None,
+                        drop_table_on_success=None,
+                        memory_size=None,
+                        local=False,
+                        sql=None,
+                        flight_path=None):
         if sql:
             data = pd.read_sql(sql, self.engine)
             if len(data.index) == 0:
@@ -314,7 +320,9 @@ class Integration(object):
 
         environment = {
             "http://localhost:8080": "LOCAL",
-            "https://api.dev.astrometrics.us": "PROD_INTEGRATION"        }
+            "https://api.openlattice.com": "PROD_INTEGRATION",
+            "https://api.staging.openlattice.com": "STAGING_INTEGRATION"
+        }
 
         # for ncric, make sure there's an __init__.py file if the yaml file is in a different place!
         if flight_path is not None:
@@ -393,6 +401,7 @@ class Integration(object):
                 process.kill()
                 raise
             process.kill()
+
         except Exception as e:
             print(e)
             errors.append(e)
@@ -413,7 +422,10 @@ class Integration(object):
             self.engine.execute(f"DROP TABLE {clean_table_name};")
             print(f"Dropped table {clean_table_name}")
 
-    def integrate(self, shuttle_path=None, shuttle_args=None, drop_table_on_success=None):
+    def integrate(self,
+                  shuttle_path=None,
+                  shuttle_args=None,
+                  drop_table_on_success=None):
         table = self.clean_and_upload()
         self.integrate_table(
             clean_table_name=table,

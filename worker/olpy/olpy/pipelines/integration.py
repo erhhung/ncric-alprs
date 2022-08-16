@@ -93,7 +93,6 @@ class Integration(object):
             raise ValueError("No clean table name specified")
         if atlas_organization_id is None and self.flight_path is None:
             raise ValueError("At least one organization ID or flight path must be specified!")
-        
 
         # finish setup
         self.configuration = olpy.misc.get_config(jwt=self.jwt, base_url=self.base_url)
@@ -215,8 +214,8 @@ class Integration(object):
 
         environment = {
             "http://localhost:8080": "LOCAL",
-            'https://api.openlattice.com': "PROD_INTEGRATION",
-            'https://api.staging.openlattice.com': "STAGING_INTEGRATION"
+            "https://api.openlattice.com": "PROD_INTEGRATION",
+            "https://api.staging.openlattice.com": "STAGING_INTEGRATION"
         }
 
         # for ncric, make sure there's an __init__.py file if the yaml file is in a different place!
