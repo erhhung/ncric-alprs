@@ -20,8 +20,8 @@ class BOSS4Integration(ALPRIntegration):
                  sql=None,
                  raw_table_name='boss4_hourly_clean',
                  raw_table_name_images='boss4_images_hourly_raw',
-                 s3_bucket="sftp.openlattice.com",
-                 s3_prefix="ncric",
+                 s3_bucket="alprs-sftp-dev",
+                 s3_prefix="boss4", #"ncric",
                  limit=None,
                  date_start=None,
                  date_end=None,
@@ -67,14 +67,16 @@ class BOSS4Integration(ALPRIntegration):
 
 
 class BOSS4ImagesIntegration(Integration):
-    def __init__(self,
-                 sql,
-                 base_url="https://api.openlattice.com",
-                 flight_name="ncric_boss4_images_flight.yaml",
-                 clean_table_name_root="boss4_images_hourly_clean",
-                 standardize_table_name=True,
-                 clean_table_suffix=None
-                 ):
+    def __init__(
+        self,
+        sql,
+        base_url="https://api.openlattice.com",
+        flight_name="ncric_boss4_images_flight.yaml",
+        clean_table_name_root="boss4_hr_images",
+        standardize_table_name=True,
+        clean_table_suffix=None
+    ):
+
         super().__init__(
             sql=sql,
             atlas_organization_id="1446ff84-7112-42ec-828d-f181f45e4d20",
@@ -113,13 +115,15 @@ class BOSS4ImageSourcesIntegration(Integration):
 
 class BOSS4AgenciesIntegration(Integration):
     # 'select distinct "agency_id", "agencyName", "datasource", "agencyAcronym" from boss4_hourly_clean'
-    def __init__(self,
-                 sql,
-                 base_url="https://api.openlattice.com",
-                 clean_table_name_root="clean_boss4_agencies",
-                 flight_name="ncric_boss4_agencies_flight.yaml",
-                 drop_table_on_success=False
-                 ):
+    def __init__(
+        self,
+        sql,
+        base_url="https://api.openlattice.com",
+        clean_table_name_root="boss4_agencies_clean",
+        flight_name="ncric_boss4_agencies_flight.yaml",
+        drop_table_on_success=False
+    ):
+
         super().__init__(
             sql=sql,
             clean_table_name_root=clean_table_name_root,
