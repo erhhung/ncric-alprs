@@ -13,6 +13,11 @@ db_pass = os.environ.get("RD_OPTION_DB_PASS")
 db_host = os.environ.get("RD_OPTION_DB_HOST")
 db_name = os.environ.get("RD_OPTION_DB_NAME")
 
+''' For Boss data, the cleaning function gets called *within* the function "get_raw_data_from_S3".
+    So first, ALPRIntegration class declares the "clean_row" function. THen it calls it within the following  
+    "get_raw_data_from_S3" function.
+    This is different than the rest of pyntegrations.  
+'''
 
 class ALPRIntegration(Integration):
     def __init__(
@@ -32,7 +37,7 @@ class ALPRIntegration(Integration):
 
         super().__init__(
             if_exists="replace",
-            base_url="https://api.openlattice.com",
+            base_url="https://api.dev.astrometrics.us",
             atlas_organization_id=atlas_organization_id)
 
         self.s3_bucket = s3_bucket
@@ -44,7 +49,7 @@ class ALPRIntegration(Integration):
         self.standardized_agency_table = standardized_agency_table
         self.col_list = col_list
 
-        self.image_cols = ["LPREventID", #"standardized_agency_name",
+        self.image_cols = ["LPREventID", "standardized_agency_name",
                            "VehicleLicensePlateID", "LPRVehiclePlatePhoto", "LPRAdditionalPhoto"]
         utc = pytz.UTC
 
@@ -112,7 +117,7 @@ class ALPRIntegration(Integration):
         newdict['agencyAcronym'] = row.agencyAcronym
         newdict['datasource'] = self.datasource
         newdict['LPRCameraName'] = row.LPRCameraName
-        # newdict['standardized_agency_name'] = row.standardized_agency_name      #PUT BACK WHEN TABLE EXISTS
+        newdict['standardized_agency_name'] = row.standardized_agency_name      #PUT BACK WHEN TABLE EXISTS
 
         if self.datasource == "BOSS4":
             datasource = "None"
@@ -129,11 +134,11 @@ class ALPRIntegration(Integration):
         newdict['recordedby2_id'] = self.join_string(
             filter(lambda x: x != "None", [str(row.LPREventID), str(row.agencyOriNumber), datasource]))
         newdict['recordedby3_id'] = self.join_string(
-            filter(lambda x: x != "None", [str(row.LPREventID), str(row.agencyName), datasource])) #row.standardized_agency_name
+            filter(lambda x: x != "None", [str(row.LPREventID), str(row.standardized_agency_name), datasource])) #row.standardized_agency_name
         newdict['collectedby_id'] = self.join_string(
             filter(lambda x: x != "None", [str(row.LPRCameraID), str(row.agencyOriNumber), datasource]))
         newdict['collectedby2_id'] = self.join_string(
-            filter(lambda x: x != "None", [str(row.LPRCameraID), str(row.agencyName), datasource])) #row.standardized_agency_name
+            filter(lambda x: x != "None", [str(row.LPRCameraID), str(row.standardized_agency_name), datasource])) #row.standardized_agency_name
         newdict['locatedat1_id'] = self.join_string(
             filter(lambda x: x != "None" and x is not None, [str(row.LPRCameraID), newdict['location_id'], datasource]))
         newdict['locatedat2_id'] = self.join_string(
@@ -219,19 +224,36 @@ class ALPRIntegration(Integration):
         engine = sqlalchemy.create_engine(
             f"postgresql://{db_user}:{db_pass}@{db_host}:5432/{db_name}")
 
-        # exit cleanly if there are any issues...
+        # exit cleanly if there are any issues...by uploading empty tables to atlas
         if len(df.index) == 0:
             print("No data to upload! Creating a new empty table.")
-            dtypes = self.flight.get_pandas_datatypes_by_column()
-            empty = pd.DataFrame(columns=dtypes.keys())
+            # dtypes = self.flight.get_pandas_datatypes_by_column()
+            boss4_cols = ["eventDateTime", "latlon", "location_id", "vehicle_record_id",
+                          "VehicleLicensePlateID", "agencyName", "agencyAcronym", "datasource",
+                          "LPRCameraName", "standardized_agency_name", "camera_id", "agency_id",
+                          "has_id", "recordedby1_id", "recordedby2_id",
+                          "recordedby3_id", "collectedby_id", "collectedby2_id", "locatedat1_id",
+                          "locatedat2_id", "locatedat3_id"]
+            empty = pd.DataFrame(columns=boss4_cols).astype('string')
             empty.to_sql(
                 self.raw_table_name,
                 engine,
                 if_exists='replace',
-                dtype=dtypes,
+                dtype=sqlalchemy.types.VARCHAR, #dtypes,
                 index=False
             )
-            return f"select * from {self.raw_table_name}"
+            if self.raw_table_name_images:
+                empty_images = pd.DataFrame(columns=self.image_cols).astype('string')
+                empty_images.to_sql(
+                    self.raw_table_name_images,
+                    engine,
+                    if_exists='replace',
+                    dtype=sqlalchemy.types.VARCHAR,  # dtypes,
+                    index=False
+                )
+            return self.raw_table_name, self.raw_table_name_images
+            #  return f"select * from {self.raw_table_name}"
+
 
         # filter out any bad dates
         if self.date_end is not None:
@@ -245,75 +267,76 @@ class ALPRIntegration(Integration):
 
         df = df[(pd.notnull(df['LPREventID'])) & (df['LPREventID'] != "${read.id}")]
 
-        #RE-COMMENT BACK IN WHEN WE HAVE A STANDARDIZED TABLE
         # grab the standardized agency table and left join
-        # standardized_agency_table = pd.read_sql(
-        #     f"""select * from {self.standardized_agency_table} where "ol.datasource" = '{self.datasource}';""", engine)
-        # df = df.merge(standardized_agency_table, left_on="agencyName", right_on="ol.name", how="left")
+        standardized_agency_table = pd.read_sql(
+            f"""select * from {self.standardized_agency_table} where "ol.datasource" = '{self.datasource}';""", engine)
+        df = df.merge(standardized_agency_table, left_on="agencyName", right_on="ol.name", how="left")
 
-        # add_agency = pd.DataFrame()
+        add_agency = pd.DataFrame()
 
         # find all the agencies that are not part of the standardized agency name
         # unfortunately BOSS4 ends up getting a lot of NA values, so we need an extra check to make sure
         # there also exists an agency name - otherwise, I'm getting lots of Nones appended
-        # agency_names = df[(pd.isnull(df['standardized_agency_name'])) & (pd.notnull(df['agencyName']))][['agencyName']]
-        # if len(agency_names) > 0:
-        #     # make the standardized agency name the same as the actual agency name (at least temporarily)
-        #     print("Adding new agency!")
-        #     add_agency = agency_names.drop_duplicates()
-        #     add_agency = add_agency.rename({"agencyName": "ol.name"}, axis=1)
-        #     add_agency['standardized_agency_name'] = add_agency['ol.name']
-        #     add_agency['ol.datasource'] = self.datasource
-        #     add_agency = add_agency[['ol.name', 'standardized_agency_name', 'ol.datasource']]
+        agency_names = df[(pd.isnull(df['standardized_agency_name'])) & (pd.notnull(df['agencyName']))][['agencyName']]
+        if len(agency_names) > 0:
+            # make the standardized agency name the same as the actual agency name (at least temporarily)
+            print("Adding new agency!")
+            add_agency = agency_names.drop_duplicates()
+            add_agency = add_agency.rename({"agencyName": "ol.name"}, axis=1)
+            add_agency['standardized_agency_name'] = add_agency['ol.name']
+            add_agency['ol.datasource'] = self.datasource
+            add_agency = add_agency[['ol.name', 'standardized_agency_name', 'ol.datasource']]
 
         # check difference between sets and add if sets are different
 
         with engine.connect() as connection:
+            # if len(df.index) > 0:
+            df.columns = [x.split(".")[-1] for x in df.columns]
+
+            df_img = df[self.image_cols]
+            # grab everything in the images list BESIDES standardized agency name and LPREventID
+            df_col_list = list(set(df.columns) - set(self.image_cols[3:]))
+            df = df[df_col_list]
             if len(df.index) > 0:
-                df.columns = [x.split(".")[-1] for x in df.columns]
-
-                df_img = df[self.image_cols]
-                # grab everything in the images list BESIDES standardized agency name and LPREventID
-                df_col_list = list(set(df.columns) - set(self.image_cols[3:]))
-                df = df[df_col_list]
                 df = df.apply(self.clean_row, axis=1)
-                # subset columns if we want to upload less columns for catch up jobs
-                if self.col_list:
-                    df = df[self.col_list]
+            # subset columns if we want to upload less columns for catch up jobs
+            if self.col_list:
+                df = df[self.col_list]
 
-                # figure out how to drop sql table for daily use
-                df.to_sql(
-                    self.raw_table_name,
+            # upload main table (subset of df at start of this loop)
+            df.to_sql(
+                self.raw_table_name,
+                connection,
+                if_exists='replace',
+                index=False,
+                # dtype={col: (sqlalchemy.sql.sqltypes.String) for col in df.columns},
+                chunksize=1000,
+                method='multi'
+            )
+
+            # upload image table (subset of df)
+            if self.raw_table_name_images:
+                df_img.to_sql(
+                    self.raw_table_name_images,
                     connection,
                     if_exists='replace',
                     index=False,
-                    # dtype={col: (sqlalchemy.sql.sqltypes.String) for col in df.columns},
                     chunksize=1000,
+                    dtype={col: (sqlalchemy.sql.sqltypes.String) for col in df.columns},
                     method='multi'
                 )
+                print(f"Uploaded {len(df.index)} rows of data to {self.raw_table_name} and {self.raw_table_name_images}!")
+            else:
+                print(f"Uploaded {len(df.index)} rows of data to {self.raw_table_name}!")
 
-                if self.raw_table_name_images:
-                    df_img.to_sql(
-                        self.raw_table_name_images,
-                        connection,
-                        if_exists='replace',
-                        index=False,
-                        chunksize=1000,
-                        dtype={col: (sqlalchemy.sql.sqltypes.String) for col in df.columns},
-                        method='multi'
-                    )
-                    print(f"Uploaded {len(df.index)} rows of data to {self.raw_table_name} and {self.raw_table_name_images}!")
-                else:
-                    print(f"Uploaded {len(df.index)} rows of data to {self.raw_table_name}!")
-
-                # if len(add_agency.index) > 0:
-                #     add_agency.to_sql(
-                #         self.standardized_agency_table,
-                #         connection,
-                #         if_exists='append',
-                #         index=False
-                #     )
-                #     print(f"Uploaded {len(add_agency.index)} rows to {self.standardized_agency_table}!")
+            if len(add_agency.index) > 0:
+                add_agency.to_sql(
+                    self.standardized_agency_table,
+                    connection,
+                    if_exists='append',
+                    index=False
+                )
+                print(f"Uploaded {len(add_agency.index)} rows to {self.standardized_agency_table}!")
 
         return self.raw_table_name, self.raw_table_name_images
 
@@ -344,7 +367,7 @@ class ALPRImagesIntegration(Integration):
                 newdict['LPRAdditionalPhoto'] = None
                 pass
         newdict['vehicle_record_id'] = f"{row.LPREventID}_{datasource}"
-        # newdict['standardized_agency_name'] = row.standardized_agency_name
+        newdict['standardized_agency_name'] = row.standardized_agency_name
         newdict['VehicleLicensePlateID'] = str(row.VehicleLicensePlateID)
         return pd.Series(newdict)
 

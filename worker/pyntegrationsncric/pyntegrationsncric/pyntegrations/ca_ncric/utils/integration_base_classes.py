@@ -10,7 +10,6 @@ import sqlalchemy
 import pandas as pd
 from pytz import timezone
 from urllib.parse import unquote
-from pkg_resources import resource_filename
 from pyntegrationsncric.pyntegrations.ca_ncric.utils import flight
 import pyntegrationsncric.pyntegrations.ca_ncric.utils.openlattice_functions as of
 
@@ -38,7 +37,7 @@ class Integration(object):
     def __init__(self,
                  integration_config=None,
                  sql=None,
-                 # file_path=None,  # KIM COMMENTED OUT
+                 file_path=None,  # KIM COMMENTED OUT
                  raw_table_name="tmp_raw",
                  append_raw_table_name=None,
                  clean_table_name_root="tmp",
@@ -46,7 +45,7 @@ class Integration(object):
                  if_exists="fail",
                  flight_path=None,
                  atlas_organization_id=None,  # KIM ADDED
-                 base_url="https://api.openlattice.com",
+                 base_url="https://api.dev.astrometrics.us",
                  rowwise=None,
                  cleaning_required=True,
                  shuttle_path=None,
@@ -81,11 +80,11 @@ class Integration(object):
                 raise ValueError("SQL query specified twice.")
         else:
             self.sql = sql
-        # if "file_path" in self.__dict__:  # KIM COMMENTED OUT
-        #     if file_path:
-        #         raise ValueError("File path specified twice.")
-        # else:
-        #     self.file_path = file_path
+        if "file_path" in self.__dict__:  # KIM COMMENTED OUT
+            if file_path:
+                raise ValueError("File path specified twice.")
+        else:
+            self.file_path = file_path
 
         if "clean_table_name_root" not in self.__dict__:  # KIM CHANGED
             self.clean_table_name_root = clean_table_name_root
@@ -126,7 +125,7 @@ class Integration(object):
 
         # finish setup
         token = of.get_jwt(ol_user, ol_pass, client_id)
-        self.configuration = of.get_config(jwt=token, base_url="https://api.openlattice.com")
+        self.configuration = of.get_config(jwt=token, base_url="https://api.dev.astrometrics.us")
         self.flight = flight.Flight(configuration=self.configuration)
         if self.flight_path is not None:  # KIM ADDED
             self.flight.deserialize(self.flight_path)
@@ -222,12 +221,15 @@ class Integration(object):
             dt = datetime.datetime.now(timezone("America/Los_Angeles"))
             clean_table_name = "_".join([str(dt.year), str(dt.month), str(
                 dt.day), str(dt.hour), str(dt.minute), str(dt.second)])
+            print("Made clean table name.")
             return f"zzz_{self.clean_table_name_root}_{clean_table_name}_pst"
         else:
             clean_table_name = self.clean_table_name_root
 
-        with self.engine.connect() as connection:
+        dtypes = self.flight.get_pandas_datatypes_by_column()
 
+        with self.engine.connect() as connection:
+            print("connection.")
             if self.engine.dialect.has_table(connection, clean_table_name):
                 if self.if_exists == "skip":
                     print("Clean table already exists. Skipping the cleaning step.")
@@ -239,19 +241,26 @@ class Integration(object):
                 if self.if_exists == "fail":
                     raise Exception("Clean table name already in use.")
 
-            if self.file_path:
-                self.upload_raw_data_from_filepath(connection)
-                generator = pd.read_sql_query(
-                    f"select * from {self.raw_table_name}",
-                    connection,
-                    chunksize=1000)
-            else:
+            if self.sql:
+                print("self.sql")
                 generator = pd.read_sql_query(
                     self.sql,
                     connection,
                     chunksize=1000)
 
-            dtypes = self.flight.get_pandas_datatypes_by_column()
+            # if self.file_path and self.file_path is not None:
+            #     print("self.file_path and self.file_path is not None")
+            #     self.upload_raw_data_from_filepath(connection)
+            #     generator = pd.read_sql_query(
+            #         f"select * from {self.raw_table_name}",
+            #         connection,
+            #         chunksize=1000)
+            # else:
+            #     print("not self.file_path and self.file_path is not None")
+            #     generator = pd.read_sql_query(
+            #         self.sql,
+            #         connection,
+            #         chunksize=1000)
 
             rows_cleaned = 0
             rows_fetched = 0
@@ -279,6 +288,7 @@ class Integration(object):
                 print(f"Fetched and cleaned {rows_fetched} rows. Uploaded a total of {rows_cleaned} rows.")
             if rows_fetched == 0:
                 # meaning original dataset was actually empty
+                print("original dataset was empty")
                 empty = pd.DataFrame(columns=dtypes.keys())
                 empty.to_sql(
                     clean_table_name,
@@ -304,15 +314,14 @@ class Integration(object):
 
         environment = {
             "http://localhost:8080": "LOCAL",
-            "https://api.dev.astrometrics.us": "PROD_INTEGRATION",
-            "https://api.staging.openlattice.com": "STAGING_INTEGRATION"
+            "https://api.dev.astrometrics.us": "PROD_INTEGRATION"
         }
 
         # for ncric, make sure there's an __init__.py file if the yaml file is in a different place!
         if flight_path is not None:
             self.flight_path = flight_path
         if self.flight_path is None or not os.path.isfile(self.flight_path):
-            print(self.flight_path)
+            # print(self.flight_path)
             raise ValueError("Flight path has not been specified or is incorrect!")
 
         host = environment[self.configuration.host]
@@ -372,6 +381,7 @@ class Integration(object):
             print(statement.replace(self.configuration.access_token, "***"))
 
             process = subprocess.Popen(statement, stdout=subprocess.PIPE, shell=True)
+            errors = []
             try:
                 while process.poll() is None:
                     output = process.stdout.readline()
@@ -379,19 +389,24 @@ class Integration(object):
                         print(output.strip().decode())
                 retval = process.poll()
             except Exception as e:
-                print(e)
+                print(f"{e}, process.poll() is not None")
+                errors.append(e)
                 process.kill()
                 raise
             process.kill()
         except Exception as e:
             print(e)
+            errors.append(e)
             track = traceback.format_exc()
-            print(track)
+            errors.append(track)
+            print(f"track: {track}")
             os.remove(tmp_mapper_path)
             raise
         os.remove(tmp_mapper_path)
 
         if retval != 0:
+            print(f"retval is {retval}")
+            print(errors)
             raise ValueError("The integration did not exit cleanly...")
 
         print("Integration finished successfully!")
