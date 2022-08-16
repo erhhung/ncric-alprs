@@ -10,7 +10,7 @@ etc_hosts() (
   tab=$(printf "\t")
   cat <<EOF >> hosts
 
-$ip${tab}$host
+${ip}${tab}${host}
 EOF
 )
 
@@ -166,7 +166,7 @@ trigger_index() (
   set -x
   curl -H "Authorization: Bearer $jwt" \
     -so /dev/null -w '%{http_code}\n' \
-    http://$DATASTORE_IP:8080/datastore/search/edm/index
+    http://datastore:8080/datastore/search/edm/index
 )
 
 export -f git_clone
