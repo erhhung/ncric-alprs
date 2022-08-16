@@ -28,6 +28,11 @@ lsrb = !git ls-remote --heads origin | colrm 1 59
 rmb = branch -d
 # remove remote branch
 rmrb = push origin -d
+# diff previous commits
+diff0 = diff HEAD~0
+diff1 = diff HEAD~1
+diff2 = diff HEAD~2
+diff3 = diff HEAD~3
 # show commit history
 hist = log --graph --date=short --pretty=format:\"%>|(6)%C(white)┃ %C(yellow)%h %C(brightcyan)%ad %C(white)┃ %Creset%s%C(brightred bold)%d %C(blue italic)[%an]\"
 # edit commit history

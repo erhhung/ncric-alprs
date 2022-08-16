@@ -5,3 +5,7 @@ postgres:
     password: ${ALPRS_PASSWORD}
     maximumPoolSize: 1
     connectionTimeout: 120000
+aurora:
+  config: {}
+alpr:
+  config: {}

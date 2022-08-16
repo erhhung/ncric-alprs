@@ -94,6 +94,8 @@ EOF
       cd /opt/elasticsearch/conf
       # create index template to apply common settings
       aws s3 cp $ES_TEMPLATE template.json --no-progress
+      chown elasticsearch:elasticsearch template.json
+
       # https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping-settings-limit.html
       curl -sX PUT http://localhost:9201/_template/common \
         -H 'Content-Type: application/json' \
