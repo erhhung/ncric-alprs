@@ -165,7 +165,7 @@
         pyntegrations_path = os.environ.get("PYNTEGRATIONS_PATH")
         pyntegrations_path += "/ca_ncric"
         shuttle_path = os.environ.get("SHUTTLE_PATH")
-        shuttle_args = "@option.shuttle_args@ @option.region@"
+        shuttle_args = "@option.shuttle_args@"
 
         try:
             for agency in agencies:

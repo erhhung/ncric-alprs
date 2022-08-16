@@ -56,7 +56,7 @@ ${file("${path.module}/shared/prolog.sh")}
 ${templatefile("${path.module}/postgresql/boot.tftpl", {
     ENV       = var.env
     S3_URL    = local.user_data_s3_url
-    APP_URL   = "https://${local.app_domain}"
+    APP_URL   = local.app_url
     PG_CONF   = "${local.user_data_s3_url}/postgresql/postgresql.conf"
     PG_HBA    = "${local.user_data_s3_url}/postgresql/pg_hba.conf"
     ALPRS_SQL = "${local.user_data_s3_url}/postgresql/alprs.sql.gz"

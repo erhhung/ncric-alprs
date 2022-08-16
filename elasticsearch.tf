@@ -53,9 +53,15 @@ locals {
   es_user_data = [{
     path = "elasticsearch/elasticsearch.yml"
     data = data.external.elasticsearch_yml.result.text
+    type = "text/yaml"
+    }, {
+    path = "elasticsearch/template.json"
+    file = "${path.module}/elasticsearch/template.json"
+    type = "text/json"
     }, {
     path = "elasticsearch/kibana.yml"
     data = data.external.kibana_yml.result.text
+    type = "text/yaml"
     }, {
     path = "elasticsearch/nginx.conf"
     data = data.external.nginx_conf.result.text
@@ -67,6 +73,7 @@ ${templatefile("${path.module}/elasticsearch/boot.tftpl", {
     ENV           = var.env
     S3_URL        = local.user_data_s3_url
     ES_YML        = "${local.user_data_s3_url}/elasticsearch/elasticsearch.yml"
+    ES_TEMPLATE   = "${local.user_data_s3_url}/elasticsearch/template.json"
     KB_YML        = "${local.user_data_s3_url}/elasticsearch/kibana.yml"
     NG_CONF       = "${local.user_data_s3_url}/elasticsearch/nginx.conf"
     BACKUP_BUCKET = var.buckets["backup"]
@@ -84,9 +91,10 @@ resource "aws_s3_object" "es_user_data" {
 
   bucket       = data.aws_s3_bucket.user_data.id
   key          = "userdata/${each.value.path}"
-  content_type = "text/plain"
-  content      = chomp(each.value.data)
-  source_hash  = md5(each.value.data)
+  content_type = lookup(each.value, "type", "text/plain")
+  content      = lookup(each.value, "data", null) == null ? null : chomp(each.value.data)
+  source       = lookup(each.value, "file", null) == null ? null : each.value.file
+  source_hash  = lookup(each.value, "file", null) != null ? filemd5(each.value.file) : md5(each.value.data)
 }
 
 locals {

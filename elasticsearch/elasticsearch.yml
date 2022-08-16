@@ -16,6 +16,9 @@
 #
 cluster.name: alprs
 #
+# https://www.elastic.co/guide/en/elasticsearch/reference/current/modules-cluster.html#misc-cluster-settings
+cluster.max_shards_per_node: 10000
+#
 # ------------------------------------ Node ------------------------------------
 #
 # Use a descriptive name for the node:

@@ -2,7 +2,8 @@
 # of the bastion host's "boot.sh" script.
 
 export NCRIC_DB="org_1446ff84711242ec828df181f45e4d20"
-export SHUTTLE_ARGS="--shuttle-config $CONFIG_BUCKET --read-rate-limit 0"
+# NOTE: the --shuttle-config option expects TWO values: config bucket and region
+export SHUTTLE_ARGS="--shuttle-config $CONFIG_BUCKET REGION --read-rate-limit 0"
 
 install_java() (
   hash java 2> /dev/null && exit
@@ -186,7 +187,7 @@ keys/s3_prefix/boss4   boss4
 keys/s3_prefix/scso    scso
 keys/s3_prefix/flock   flock
 keys/s3_prefix/hotlist hotlist
-keys/shuttle_args      $SHUTTLE_ARGS
+keys/shuttle_args      ${SHUTTLE_ARGS/REGION/${az:0:-1}}
 keys/db_host           $PG_HOST
 keys/db_name           $NCRIC_DB
 keys/db_user           atlas_user

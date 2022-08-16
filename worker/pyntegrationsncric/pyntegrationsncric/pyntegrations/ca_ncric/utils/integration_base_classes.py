@@ -314,8 +314,7 @@ class Integration(object):
 
         environment = {
             "http://localhost:8080": "LOCAL",
-            "https://api.dev.astrometrics.us": "PROD_INTEGRATION"
-        }
+            "https://api.dev.astrometrics.us": "PROD_INTEGRATION"        }
 
         # for ncric, make sure there's an __init__.py file if the yaml file is in a different place!
         if flight_path is not None:

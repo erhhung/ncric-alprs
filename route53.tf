@@ -9,4 +9,6 @@ locals {
   app_domain  = data.aws_route53_zone.astrometrics.name
   api_domain  = "api.${local.app_domain}"
   sftp_domain = "sftp.${local.app_domain}"
+  app_url     = "https://${local.app_domain}"
+  api_url     = "https://${local.api_domain}"
 }

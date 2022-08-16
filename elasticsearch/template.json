@@ -1,0 +1,15 @@
+{
+  "index_patterns": "*",
+  "order": 10,
+  "settings": {
+    "index": {
+      "mapping": {
+        "total_fields": {
+          "limit": 5000
+        }
+      }
+    }
+  },
+  "aliases": {},
+  "mappings": {}
+}

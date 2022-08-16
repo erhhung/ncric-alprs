@@ -6,8 +6,8 @@ ${templatefile("${path.module}/webapp/install.tftpl", {
   MB_TOKEN      = var.MAPBOX_PUBLIC_TOKEN
   AUTH0_ID      = var.AUTH0_SPA_CLIENT_ID
   SUPPORT_EMAIL = var.ALPRS_SUPPORT_EMAIL
-  APP_URL       = "https://${local.app_domain}"
-  API_URL       = "https://${local.api_domain}"
+  APP_URL       = local.app_url
+  API_URL       = local.api_url
 })}
 ${file("${path.module}/webapp/install.sh")}
 EOT

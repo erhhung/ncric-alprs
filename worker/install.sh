@@ -127,6 +127,8 @@ user_dotfiles() (
 export CONFIG_BUCKET="$CONFIG_BUCKET"
 export MEDIA_BUCKET="$MEDIA_BUCKET"
 export SFTP_BUCKET="$SFTP_BUCKET"
+
+export API_URL="$API_URL"
 EOF
   SITE_PACKAGES_PATH=$(python3 -m site --user-site)
   PYNTEGRATIONS_PATH="$SITE_PACKAGES_PATH/pyntegrationsncric/pyntegrations"
