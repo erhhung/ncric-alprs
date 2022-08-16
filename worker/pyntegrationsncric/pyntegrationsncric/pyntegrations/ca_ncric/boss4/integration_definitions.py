@@ -20,8 +20,8 @@ class BOSS4Integration(ALPRIntegration):
                  sql=None,
                  raw_table_name='boss4_hourly_clean',
                  raw_table_name_images='boss4_images_hourly_raw',
-                 s3_bucket="sftp.openlattice.com",
-                 s3_prefix="ncric",
+                 s3_bucket="alprs-sftp-dev",
+                 s3_prefix="boss4", #"ncric",
                  limit=None,
                  date_start=None,
                  date_end=None,
@@ -72,8 +72,8 @@ class BOSS4ImagesIntegration(Integration):
         sql,
         base_url="https://api.dev.astrometrics.us",
         flight_name="ncric_boss4_images_flight.yaml",
-        clean_table_name_root="boss4_images_hourly_clean",
-        standardize_table_name=True,
+        clean_table_name_root="boss4_hr_images",
+        standardize_table_name=False,
         clean_table_suffix=None
     ):
         super().__init__(
@@ -118,7 +118,7 @@ class BOSS4AgenciesIntegration(Integration):
         self,
         sql,
         base_url="https://api.dev.astrometrics.us",
-        clean_table_name_root="clean_boss4_agencies",
+        clean_table_name_root="boss4_agencies_clean",
         flight_name="ncric_boss4_agencies_flight.yaml",
         drop_table_on_success=False
     ):
