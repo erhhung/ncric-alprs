@@ -21,9 +21,8 @@ install_postgresql() (
   cat <<EOF > postgresql-pgdg.list
 deb https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main
 EOF
-  apt-get update
-  wait_apt_get
-  apt-get install -y postgresql-14 postgresql-contrib
+  apt_update
+  eval_with_retry "wait_apt_get && apt-get install -y postgresql-14 postgresql-contrib"
   cd /home/$USER
   cat <<'EOF' >> .bash_aliases
 

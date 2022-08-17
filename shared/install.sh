@@ -42,8 +42,7 @@ EOF
 
 install_java() (
   hash java 2> /dev/null && exit
-  wait_apt_get
-  apt-get install -y openjdk-11-jdk
+  eval_with_retry "wait_apt_get && apt-get install -y openjdk-11-jdk"
   java --version
   cat <<'EOF' >> /etc/environment
 JAVA_HOME="/usr/lib/jvm/java-11-openjdk-arm64"
@@ -54,8 +53,7 @@ install_delta() (
   cd /tmp
   hash delta 2> /dev/null && exit
   wget -q https://github.com/dandavison/delta/releases/download/0.12.0/git-delta_0.12.0_arm64.deb
-  wait_apt_get
-  dpkg -i git-delta_0.12.0_arm64.deb
+  eval_with_retry "wait_apt_get && dpkg -i git-delta_0.12.0_arm64.deb"
   rm git-delta*
 )
 

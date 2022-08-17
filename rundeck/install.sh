@@ -123,7 +123,7 @@ start_rundeck() {
 eval_with_retry() {
   local cmd="$1" tries=${2:-3}
   while ! eval "$cmd" && [ $((--tries)) -gt 0 ]; do
-    echo "Retrying: $cmd"
+    echo "RETRYING: $cmd"
     sleep 1
   done
   sleep 1

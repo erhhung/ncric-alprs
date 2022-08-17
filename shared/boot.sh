@@ -20,6 +20,16 @@ EOF
   chmod +x custom_prompt.sh
 )
 
+# eval_with_retry <cmd> [tries]
+eval_with_retry() {
+  local cmd="$1" tries=${2:-3}
+  while ! eval "$cmd" && [ $((--tries)) -gt 0 ]; do
+    echo "RETRYING: $cmd"
+    sleep 5
+  done
+  sleep 1
+}
+
 wait_apt_get() {
   while [ "$(lsof -t /var/lib/dpkg/lock \
                      /var/lib/apt/lists/lock \
@@ -30,18 +40,14 @@ wait_apt_get() {
 }
 
 apt_update() {
-  wait_apt_get
-  apt-get update
+  eval_with_retry "wait_apt_get && apt-get update"
 }
 
 apt_install() {
   apt_update
-  wait_apt_get
-  add-apt-repository -y ppa:git-core/ppa
-  wait_apt_get
-  apt-get dist-upgrade -y
-  wait_apt_get
-  apt-get install -y figlet emacs-nox moreutils most jq git unzip net-tools nmap pwgen
+  eval_with_retry "wait_apt_get && add-apt-repository -y ppa:git-core/ppa"
+  eval_with_retry "wait_apt_get && apt-get dist-upgrade -y"
+  eval_with_retry "wait_apt_get && apt-get install -y figlet emacs-nox moreutils most jq git unzip net-tools nmap pwgen"
   snap install yq
 }
 
@@ -127,6 +133,7 @@ EOF
   chmod 400 server.key
 )
 
+export -f eval_with_retry
 export -f wait_apt_get
 export -f apt_update
 
