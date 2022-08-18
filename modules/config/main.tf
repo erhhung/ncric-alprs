@@ -17,7 +17,7 @@ locals {
 }
 
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_object
-resource "aws_s3_object" "configs" {
+resource "aws_s3_object" "files" {
   for_each = local.contents
 
   bucket       = var.bucket
