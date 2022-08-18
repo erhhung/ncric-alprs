@@ -136,7 +136,7 @@ EOF
 
 install_cwagent() {
   # CloudWatch Agent is already bundled in
-  # AMI, but install supplemental pacakges
+  # AMI, but install supplemental packages
   eval_with_retry "wait_apt_get && apt-get install -y collectd"
 }
 

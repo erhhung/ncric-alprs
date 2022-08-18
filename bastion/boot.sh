@@ -125,7 +125,7 @@ EOF
 
 install_cwagent() {
   # CloudWatch Agent is already bundled in
-  # AMI, but install supplemental pacakges
+  # AMI, but install supplemental packages
   amazon-linux-extras install -y collectd
 }
 
