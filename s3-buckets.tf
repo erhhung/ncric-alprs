@@ -102,11 +102,11 @@ resource "aws_s3_bucket_lifecycle_configuration" "media" {
   bucket = aws_s3_bucket.buckets["media"].id
 
   rule {
-    id     = "infrequent-7"
+    id     = "infrequent-30"
     status = "Enabled"
 
     transition {
-      days          = 7
+      days          = 30
       storage_class = "STANDARD_IA"
     }
   }
@@ -116,11 +116,11 @@ resource "aws_s3_bucket_lifecycle_configuration" "backup" {
   bucket = aws_s3_bucket.buckets["backup"].id
 
   rule {
-    id     = "infrequent-7"
+    id     = "infrequent-30"
     status = "Enabled"
 
     transition {
-      days          = 7
+      days          = 30
       storage_class = "STANDARD_IA"
     }
   }
