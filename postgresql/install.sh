@@ -24,9 +24,8 @@ EOF
   apt_update
   eval_with_retry "wait_apt_get && apt-get install -y postgresql-14 postgresql-contrib"
   cd /home/$USER
+  echo -e \\n >> .bash_aliases
   cat <<'EOF' >> .bash_aliases
-
-
 psql() {
   [ "$USER" == 'postgres' ] && $(which psql) "$@" || \
     \sudo -E su postgres -c   "$(which psql)  $@"

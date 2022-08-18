@@ -74,7 +74,7 @@ resource "aws_iam_role_policy_attachment" "alprs_bastion" {
 data "aws_iam_policy_document" "alprs_buckets" {
   statement {
     effect    = "Allow"
-    actions   = ["s3:ListBucket"]
+    actions   = ["s3:ListBucket", "s3:GetBucketLocation"]
     resources = [for type, _ in var.buckets : aws_s3_bucket.buckets[type].arn]
   }
   statement {
@@ -122,7 +122,7 @@ resource "aws_iam_role_policy_attachment" "alprs_service" {
 data "aws_iam_policy_document" "backup_bucket" {
   statement {
     effect    = "Allow"
-    actions   = ["s3:ListBucket"]
+    actions   = ["s3:ListBucket", "s3:GetBucketLocation"]
     resources = [aws_s3_bucket.buckets["backup"].arn]
   }
   statement {
@@ -135,7 +135,7 @@ data "aws_iam_policy_document" "backup_bucket" {
 data "aws_iam_policy_document" "config_bucket" {
   statement {
     effect    = "Allow"
-    actions   = ["s3:ListBucket"]
+    actions   = ["s3:ListBucket", "s3:GetBucketLocation"]
     resources = [aws_s3_bucket.buckets["config"].arn]
   }
   statement {
@@ -266,8 +266,11 @@ resource "aws_iam_role_policy_attachment" "alprs_worker" {
 
 data "aws_iam_policy_document" "ingest_buckets" {
   statement {
-    effect  = "Allow"
-    actions = ["s3:ListBucket"]
+    effect = "Allow"
+    actions = [
+      "s3:ListBucket",
+      "s3:GetBucketLocation",
+    ]
     resources = [
       aws_s3_bucket.buckets["sftp"].arn,
       aws_s3_bucket.buckets["media"].arn,

@@ -1,5 +1,6 @@
-# This user data script is a continuation
-# of the shared "boot.sh" script.
+# This user data script is a continuation of
+# the shared "boot.sh" script. It's included
+# on Conductor/Datastore/Indexer hosts only.
 
 etc_hosts() (
   cd /etc
@@ -20,13 +21,17 @@ create_user() (
   cat <<EOF >> .bashrc
 export CONFIG_BUCKET="$CONFIG_BUCKET"
 EOF
+  echo -e \\n >> .bash_aliases
+  cat <<'EOF' >> .bash_aliases
+alias psj='ps auxw | grep -v grep | grep java'
+alias mol='most +1000000 /opt/openlattice/logging/*.log'
+EOF
   # adduser copies files from /etc/skel
   # into the new user's home directory
   cp -a .bashrc .bash_aliases .gitconfig .emacs \
     .screenrc .sudo_as_admin_successful /etc/skel
   adduser --disabled-login --gecos "" openlattice
   cat <<'EOF' >> .bash_aliases
-
 alias ol='sudo su -l openlattice'
 EOF
   cat <<'EOF' >> /home/openlattice/.bashrc

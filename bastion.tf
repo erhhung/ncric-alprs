@@ -8,7 +8,10 @@ locals {
   ])
   bastion_user_data = [{
     path = "bastion/.bash_aliases"
-    data = file("${path.module}/bastion/.bash_aliases")
+    data = <<-EOF
+${file("${path.module}/shared/.bash_aliases")}
+${file("${path.module}/shared/.bash_aliases_centos")}
+EOF
     }, {
     path = "bastion/.bashrc"
     data = file("${path.module}/bastion/.bashrc")

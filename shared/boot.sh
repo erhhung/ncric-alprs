@@ -47,7 +47,8 @@ apt_install() {
   apt_update
   eval_with_retry "wait_apt_get && add-apt-repository -y ppa:git-core/ppa"
   eval_with_retry "wait_apt_get && apt-get dist-upgrade -y"
-  eval_with_retry "wait_apt_get && apt-get install -y figlet emacs-nox moreutils most jq git unzip net-tools nmap pwgen"
+  eval_with_retry "wait_apt_get && apt-get install -y figlet emacs-nox moreutils most \
+                    jq git unzip net-tools nmap pwgen libxml2-utils python3-pygments"
   snap install yq
 }
 

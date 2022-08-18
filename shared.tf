@@ -34,7 +34,10 @@ locals {
     data = local.authorized_keys
     }, {
     path = "shared/.bash_aliases"
-    data = file("${path.module}/shared/.bash_aliases")
+    data = <<-EOF
+${file("${path.module}/shared/.bash_aliases")}
+${file("${path.module}/shared/.bash_aliases_ubuntu")}
+EOF
     }, {
     path = "shared/.gitconfig"
     data = file("${path.module}/shared/.gitconfig")
