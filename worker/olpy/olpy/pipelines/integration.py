@@ -26,7 +26,7 @@ class Integration(object):
                  if_exists="fail",
                  flight_path=None,
                  atlas_organization_id=None,
-                 base_url="https://api.openlattice.com",
+                 base_url="http://datastore:8080",
                  rowwise=None,
                  cleaning_required=True,
                  shuttle_path=None,
@@ -214,8 +214,8 @@ class Integration(object):
 
         environment = {
             "http://localhost:8080": "LOCAL",
-            "https://api.openlattice.com": "PROD_INTEGRATION",
-            "https://api.staging.openlattice.com": "STAGING_INTEGRATION"
+            "http://datastore:8080": "PROD_INTEGRATION",
+            "http://datastore:8080": "STAGING_INTEGRATION"
         }
 
         # for ncric, make sure there's an __init__.py file if the yaml file is in a different place!

@@ -70,7 +70,7 @@ class BOSS4ImagesIntegration(Integration):
     def __init__(
         self,
         sql,
-        base_url="https://api.openlattice.com",
+        base_url="http://datastore:8080",
         flight_name="ncric_boss4_images_flight.yaml",
         clean_table_name_root="boss4_hr_images",
         standardize_table_name=True,
@@ -94,7 +94,7 @@ class BOSS4ImagesIntegration(Integration):
 class BOSS4ImageSourcesIntegration(Integration):
     # 'select distinct "LPRCameraID", "LPRCameraName", "datasource" from boss4_hourly'
     # imagesources uses the same flight everywhere, so we can specify here the flight
-    def __init__(self, sql, base_url="https://api.openlattice.com",
+    def __init__(self, sql, base_url="http://datastore:8080",
                  flight_name="ncric_boss4_imagesource_flight.yaml",
                  clean_table_name_root="boss4_imagesources",
                  drop_table_on_success=False
@@ -118,7 +118,7 @@ class BOSS4AgenciesIntegration(Integration):
     def __init__(
         self,
         sql,
-        base_url="https://api.openlattice.com",
+        base_url="http://datastore:8080",
         clean_table_name_root="boss4_agencies_clean",
         flight_name="ncric_boss4_agencies_flight.yaml",
         drop_table_on_success=False
@@ -140,7 +140,7 @@ class BOSS4AgenciesIntegration(Integration):
 
 class BOSS4AgenciesStandardizedIntegration(Integration):
     def __init__(self,
-                 base_url="https://api.openlattice.com",
+                 base_url="http://datastore:8080",
                  sql="""select distinct standardized_agency_name from standardized_agency_names where "ol.datasource" = 'BOSS4';""",
                  flight_name="ncric_boss4_agencies_standardized.yaml",
                  drop_table_on_success=False
@@ -160,7 +160,7 @@ class BOSS4HotlistDaily(Integration):
     # inner join boss4_hourly on "plate" = "VehicleLicensePlateID";"""
     def __init__(self,
                  sql,
-                 base_url="https://api.openlattice.com",
+                 base_url="http://datastore:8080",
                  clean_table_name_root="clean_boss4_hotlist_hourly",
                  drop_table_on_success=False
                  ):

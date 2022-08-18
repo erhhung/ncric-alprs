@@ -2,11 +2,23 @@
 # frontend to the webapp bucket during bootstrapping
 # and runs the lattice-org webapp and Rundeck server
 
+# https://registry.terraform.io/providers/hashicorp/external/latest/docs/data-sources/data_source
+data "external" "bastion_cwagent_json" {
+  program = [
+    "${path.module}/shared/cwagent.sh",
+    "bastion",
+  ]
+}
+
 locals {
   all_bucket_names = join(" ", [
     for key, name in var.buckets : "'${upper(key)}_BUCKET=\"${name}\"'"
   ])
   bastion_user_data = [{
+    path = "bastion/cwagent.json"
+    data = data.external.bastion_cwagent_json.result.json
+    type = "application/json"
+    }, {
     path = "bastion/.bash_aliases"
     data = <<-EOF
 ${file("${path.module}/shared/.bash_aliases")}
@@ -17,7 +29,7 @@ EOF
     data = file("${path.module}/bastion/.bashrc")
     }, {
     path = "bastion/bootstrap.sh"
-    data = <<-EOT
+    data = <<-EOF
 ${file("${path.module}/shared/prolog.sh")}
 ${templatefile("${path.module}/bastion/boot.tftpl", {
     ENV         = var.env
@@ -30,23 +42,19 @@ ${file("${path.module}/bastion/boot.sh")}
 ${local.webapp_bootstrap}
 ${local.rundeck_bootstrap}
 ${file("${path.module}/shared/epilog.sh")}
-EOT
+EOF
 }]
 }
 
-# https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_object
-resource "aws_s3_object" "bastion_user_data" {
-  for_each = { for object in local.bastion_user_data : basename(object.path) => object }
+module "bastion_user_data" {
+  source = "./modules/userdata"
 
-  bucket       = data.aws_s3_bucket.user_data.id
-  key          = "userdata/${each.value.path}"
-  content_type = "text/plain"
-  content      = chomp(each.value.data)
-  source_hash  = md5(each.value.data)
+  bucket = data.aws_s3_bucket.user_data.id
+  files  = local.bastion_user_data
 }
 
 locals {
-  bastion_bootstrap = <<EOT
+  bastion_bootstrap = <<-EOT
 ${templatefile("${path.module}/shared/boot.tftpl", {
   BUCKET = local.user_data_bucket
   HOST   = "bastion"
@@ -59,9 +67,9 @@ module "bastion_host" {
   source = "./modules/instance"
 
   depends_on = [
-    aws_s3_object.shared_user_data,
-    aws_s3_object.bastion_user_data,
-    aws_s3_object.rd_user_data,
+    module.shared_user_data,
+    module.rundeck_user_data,
+    module.bastion_user_data,
   ]
   ami_id           = local.applied_amis["amazon_linux2"].id
   instance_type    = var.instance_types["bastion"]

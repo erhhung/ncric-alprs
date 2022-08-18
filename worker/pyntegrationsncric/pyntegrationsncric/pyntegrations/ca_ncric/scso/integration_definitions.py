@@ -38,7 +38,7 @@ class SCSOImagesIntegration(Integration):
         sql="select * from scso_images_hourly_raw",
         clean_table_name_root="scso_images_hourly_clean",
         flight_name="ncric_scso_images_flight.yaml",
-        base_url="https://api.openlattice.com",
+        base_url="http://datastore:8080",
         clean_table_suffix=None
     ):
         super().__init__(
@@ -58,7 +58,7 @@ class SCSOImageSourcesIntegration(Integration):
     def __init__(
         self,
         sql,
-        base_url="https://api.openlattice.com",
+        base_url="http://datastore:8080",
         clean_table_name_root="zzz_clean_scso_imagesources",
         flight_name="ncric_scso_imagesource_flight.yaml"
     ):
@@ -79,7 +79,7 @@ class SCSOAgenciesIntegration(Integration):
     def __init__(
         self,
         sql,
-        base_url="https://api.openlattice.com",
+        base_url="http://datastore:8080",
         clean_table_name_root="zzz_clean_scso_agencies",
         flight_name="ncric_scso_agencies_flight.yaml"
     ):
@@ -100,7 +100,7 @@ class SCSOAgenciesStandardizedIntegration(Integration):
     def __init__(
         self,
         sql="""select distinct standardized_agency_name from standardized_agency_names where "ol.datasource" = 'SCSO';""",
-        base_url="https://api.openlattice.com",
+        base_url="http://datastore:8080",
         clean_table_name_root="zzz_clean_scso_agencies_standardized",
         flight_name="ncric_scso_agencies_standardized.yaml"
     ):
@@ -121,7 +121,7 @@ class SCSOGeoFix(Integration):
             standardize_clean_table_name=False,
             if_exists="replace",
             flight_path=resource_filename(__name__, "ncric_scso_dt_geo_fix.yaml"),
-            base_url="https://api.openlattice.com")
+            base_url="http://datastore:8080")
 
 
 class SCSOHotlistDaily(Integration):
@@ -130,7 +130,7 @@ class SCSOHotlistDaily(Integration):
         sql="""select hotlist_daily.*, scso_hourly.* from hotlist_daily
                 inner join scso_hourly_clean on "plate" = "VehicleLicensePlateID";
                 """,
-        base_url="https://api.openlattice.com",
+        base_url="http://datastore:8080",
         clean_table_name_root="zzz_clean_scso_hotlist_hourly",
         flight_name="ncric_scso_hotlist_flight.yaml"
     ):

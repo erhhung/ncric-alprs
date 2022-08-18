@@ -1,5 +1,5 @@
 module "elasticsearch_sg" {
-  source = "./modules/secgrp"
+  source = "./modules/secgroup"
 
   name        = "elasticsearch-sg"
   description = "Allow Elasticsearch/Kibana traffic"
@@ -28,6 +28,12 @@ module "elasticsearch_sg" {
 }
 
 # https://registry.terraform.io/providers/hashicorp/external/latest/docs/data-sources/data_source
+data "external" "elasticsearch_cwagent_json" {
+  program = [
+    "${path.module}/shared/cwagent.sh",
+    "elasticsearch",
+  ]
+}
 data "external" "elasticsearch_yml" {
   program = [
     "${path.module}/shared/minconf.sh",
@@ -50,24 +56,28 @@ data "external" "nginx_conf" {
 }
 
 locals {
-  es_user_data = [{
+  elasticsearch_user_data = [{
+    path = "elasticsearch/cwagent.json"
+    data = data.external.elasticsearch_cwagent_json.result.json
+    type = "application/json"
+    }, {
     path = "elasticsearch/elasticsearch.yml"
     data = data.external.elasticsearch_yml.result.text
-    type = "text/yaml"
+    type = "application/yaml"
     }, {
     path = "elasticsearch/template.json"
     file = "${path.module}/elasticsearch/template.json"
-    type = "text/json"
+    type = "application/json"
     }, {
     path = "elasticsearch/kibana.yml"
     data = data.external.kibana_yml.result.text
-    type = "text/yaml"
+    type = "application/yaml"
     }, {
     path = "elasticsearch/nginx.conf"
     data = data.external.nginx_conf.result.text
     }, {
     path = "elasticsearch/bootstrap.sh"
-    data = <<-EOT
+    data = <<-EOF
 ${file("${path.module}/shared/prolog.sh")}
 ${templatefile("${path.module}/elasticsearch/boot.tftpl", {
     ENV           = var.env
@@ -81,24 +91,19 @@ ${templatefile("${path.module}/elasticsearch/boot.tftpl", {
 ${file("${path.module}/shared/boot.sh")}
 ${file("${path.module}/elasticsearch/install.sh")}
 ${file("${path.module}/shared/epilog.sh")}
-EOT
+EOF
 }]
 }
 
-# https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_object
-resource "aws_s3_object" "es_user_data" {
-  for_each = { for obj in local.es_user_data : basename(obj.path) => obj }
+module "elasticsearch_user_data" {
+  source = "./modules/userdata"
 
-  bucket       = data.aws_s3_bucket.user_data.id
-  key          = "userdata/${each.value.path}"
-  content_type = lookup(each.value, "type", "text/plain")
-  content      = lookup(each.value, "data", null) == null ? null : chomp(each.value.data)
-  source       = lookup(each.value, "file", null) == null ? null : each.value.file
-  source_hash  = lookup(each.value, "file", null) != null ? filemd5(each.value.file) : md5(each.value.data)
+  bucket = data.aws_s3_bucket.user_data.id
+  files  = local.elasticsearch_user_data
 }
 
 locals {
-  es_bootstrap = <<EOT
+  elasticsearch_bootstrap = <<-EOT
 ${templatefile("${path.module}/shared/boot.tftpl", {
   BUCKET = local.user_data_bucket
   HOST   = "elasticsearch"
@@ -111,8 +116,8 @@ module "elasticsearch_server" {
   source = "./modules/instance"
 
   depends_on = [
-    aws_s3_object.shared_user_data,
-    aws_s3_object.es_user_data,
+    module.shared_user_data,
+    module.elasticsearch_user_data,
   ]
   ami_id           = local.applied_amis["ubuntu_20arm"].id
   instance_type    = var.instance_types["elasticsearch"]
@@ -122,7 +127,7 @@ module "elasticsearch_server" {
   security_groups  = [module.elasticsearch_sg.id]
   instance_profile = aws_iam_instance_profile.alprs_service.name
   key_name         = aws_key_pair.admin.key_name
-  user_data        = chomp(local.es_bootstrap)
+  user_data        = chomp(local.elasticsearch_bootstrap)
 }
 
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/volume_attachment

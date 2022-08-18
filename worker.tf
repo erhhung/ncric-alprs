@@ -3,9 +3,19 @@ locals {
     "pyntegrationsncric",
     "olpy",
   ]
+  worker_scripts_paths = [{
+    path = "${path.module}/shuttle/scripts"
+    dest = "shuttle/"
+    }, {
+    path = "${path.module}/flapper/scripts"
+    dest = "flapper/"
+  }]
 }
 
 # https://registry.terraform.io/providers/hashicorp/external/latest/docs/data-sources/data_source
+data "external" "worker_cwagent_json" {
+  program = ["${path.module}/shared/cwagent.sh"]
+}
 data "external" "python_wheels" {
   for_each = toset(local.wheels)
 
@@ -21,9 +31,18 @@ locals {
       path = "worker/${wheel}.whl"
       file = "${path.module}/worker/${wheel}.whl"
       type = "application/x-wheel+zip"
-    }], {
+    }], [
+    for scripts in local.worker_scripts_paths : [
+      for path in fileset(scripts.path, "**") : {
+        path = "worker/scripts/${lookup(scripts, "dest", "")}${path}"
+        file = "${scripts.path}/${path}"
+    }]], {
+    path = "worker/cwagent.json"
+    data = data.external.worker_cwagent_json.result.json
+    type = "application/json"
+    }, {
     path = "worker/bootstrap.sh"
-    data = <<-EOT
+    data = <<-EOF
 ${file("${path.module}/shared/prolog.sh")}
 ${templatefile("${path.module}/worker/boot.tftpl", {
     ENV           = var.env
@@ -42,52 +61,22 @@ ${templatefile("${path.module}/worker/boot.tftpl", {
 ${file("${path.module}/shared/boot.sh")}
 ${file("${path.module}/worker/install.sh")}
 ${file("${path.module}/shared/epilog.sh")}
-EOT
+EOF
 }])
 }
 
-resource "aws_s3_object" "worker_user_data" {
-  for_each   = { for obj in local.worker_user_data : basename(obj.path) => obj }
-  depends_on = [data.external.python_wheels]
+module "worker_user_data" {
+  source = "./modules/userdata"
 
-  bucket       = data.aws_s3_bucket.user_data.id
-  key          = "userdata/${each.value.path}"
-  content_type = lookup(each.value, "type", "text/plain")
-  content      = lookup(each.value, "data", null) == null ? null : chomp(each.value.data)
-  source       = lookup(each.value, "file", null) == null ? null : each.value.file
-  source_hash  = lookup(each.value, "file", null) != null ? filemd5(each.value.file) : md5(each.value.data)
+  depends_on = [
+    data.external.python_wheels,
+  ]
+  bucket = data.aws_s3_bucket.user_data.id
+  files  = local.worker_user_data
 }
 
 locals {
-  worker_scripts_paths = [{
-    path = "${path.module}/shuttle/scripts"
-    dest = "shuttle"
-    }, {
-    path = "${path.module}/flapper/scripts"
-    dest = "flapper"
-  }]
-  worker_scripts = flatten([
-    for scripts in local.worker_scripts_paths : [
-      for path in fileset(scripts.path, "**") : {
-        path = "${scripts.path}/${path}"
-        rel  = lookup(scripts, "dest", null) == null ? path : "${scripts.dest}/${path}"
-      }
-    ]
-  ])
-}
-
-resource "aws_s3_object" "worker_scripts" {
-  for_each = { for file in local.worker_scripts : file.rel => file.path }
-
-  bucket       = data.aws_s3_bucket.user_data.id
-  key          = "userdata/worker/scripts/${each.key}"
-  content_type = "text/plain"
-  source       = each.value
-  source_hash  = filemd5(each.value)
-}
-
-locals {
-  worker_bootstrap = <<EOT
+  worker_bootstrap = <<-EOT
 ${templatefile("${path.module}/shared/boot.tftpl", {
   BUCKET = local.user_data_bucket
   HOST   = "worker"
@@ -100,9 +89,8 @@ module "worker_node" {
   source = "./modules/instance"
 
   depends_on = [
-    aws_s3_object.shared_user_data,
-    aws_s3_object.worker_user_data,
-    aws_s3_object.worker_scripts,
+    module.shared_user_data,
+    module.worker_user_data,
   ]
   ami_id           = local.applied_amis["ubuntu_20arm"].id
   instance_type    = var.instance_types["worker"]

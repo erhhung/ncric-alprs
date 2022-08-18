@@ -44,8 +44,8 @@ class Integration(object):
                  standardize_clean_table_name=True,
                  if_exists="fail",
                  flight_path=None,
-                 atlas_organization_id=None,  # KIM ADDED
-                 base_url="https://api.openlattice.com",
+                 atlas_organization_id=None,
+                 base_url="http://datastore:8080",
                  rowwise=None,
                  cleaning_required=True,
                  shuttle_path=None,
@@ -125,7 +125,7 @@ class Integration(object):
 
         # finish setup
         token = of.get_jwt(ol_user, ol_pass, client_id)
-        self.configuration = of.get_config(jwt=token, base_url="https://api.openlattice.com")
+        self.configuration = of.get_config(jwt=token, base_url=base_url)
         self.flight = flight.Flight(configuration=self.configuration)
         if self.flight_path is not None:  # KIM ADDED
             self.flight.deserialize(self.flight_path)
@@ -320,8 +320,8 @@ class Integration(object):
 
         environment = {
             "http://localhost:8080": "LOCAL",
-            "https://api.openlattice.com": "PROD_INTEGRATION",
-            "https://api.staging.openlattice.com": "STAGING_INTEGRATION"
+            "http://datastore:8080": "PROD_INTEGRATION",
+            "http://datastore:8080": "STAGING_INTEGRATION"
         }
 
         # for ncric, make sure there's an __init__.py file if the yaml file is in a different place!

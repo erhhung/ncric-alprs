@@ -24,7 +24,7 @@ EOF
   echo -e \\n >> .bash_aliases
   cat <<'EOF' >> .bash_aliases
 alias psj='ps auxw | grep -v grep | grep java'
-alias mol='most +1000000 /opt/openlattice/logging/*.log'
+alias mol='most +1000000 /opt/openlattice/logging/*[!0-9].log'
 EOF
   # adduser copies files from /etc/skel
   # into the new user's home directory

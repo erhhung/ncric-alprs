@@ -1,5 +1,5 @@
 module "services_sg" {
-  source = "./modules/secgrp"
+  source = "./modules/secgroup"
 
   name        = "services-sg"
   description = "Allow Hazelcast/Jetty traffic"
@@ -50,15 +50,11 @@ EOF
   }]
 }
 
-# https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_object
-resource "aws_s3_object" "shared_user_data" {
-  for_each = { for object in local.shared_user_data : basename(object.path) => object }
+module "shared_user_data" {
+  source = "./modules/userdata"
 
-  bucket       = data.aws_s3_bucket.user_data.id
-  key          = "userdata/${each.value.path}"
-  content_type = "text/plain"
-  content      = chomp(each.value.data)
-  source_hash  = md5(each.value.data)
+  bucket = data.aws_s3_bucket.user_data.id
+  files  = local.shared_user_data
 }
 
 locals {

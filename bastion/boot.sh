@@ -99,8 +99,8 @@ authorize_keys() {
 }
 
 user_dotfiles() {
-  aws s3 sync $S3_URL/shared  . --exclude '*' --include '.*' --exclude '.bash*' --no-progress
-  aws s3 sync $S3_URL/bastion . --exclude '*' --include '.*' --no-progress
+  aws s3 sync $S3_URL/shared    . --exclude '*' --include '.*' --exclude '.bash*' --no-progress
+  aws s3 sync $S3_URL/${HOST,,} . --exclude '*' --include '.*' --no-progress
 }
 
 root_dotfiles() (
@@ -123,6 +123,23 @@ $ES_IP${tab}elasticsearch
 EOF
 )
 
+install_cwagent() {
+  # CloudWatch Agent is already bundled in
+  # AMI, but install supplemental pacakges
+  amazon-linux-extras install -y collectd
+}
+
+config_cwagent() (
+  cd /opt/aws/amazon-cloudwatch-agent/etc
+  aws s3 cp $S3_URL/${HOST,,}/cwagent.json amazon-cloudwatch-agent.json
+)
+
+start_cwagent() (
+  cd /opt/aws/amazon-cloudwatch-agent
+  ./bin/amazon-cloudwatch-agent-ctl -a fetch-config \
+    -m ec2 -s -c file:etc/amazon-cloudwatch-agent.json
+)
+
 if [ ${BASH_VERSINFO[0]}${BASH_VERSINFO[1]} -lt 51 ]; then
   run upgrade_bash; exit
 fi
@@ -141,3 +158,6 @@ run authorize_keys $USER
 run user_dotfiles  $USER
 run root_dotfiles
 run etc_hosts
+run install_cwagent
+run config_cwagent
+run start_cwagent

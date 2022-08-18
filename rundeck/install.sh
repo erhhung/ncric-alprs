@@ -181,7 +181,7 @@ config_project() {
   local az=$(myaz)
   cat <<EOF > keys.txt
 keys/region            ${az:0:-1}
-keys/api_url           $API_URL
+keys/api_url           http://datastore:8080
 keys/s3_bucket         $SFTP_BUCKET
 keys/s3_prefix/boss4   boss4
 keys/s3_prefix/scso    scso

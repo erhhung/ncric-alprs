@@ -1,54 +1,53 @@
-locals {
-  indexer_bootstrap_sh = <<-EOT
-${file("${path.module}/shared/prolog.sh")}
-${templatefile("${path.module}/indexer/boot.tftpl", {
-  ENV           = var.env
-  S3_URL        = local.user_data_s3_url
-  GH_TOKEN      = var.GITHUB_ACCESS_TOKEN
-  BACKUP_BUCKET = var.buckets["backup"]
-  CONFIG_BUCKET = var.buckets["config"]
-  DATASTORE_IP  = module.datastore_server.private_ip
-  CLIENT_ID     = var.AUTH0_SPA_CLIENT_ID
-  # passwords are created in keys.tf
-  auth0_email = var.auth0_user.email
-  auth0_pass  = var.auth0_user.password
-})}
-${file("${path.module}/shared/boot.sh")}
-${file("${path.module}/shared/install.sh")}
-${file("${path.module}/shared/epilog.sh")}
-EOT
-}
-
-resource "aws_s3_object" "indexer_bootstrap" {
-  bucket       = data.aws_s3_bucket.user_data.id
-  key          = "userdata/indexer/bootstrap.sh"
-  content_type = "text/plain"
-  content      = chomp(local.indexer_bootstrap_sh)
-  source_hash  = md5(local.indexer_bootstrap_sh)
+# https://registry.terraform.io/providers/hashicorp/external/latest/docs/data-sources/data_source
+data "external" "indexer_cwagent_json" {
+  program = [
+    "${path.module}/shared/cwagent.sh",
+    "shared", "HOST=indexer"
+  ]
 }
 
 locals {
   indexer_scripts_path = "${path.module}/indexer/scripts"
-  indexer_scripts = [
+  indexer_user_data = flatten([[
     for path in fileset(local.indexer_scripts_path, "**") : {
-      path = "${local.indexer_scripts_path}/${path}"
-      rel  = path
-    }
-  ]
+      path = "indexer/scripts/${path}"
+      file = "${local.indexer_scripts_path}/${path}"
+    }], {
+    path = "indexer/cwagent.json"
+    data = data.external.indexer_cwagent_json.result.json
+    type = "application/json"
+    }, {
+    path = "indexer/bootstrap.sh"
+    data = <<-EOF
+${file("${path.module}/shared/prolog.sh")}
+${templatefile("${path.module}/indexer/boot.tftpl", {
+    ENV           = var.env
+    S3_URL        = local.user_data_s3_url
+    GH_TOKEN      = var.GITHUB_ACCESS_TOKEN
+    BACKUP_BUCKET = var.buckets["backup"]
+    CONFIG_BUCKET = var.buckets["config"]
+    DATASTORE_IP  = module.datastore_server.private_ip
+    CLIENT_ID     = var.AUTH0_SPA_CLIENT_ID
+    # passwords are created in keys.tf
+    auth0_email = var.auth0_user.email
+    auth0_pass  = var.auth0_user.password
+  })}
+${file("${path.module}/shared/boot.sh")}
+${file("${path.module}/shared/install.sh")}
+${file("${path.module}/shared/epilog.sh")}
+EOF
+}])
 }
 
-resource "aws_s3_object" "indexer_scripts" {
-  for_each = { for file in local.indexer_scripts : file.rel => file.path }
+module "indexer_user_data" {
+  source = "./modules/userdata"
 
-  bucket       = data.aws_s3_bucket.user_data.id
-  key          = "userdata/indexer/scripts/${each.key}"
-  content_type = "text/plain"
-  source       = each.value
-  source_hash  = filemd5(each.value)
+  bucket = data.aws_s3_bucket.user_data.id
+  files  = local.indexer_user_data
 }
 
 locals {
-  indexer_bootstrap = <<EOT
+  indexer_bootstrap = <<-EOT
 ${templatefile("${path.module}/shared/boot.tftpl", {
   BUCKET = local.user_data_bucket
   HOST   = "indexer"
@@ -61,9 +60,8 @@ module "indexer_server" {
   source = "./modules/instance"
 
   depends_on = [
-    aws_s3_object.shared_user_data,
-    aws_s3_object.indexer_bootstrap,
-    aws_s3_object.indexer_scripts,
+    module.shared_user_data,
+    module.indexer_user_data,
   ]
   ami_id           = local.applied_amis["ubuntu_20arm"].id
   instance_type    = var.instance_types["indexer"]

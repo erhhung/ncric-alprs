@@ -1,5 +1,5 @@
 module "elb_http_sg" {
-  source = "./modules/secgrp"
+  source = "./modules/secgroup"
 
   name        = "elb-http-sg"
   description = "Allow HTTP/S inbound traffic"
@@ -30,6 +30,7 @@ resource "aws_lb" "api" {
   subnets                    = local.public_subnet_ids
   security_groups            = [module.elb_http_sg.id]
   drop_invalid_header_fields = true
+  idle_timeout               = 300
 
   access_logs {
     # https://docs.aws.amazon.com/elasticloadbalancing/latest/classic/enable-access-logs.html
@@ -92,16 +93,16 @@ resource "aws_route53_record" "api" {
   zone_id        = local.zone_id
   name           = local.api_domain
   type           = "A"
-#  set_identifier = "US"
+  set_identifier = "US"
 
   alias {
     name                   = aws_lb.api.dns_name
     zone_id                = aws_lb.api.zone_id
     evaluate_target_health = true
   }
-#  geolocation_routing_policy {
-#    country = "US"
-#  }
+  geolocation_routing_policy {
+    country = "US"
+  }
 }
 
 output "api_elb_domain" {

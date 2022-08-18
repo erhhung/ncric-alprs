@@ -25,7 +25,7 @@ locals {
 }
 
 module "egress_only_sg" {
-  source = "./modules/secgrp"
+  source = "./modules/secgroup"
 
   name        = "egress-only-sg"
   description = "Allow only outbound traffic"
@@ -33,7 +33,7 @@ module "egress_only_sg" {
 }
 
 module "private_ssh_sg" {
-  source = "./modules/secgrp"
+  source = "./modules/secgroup"
 
   name        = "private-ssh-sg"
   description = "Allow SSH from instances"

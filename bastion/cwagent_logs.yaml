@@ -1,0 +1,10 @@
+# This file will be merged with "shared/cwagent_main.yaml"
+
+logs:
+  logs_collected:
+    files:
+      collect_list:
+      - file_path: /var/log/rundeck/*.log
+        log_group_name: astrometrics
+        log_stream_name: rundeck
+        retention_in_days: 90

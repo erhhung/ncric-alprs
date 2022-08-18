@@ -2,6 +2,8 @@
 
 # extract only the effective lines in input conf file
 # outputs JSON for Terraform's "external" data source
+#
+# usage: minconf.sh <file> [VAR1=value1] [VAR2=value2] ...
 
 _reqcmds() {
   local cmd

@@ -31,12 +31,12 @@ cd $tmp_dir
 [ -f setup.py ] || exit $?
 
 # replace "base_url" parameter values
-_URL='https://api.openlattice.com'
-while read file; do
-  sed -i '' "s|$_URL|$API_URL|" $file
-done < <(
-  grep -rl $_URL
-)
+# _URL='http://datastore:8080'
+# while read file; do
+#   sed -i '' "s|$_URL|$API_URL|" $file
+# done < <(
+#   grep -rl $_URL
+# )
 
 # replace AWS region parameter values
 _REGION='us-gov-west-1'

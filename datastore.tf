@@ -1,51 +1,50 @@
-locals {
-  datastore_bootstrap_sh = <<-EOT
-${file("${path.module}/shared/prolog.sh")}
-${templatefile("${path.module}/datastore/boot.tftpl", {
-  ENV           = var.env
-  S3_URL        = local.user_data_s3_url
-  GH_TOKEN      = var.GITHUB_ACCESS_TOKEN
-  FROM_EMAIL    = local.alprs_sender_email
-  BACKUP_BUCKET = var.buckets["backup"]
-  CONFIG_BUCKET = var.buckets["config"]
-  CONDUCTOR_IP  = module.conductor_server.private_ip
-})}
-${file("${path.module}/shared/boot.sh")}
-${file("${path.module}/shared/install.sh")}
-${file("${path.module}/shared/epilog.sh")}
-EOT
-}
-
-resource "aws_s3_object" "datastore_bootstrap" {
-  bucket       = data.aws_s3_bucket.user_data.id
-  key          = "userdata/datastore/bootstrap.sh"
-  content_type = "text/plain"
-  content      = chomp(local.datastore_bootstrap_sh)
-  source_hash  = md5(local.datastore_bootstrap_sh)
+# https://registry.terraform.io/providers/hashicorp/external/latest/docs/data-sources/data_source
+data "external" "datastore_cwagent_json" {
+  program = [
+    "${path.module}/shared/cwagent.sh",
+    "shared", "HOST=datastore"
+  ]
 }
 
 locals {
   datastore_scripts_path = "${path.module}/datastore/scripts"
-  datastore_scripts = [
+  datastore_user_data = flatten([[
     for path in fileset(local.datastore_scripts_path, "**") : {
-      path = "${local.datastore_scripts_path}/${path}"
-      rel  = path
-    }
-  ]
+      path = "datastore/scripts/${path}"
+      file = "${local.datastore_scripts_path}/${path}"
+    }], {
+    path = "datastore/cwagent.json"
+    data = data.external.datastore_cwagent_json.result.json
+    type = "application/json"
+    }, {
+    path = "datastore/bootstrap.sh"
+    data = <<-EOF
+${file("${path.module}/shared/prolog.sh")}
+${templatefile("${path.module}/datastore/boot.tftpl", {
+    ENV           = var.env
+    S3_URL        = local.user_data_s3_url
+    GH_TOKEN      = var.GITHUB_ACCESS_TOKEN
+    FROM_EMAIL    = local.alprs_sender_email
+    BACKUP_BUCKET = var.buckets["backup"]
+    CONFIG_BUCKET = var.buckets["config"]
+    CONDUCTOR_IP  = module.conductor_server.private_ip
+  })}
+${file("${path.module}/shared/boot.sh")}
+${file("${path.module}/shared/install.sh")}
+${file("${path.module}/shared/epilog.sh")}
+EOF
+}])
 }
 
-resource "aws_s3_object" "datastore_scripts" {
-  for_each = { for file in local.datastore_scripts : file.rel => file.path }
+module "datastore_user_data" {
+  source = "./modules/userdata"
 
-  bucket       = data.aws_s3_bucket.user_data.id
-  key          = "userdata/datastore/scripts/${each.key}"
-  content_type = "text/plain"
-  source       = each.value
-  source_hash  = filemd5(each.value)
+  bucket = data.aws_s3_bucket.user_data.id
+  files  = local.datastore_user_data
 }
 
 locals {
-  datastore_bootstrap = <<EOT
+  datastore_bootstrap = <<-EOT
 ${templatefile("${path.module}/shared/boot.tftpl", {
   BUCKET = local.user_data_bucket
   HOST   = "datastore"
@@ -58,9 +57,8 @@ module "datastore_server" {
   source = "./modules/instance"
 
   depends_on = [
-    aws_s3_object.shared_user_data,
-    aws_s3_object.datastore_bootstrap,
-    aws_s3_object.datastore_scripts,
+    module.shared_user_data,
+    module.datastore_user_data,
   ]
   ami_id           = local.applied_amis["ubuntu_20arm"].id
   instance_type    = var.instance_types["datastore"]

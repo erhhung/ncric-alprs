@@ -1,50 +1,49 @@
-locals {
-  conductor_bootstrap_sh = <<-EOT
-${file("${path.module}/shared/prolog.sh")}
-${templatefile("${path.module}/conductor/boot.tftpl", {
-  ENV           = var.env
-  S3_URL        = local.user_data_s3_url
-  GH_TOKEN      = var.GITHUB_ACCESS_TOKEN
-  FROM_EMAIL    = local.alprs_sender_email
-  BACKUP_BUCKET = var.buckets["backup"]
-  CONFIG_BUCKET = var.buckets["config"]
-})}
-${file("${path.module}/shared/boot.sh")}
-${file("${path.module}/shared/install.sh")}
-${file("${path.module}/shared/epilog.sh")}
-EOT
-}
-
-resource "aws_s3_object" "conductor_bootstrap" {
-  bucket       = data.aws_s3_bucket.user_data.id
-  key          = "userdata/conductor/bootstrap.sh"
-  content_type = "text/plain"
-  content      = chomp(local.conductor_bootstrap_sh)
-  source_hash  = md5(local.conductor_bootstrap_sh)
+# https://registry.terraform.io/providers/hashicorp/external/latest/docs/data-sources/data_source
+data "external" "conductor_cwagent_json" {
+  program = [
+    "${path.module}/shared/cwagent.sh",
+    "shared", "HOST=conductor"
+  ]
 }
 
 locals {
   conductor_scripts_path = "${path.module}/conductor/scripts"
-  conductor_scripts = [
+  conductor_user_data = flatten([[
     for path in fileset(local.conductor_scripts_path, "**") : {
-      path = "${local.conductor_scripts_path}/${path}"
-      rel  = path
-    }
-  ]
+      path = "conductor/scripts/${path}"
+      file = "${local.conductor_scripts_path}/${path}"
+    }], {
+    path = "conductor/cwagent.json"
+    data = data.external.conductor_cwagent_json.result.json
+    type = "application/json"
+    }, {
+    path = "conductor/bootstrap.sh"
+    data = <<-EOF
+${file("${path.module}/shared/prolog.sh")}
+${templatefile("${path.module}/conductor/boot.tftpl", {
+    ENV           = var.env
+    S3_URL        = local.user_data_s3_url
+    GH_TOKEN      = var.GITHUB_ACCESS_TOKEN
+    FROM_EMAIL    = local.alprs_sender_email
+    BACKUP_BUCKET = var.buckets["backup"]
+    CONFIG_BUCKET = var.buckets["config"]
+  })}
+${file("${path.module}/shared/boot.sh")}
+${file("${path.module}/shared/install.sh")}
+${file("${path.module}/shared/epilog.sh")}
+EOF
+}])
 }
 
-resource "aws_s3_object" "conductor_scripts" {
-  for_each = { for file in local.conductor_scripts : file.rel => file.path }
+module "conductor_user_data" {
+  source = "./modules/userdata"
 
-  bucket       = data.aws_s3_bucket.user_data.id
-  key          = "userdata/conductor/scripts/${each.key}"
-  content_type = "text/plain"
-  source       = each.value
-  source_hash  = filemd5(each.value)
+  bucket = data.aws_s3_bucket.user_data.id
+  files  = local.conductor_user_data
 }
 
 locals {
-  conductor_bootstrap = <<EOT
+  conductor_bootstrap = <<-EOT
 ${templatefile("${path.module}/shared/boot.tftpl", {
   BUCKET = local.user_data_bucket
   HOST   = "conductor"
@@ -57,9 +56,8 @@ module "conductor_server" {
   source = "./modules/instance"
 
   depends_on = [
-    aws_s3_object.shared_user_data,
-    aws_s3_object.conductor_bootstrap,
-    aws_s3_object.conductor_scripts,
+    module.shared_user_data,
+    module.conductor_user_data,
   ]
   ami_id           = local.applied_amis["ubuntu_20arm"].id
   instance_type    = var.instance_types["conductor"]

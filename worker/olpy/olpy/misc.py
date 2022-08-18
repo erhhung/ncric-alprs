@@ -37,7 +37,7 @@ def post_jira(username, password, summary, description="", project=None, assigne
     return response
 
 
-def get_jwt(username=None, password=None, client_id=None, base_url='https://api.openlattice.com'):
+def get_jwt(username=None, password=None, client_id=None, base_url='http://datastore:8080'):
     """
     Gets the jwt token for a given usr/pw from a given url.
     """
@@ -68,7 +68,7 @@ def get_jwt(username=None, password=None, client_id=None, base_url='https://api.
     if 'RD_JOB_ID' in environment:
         env = 'rundeck'
     else:
-        env = 'local_to_prod' if 'astrometrics.us' in base_url else 'local_to_local'
+        env = 'local_to_prod' if 'astrometrics' in base_url else 'local_to_local'
     env = envvars[env]
 
     if username:
@@ -77,7 +77,7 @@ def get_jwt(username=None, password=None, client_id=None, base_url='https://api.
         env['password'] = password
     if client_id:
         env['client_id'] = client_id
-    if 'astrometrics.us' in base_url:
+    if 'datastore' in base_url or 'astrometrics' in base_url:
         base_url = f'https://{domain}/userinfo'
 
     if not (env['user'] and env['password'] and env['client_id']):
@@ -97,13 +97,12 @@ def get_jwt(username=None, password=None, client_id=None, base_url='https://api.
     return token['id_token']
 
 
-def get_config(jwt=None, base_url='https://api.openlattice.com'):
+def get_config(jwt=None, base_url='http://datastore:8080'):
     if not jwt:
         jwt = get_jwt(base_url=base_url)
     configuration = openlattice.Configuration()
     configuration.host = base_url
     configuration.access_token = jwt
-
     return configuration
 
 

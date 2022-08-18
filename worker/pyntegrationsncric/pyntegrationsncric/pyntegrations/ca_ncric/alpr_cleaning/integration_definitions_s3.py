@@ -37,7 +37,7 @@ class ALPRIntegration(Integration):
 
         super().__init__(
             if_exists="replace",
-            base_url="https://api.openlattice.com",
+            base_url="http://datastore:8080",
             atlas_organization_id=atlas_organization_id)
 
         self.s3_bucket = s3_bucket
