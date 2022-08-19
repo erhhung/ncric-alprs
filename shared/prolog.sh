@@ -24,7 +24,7 @@ run() {
   export -f $func
   if [ $user == root ]; then
     # always run in subshell
-    (cd $HOME; set -x; $func "${@:3}")
+    (cd /root; set -x; $func "${@:3}")
   else
     su $user -c "bash -c 'cd \$HOME; set -x; $func $args'"
   fi
