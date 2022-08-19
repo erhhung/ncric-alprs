@@ -134,11 +134,17 @@ EOF
   chmod 400 server.key
 )
 
-install_cwagent() {
-  # CloudWatch Agent is already bundled in
-  # AMI, but install supplemental packages
-  eval_with_retry "wait_apt_get && apt-get install -y collectd"
-}
+install_cwagent() (
+  shopt -s expand_aliases
+  . .bash_aliases
+  cd /tmp
+  az=$(myaz) region=${az:0:-1}
+  deb=amazon-cloudwatch-agent.deb
+  # https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/download-cloudwatch-agent-commandline.html
+  curl -sO https://s3.$region.amazonaws.com/amazoncloudwatch-agent-$region/ubuntu/arm64/latest/$deb
+  eval_with_retry "wait_apt_get && apt-get install -y collectd && dpkg -iE ./$deb"
+  rm ./$deb
+)
 
 config_cwagent() (
   cd /opt/aws/amazon-cloudwatch-agent/etc
@@ -147,6 +153,8 @@ config_cwagent() (
 
 start_cwagent() (
   cd /opt/aws/amazon-cloudwatch-agent
+  # amazon-cloudwatch-agent.json will be converted
+  # and replaced with amazon-cloudwatch-agent.toml
   ./bin/amazon-cloudwatch-agent-ctl -a fetch-config \
     -m ec2 -s -c file:etc/amazon-cloudwatch-agent.json
 )

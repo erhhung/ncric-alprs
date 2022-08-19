@@ -23,16 +23,22 @@ Create S3 bucket for Terraform to store its state:
 _(adjust values for **prod** environment accordingly)_
 
 ```bash
+AWS_PROFILE=alprscom
+BUCKET=alprs-infra-dev
+REGION=us-west-2
+
 aws s3api create-bucket \
-  --profile alprscom \
-  --bucket alprs-infra-dev \
-  --create-bucket-configuration "LocationConstraint=us-west-2" \
+  --bucket $BUCKET \
+  --create-bucket-configuration "LocationConstraint=$REGION" \
   --object-ownership BucketOwnerEnforced
 
 aws s3api put-public-access-block \
-  --profile alprscom \
-  --bucket alprs-infra-dev \
-  --public-access-block-configuration "BlockPublicAcls=true,IgnorePublicAcls=true,BlockPublicPolicy=true,RestrictPublicBuckets=true"
+  --bucket $BUCKET \
+  --public-access-block-configuration 'BlockPublicAcls=true,IgnorePublicAcls=true,BlockPublicPolicy=true,RestrictPublicBuckets=true'
+
+aws s3api put-bucket-encryption \
+  --bucket $BUCKET \
+  --server-side-encryption-configuration '{"Rules":[{"ApplyServerSideEncryptionByDefault":{"SSEAlgorithm":"AES256"}}]}'
 ```
 
 **_Assumes AWS CLI profiles `alprscom` and `alprsgov` already exist!_**

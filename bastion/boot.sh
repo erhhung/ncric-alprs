@@ -123,11 +123,17 @@ $ES_IP${tab}elasticsearch
 EOF
 )
 
-install_cwagent() {
-  # CloudWatch Agent is already bundled in
-  # AMI, but install supplemental packages
-  amazon-linux-extras install -y collectd
-}
+install_cwagent() (
+  shopt -s expand_aliases
+  . .bash_aliases
+  cd /tmp
+  az=$(myaz) region=${az:0:-1}
+  rpm=amazon-cloudwatch-agent.rpm
+  # https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/download-cloudwatch-agent-commandline.html
+  curl -sO https://s3.$region.amazonaws.com/amazoncloudwatch-agent-$region/amazon_linux/amd64/latest/$rpm
+  amazon-linux-extras install -y collectd && rpm -U ./$rpm
+  rm ./$rpm
+)
 
 config_cwagent() (
   cd /opt/aws/amazon-cloudwatch-agent/etc
@@ -136,6 +142,8 @@ config_cwagent() (
 
 start_cwagent() (
   cd /opt/aws/amazon-cloudwatch-agent
+  # amazon-cloudwatch-agent.json will be converted
+  # and replaced with amazon-cloudwatch-agent.toml
   ./bin/amazon-cloudwatch-agent-ctl -a fetch-config \
     -m ec2 -s -c file:etc/amazon-cloudwatch-agent.json
 )

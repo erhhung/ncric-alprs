@@ -3,11 +3,10 @@
 export LSCOLORS=GxFxCxDxBxegedabagaced
 export TIME_STYLE=long-iso
 export EDITOR=emacs
-export PAGER=most
+export PAGER=less
 export AWS_PAGER=''
 export DELTA_PAGER=less
 export MOST_SWITCHES='-sw +u'
-export GREP_OPTIONS='--color=auto'
 
 export LESSQUIET=1
 export LESS='-RKMi -x4 -z-4'
