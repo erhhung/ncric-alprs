@@ -119,29 +119,21 @@ start_rundeck() {
   systemctl status rundeckd
 }
 
-# eval_with_retry <cmd> [tries]
-eval_with_retry() {
-  local cmd="$1" tries=${2:-3}
-  while ! eval "$cmd" && [ $((--tries)) -gt 0 ]; do
-    echo "RETRYING: $cmd"
-    sleep 1
-  done
-  sleep 1
-}
-
-import_project() {
+import_project() (
   local jar proj=AstroMetrics
   jar="${proj,,}.rdproject.jar"
-  echo "Creating Rundeck project: $proj"
   mkdir -p rundeck
   cd rundeck
   if eval_with_retry "rd projects list" | grep -q $proj; then
-     eval_with_retry "rd projects delete -p $proj -y"
+    # eval_with_retry "rd projects delete -p $proj -y"
+    echo "Rundeck project \"$proj\" already exists!"
+  else
+    echo "Creating Rundeck project \"$proj\"..."
+    eval_with_retry "rd projects create -p $proj"
   fi
   aws s3 cp "$S3_URL/rundeck/$jar" . --no-progress
-  eval_with_retry "rd projects create -p $proj"
   eval_with_retry "rd projects archives import -f $jar -p $proj"
-}
+)
 
 import_ssh_key() {
   local path=keys/worker
