@@ -91,6 +91,8 @@
     secure: true
     storagePath: keys/ol_pass
     valueExposed: true
+  - name: fetch_size
+    value: '5000'
   plugins:
     ExecutionLifecycle: null
   schedule:
@@ -176,9 +178,11 @@
         print("Got the raw data!")
 
         api_url = "@option.api_url@"
+        fsize = @option.fetch_size@
+
         images_integration = BOSS4ImagesIntegration(
             sql=f"select * from {images_table_name}",
-            clean_table_name_root="boss4_hourly_images_cleaned",
+            clean_table_name_root="boss4_hr_images",
             base_url=api_url)
 
         images_clean_table_name = images_integration.clean_and_upload()
@@ -200,7 +204,7 @@
                     flight_path=pyntegrations_path+f"/ncric_flights/ncric_{agency_no_space}_flight.yaml",
                     memory_size=3,
                     shuttle_path=shuttle_path,
-                    shuttle_args=shuttle_args)
+                    shuttle_args=shuttle_args+f" --upload-size {fsize}")
                 print("Passed: integrate_table MAIN table")
 
                 print(f"Integrating IMAGES table for {agency}!")
@@ -210,49 +214,14 @@
                     flight_path=pyntegrations_path+f"/ncric_image_flights/ncric_{agency_no_space}_images_flight.yaml",
                     memory_size=5,
                     shuttle_path=shuttle_path,
-                    shuttle_args=shuttle_args+" --s3 PRODUCTION")
+                    shuttle_args=shuttle_args+f" --s3 PRODUCTION --upload-size {fsize}")
                 print("Passed: integrate_table IMAGES table")
-
-            try:
-                print("Integrating HOTLIST TABLE!")
-                h_integration = BOSS4HotlistDaily(
-                    sql=f'''select hotlist_daily.*, {main_table_name}.* from hotlist_daily
-                        inner join {main_table_name} on "plate" = "VehicleLicensePlateID"
-                        ''',
-                    drop_table_on_success=True,
-                    base_url=api_url)
-                h_integration.integrate_table(
-                    sql=f'''select hotlist_daily.*, {main_table_name}.* from hotlist_daily
-                        inner join {main_table_name} on "plate" = "VehicleLicensePlateID"
-                        ''',
-                    shuttle_path=shuttle_path,
-                    shuttle_args=shuttle_args)
-            except Exception as e:
-                print(e)
-
-            try:
-                print("Integrating HOTLIST IMAGES!")
-                hi_integration = BOSS4ImagesIntegration(
-                    sql=f'''select hotlist_daily.*, {main_table_name}.* from hotlist_daily
-                        inner join {main_table_name} on "plate" = "VehicleLicensePlateID"
-                        inner join {images_clean_table_name} using("VehicleLicensePlateID")
-                        ''',
-                    clean_table_suffix="hotlist")
-                hi_integration.integrate_table(
-                    sql=f'''select hotlist_daily.*, {main_table_name}.* from hotlist_daily
-                        inner join {main_table_name} on "plate" = "VehicleLicensePlateID"
-                        inner join {images_clean_table_name} using("VehicleLicensePlateID")
-                        ''',
-                    shuttle_path=shuttle_path,
-                    shuttle_args=shuttle_args+" --s3 PRODUCTION")
-            except Exception as e:
-                print(e)
 
             print("Integrating AGENCIES table!")
             # integrate agencies associate only
             integration = BOSS4AgenciesIntegration(
                 sql=f'select distinct "agency_id", "agencyName", "datasource", "agencyAcronym" from {main_table_name}',
-                clean_table_name_root="boss4_agencies_test",
+                clean_table_name_root="boss4_agencies_clean",
                 drop_table_on_success=True,
                 base_url=api_url)
             table_name = integration.clean_and_upload()
@@ -265,7 +234,7 @@
             # integrate image sources associate only
             integration = BOSS4ImageSourcesIntegration(
                 sql=f'select distinct "camera_id", "LPRCameraName", "datasource" from {main_table_name}',
-                clean_table_name_root="boss4_imagesources_test",
+                clean_table_name_root="boss4_imagesources",
                 drop_table_on_success=True,
                 base_url=api_url)
             table_name = integration.clean_and_upload()
@@ -279,7 +248,7 @@
                 sql="""select distinct standardized_agency_name from standardized_agency_names
                     where \"ol.datasource\" = 'BOSS4'
                     """,
-                drop_table_on_success=True,
+                drop_table_on_success=False,
                 base_url=api_url)
             sagency_integration.integrate_table(
                 sql="""select distinct standardized_agency_name from standardized_agency_names
@@ -287,6 +256,41 @@
                     """,
                 shuttle_path=shuttle_path,
                 shuttle_args=shuttle_args)
+
+            # try:
+            #     print("Integrating HOTLIST TABLE!")
+            #     h_integration = BOSS4HotlistDaily(
+            #         sql=f'''select hotlist_daily.*, {main_table_name}.* from hotlist_daily
+            #             inner join {main_table_name} on "plate" = "VehicleLicensePlateID"
+            #             ''',
+            #         drop_table_on_success=True,
+            #         base_url=api_url)
+            #     h_integration.integrate_table(
+            #         sql=f'''select hotlist_daily.*, {main_table_name}.* from hotlist_daily
+            #             inner join {main_table_name} on "plate" = "VehicleLicensePlateID"
+            #             ''',
+            #         shuttle_path=shuttle_path,
+            #         shuttle_args=shuttle_args)
+            # except Exception as e:
+            #     print(e)
+
+            # try:
+            #     print("Integrating HOTLIST IMAGES!")
+            #     hi_integration = BOSS4ImagesIntegration(
+            #         sql=f'''select hotlist_daily.*, {main_table_name}.* from hotlist_daily
+            #             inner join {main_table_name} on "plate" = "VehicleLicensePlateID"
+            #             inner join {images_clean_table_name} using("VehicleLicensePlateID")
+            #             ''',
+            #         clean_table_suffix="hotlist")
+            #     hi_integration.integrate_table(
+            #         sql=f'''select hotlist_daily.*, {main_table_name}.* from hotlist_daily
+            #             inner join {main_table_name} on "plate" = "VehicleLicensePlateID"
+            #             inner join {images_clean_table_name} using("VehicleLicensePlateID")
+            #             ''',
+            #         shuttle_path=shuttle_path,
+            #         shuttle_args=shuttle_args+" --s3 PRODUCTION")
+            # except Exception as e:
+            #     print(e)
 
         except Exception as e:
             main_integration.drop_main_table()

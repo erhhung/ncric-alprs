@@ -50,7 +50,7 @@
           <description>Auth0 user password</description>
           <hidden>true</hidden>
         </option>
-        <option name='fetch_size' value='20000' />
+        <option name='fetch_size' value='5000' />
       </options>
     </context>
     <defaultTab>nodes</defaultTab>

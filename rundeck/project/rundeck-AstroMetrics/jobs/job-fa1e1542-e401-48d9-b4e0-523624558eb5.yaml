@@ -93,7 +93,7 @@
     storagePath: keys/ol_pass
     valueExposed: true
   - name: fetch_size
-    value: '20000'
+    value: '5000'
   plugins:
     ExecutionLifecycle: null
   schedule:
