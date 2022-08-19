@@ -45,6 +45,16 @@ EOF
   chmod +x custom_prompt.sh
 )
 
+# eval_with_retry <cmd> [tries]
+eval_with_retry() {
+  local cmd="$1" tries=${2:-3}
+  while ! eval "$cmd" && [ $((--tries)) -gt 0 ]; do
+    echo "RETRYING: $cmd"
+    sleep 5
+  done
+  sleep 1
+}
+
 yum_update() {
   yum update -y
 }
@@ -131,7 +141,7 @@ install_cwagent() (
   rpm=amazon-cloudwatch-agent.rpm
   # https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/download-cloudwatch-agent-commandline.html
   curl -sO https://s3.$region.amazonaws.com/amazoncloudwatch-agent-$region/amazon_linux/amd64/latest/$rpm
-  amazon-linux-extras install -y collectd && rpm -U ./$rpm
+  eval_with_retry "amazon-linux-extras install -y collectd && rpm -U ./$rpm"
   rm ./$rpm
 )
 
@@ -154,6 +164,7 @@ fi
 
 export_buckets
 
+export -f eval_with_retry
 export -f yum_update
 
 run set_hostname
