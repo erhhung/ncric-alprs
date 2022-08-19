@@ -9,6 +9,7 @@ variable "env" {
 }
 
 variable "accounts" {
+  description = "AWS account info"
   type = object({
     dev = object({
       id        = string
@@ -32,6 +33,7 @@ variable "aws_provider" {
 }
 
 variable "buckets" {
+  description = "S3 bucket names"
   type = object({
     webapp = string
     config = string
@@ -43,6 +45,7 @@ variable "buckets" {
 }
 
 variable "instance_types" {
+  description = "Host instance types"
   type = object({
     bastion       = string
     postgresql    = string
@@ -61,6 +64,19 @@ variable "instance_types" {
     ])
     error_message = "Instances other than the Bastion must use ARM-based CPUs."
   }
+}
+
+variable "private_ips" {
+  description = "Private IP host numbers"
+  type = object({
+    bastion       = number
+    postgresql    = number
+    elasticsearch = number
+    conductor     = number
+    datastore     = number
+    indexer       = number
+    worker        = number
+  })
 }
 
 variable "lock_ami_versions" {

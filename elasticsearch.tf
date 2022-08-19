@@ -8,20 +8,14 @@ module "elasticsearch_sg" {
   rules = {
     ingress_9200 = {
       from_port   = 9200
-      to_port     = 9200
-      protocol    = "tcp"
       cidr_blocks = local.subnet_cidrs["private"]
     }
     ingress_9300 = {
       from_port   = 9300
-      to_port     = 9300
-      protocol    = "tcp"
       cidr_blocks = local.subnet_cidrs["private"]
     }
     ingress_443 = {
       from_port   = 443
-      to_port     = 443
-      protocol    = "tcp"
       cidr_blocks = local.subnet_cidrs["private"]
     }
   }
@@ -124,6 +118,7 @@ module "elasticsearch_server" {
   instance_name    = "Elasticsearch"
   root_volume_size = 32
   subnet_id        = module.main_vpc.subnet_ids["private1"]
+  private_ip       = local.private_ips["elasticsearch"]
   security_groups  = [module.elasticsearch_sg.id]
   instance_profile = aws_iam_instance_profile.alprs_service.name
   key_name         = aws_key_pair.admin.key_name

@@ -56,6 +56,17 @@ instance_types = {
   worker        = "t4g.xlarge"
 }
 
+# host numbers in private subnet
+private_ips = {
+  postgresql    = 10
+  elasticsearch = 20
+  conductor     = 30
+  datastore     = 40
+  indexer       = 50
+  bastion       = 60
+  worker        = 70
+}
+
 lock_ami_versions = false
 
 data_volume_sizes = {

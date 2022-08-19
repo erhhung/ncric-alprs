@@ -1,5 +1,5 @@
 variable "service" {
-  description = "Name of microservice"
+  description = "Service name/S3 prefix"
   type        = string
 
   validation {
@@ -21,4 +21,5 @@ variable "bucket" {
 variable "values" {
   description = "Placeholder values"
   type        = map(string)
+  default     = {}
 }

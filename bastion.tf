@@ -76,6 +76,7 @@ module "bastion_host" {
   instance_name    = "Bastion Host"
   root_volume_size = 32
   subnet_id        = module.main_vpc.subnet_ids["private1"]
+  private_ip       = local.private_ips["bastion"]
   security_groups  = [module.egress_only_sg.id]
   instance_profile = aws_iam_instance_profile.alprs_bastion.name
   key_name         = aws_key_pair.admin.key_name

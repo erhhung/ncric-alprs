@@ -9,20 +9,15 @@ module "services_sg" {
     ingress_570x = {
       from_port   = 5701
       to_port     = 5703
-      protocol    = "tcp"
       cidr_blocks = local.subnet_cidrs["private"]
     }
     ingress_8080 = {
       from_port   = 8080
-      to_port     = 8080
-      protocol    = "tcp"
       cidr_blocks = local.subnet_cidrs["private"]
     }
     # traffic from ELB
     ingress_8443 = {
       from_port   = 8443
-      to_port     = 8443
-      protocol    = "tcp"
       cidr_blocks = local.all_subnet_cidrs
     }
   }

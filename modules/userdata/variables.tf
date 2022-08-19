@@ -14,7 +14,7 @@ variable "files" {
     # path under "userdata/"
     path = string
     # either "file" or "data"!
-    # file: path of local file
+    # file: path to local file
     # data: file content string
     file = optional(string)
     data = optional(string)

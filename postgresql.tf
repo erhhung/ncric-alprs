@@ -8,8 +8,6 @@ module "postgresql_sg" {
   rules = {
     ingress_5432 = {
       from_port   = 5432
-      to_port     = 5432
-      protocol    = "tcp"
       cidr_blocks = local.subnet_cidrs["private"]
     }
   }
@@ -113,6 +111,7 @@ module "postgresql_server" {
   instance_name    = "PostgreSQL"
   root_volume_size = 32
   subnet_id        = module.main_vpc.subnet_ids["private1"]
+  private_ip       = local.private_ips["postgresql"]
   security_groups  = [module.postgresql_sg.id]
   instance_profile = aws_iam_instance_profile.alprs_service.name
   key_name         = aws_key_pair.admin.key_name

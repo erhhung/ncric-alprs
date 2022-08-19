@@ -68,6 +68,7 @@ module "indexer_server" {
   instance_name    = "Indexer"
   root_volume_size = 48
   subnet_id        = module.main_vpc.subnet_ids["private1"]
+  private_ip       = local.private_ips["indexer"]
   security_groups  = [module.services_sg.id]
   instance_profile = aws_iam_instance_profile.alprs_service.name
   key_name         = aws_key_pair.admin.key_name

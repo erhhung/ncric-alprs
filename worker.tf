@@ -97,6 +97,7 @@ module "worker_node" {
   instance_name    = "Worker"
   root_volume_size = 32
   subnet_id        = module.main_vpc.subnet_ids["private1"]
+  private_ip       = local.private_ips["worker"]
   security_groups  = [module.private_ssh_sg.id]
   instance_profile = aws_iam_instance_profile.alprs_worker.name
   key_name         = aws_key_pair.admin.key_name
