@@ -1,13 +1,10 @@
 upgrade_bash() {
   cd /tmp
   yum groupinstall -y "Development Tools"
-  wget -q https://ftp.gnu.org/gnu/bash/bash-5.1.16.tar.gz
-  tar xzf bash-5.1.16.tar.gz
-  cd bash-5.1.16
-  ./configure --prefix=/
-  make && make install
+  curl -s https://ftp.gnu.org/gnu/bash/bash-5.1.16.tar.gz | tar -xz
+  (cd bash* && ./configure -q --prefix=/ && make -s && make install)
+  rm -rf bash*
   set +x; cd /
-  rm  -rf /tmp/bash-5.1.16*
   echo -e "\nRESTARTING...\n"
   hash -r; sleep 1
   exec /bootstrap.sh
@@ -130,6 +127,14 @@ install_utils() (
   chmod +x ./lesspipe.sh
 )
 
+upgrade_utils() (
+  cd /tmp
+  # upgrade coreutils 8.22 to 8.30 to support "numfmt --format" decimal precision
+  curl -s http://mirrors.kernel.org/gnu/coreutils/coreutils-8.30.tar.xz | tar -xJ
+  (cd coreutils* && FORCE_UNSAFE_CONFIGURE=1 ./configure -q --prefix=/usr && make -s && make install)
+  rm -rf coreutils*
+)
+
 etc_hosts() (
   cd /etc
   grep -q postgresql hosts && exit
@@ -185,6 +190,7 @@ run authorize_keys $USER
 run user_dotfiles  $USER
 run root_dotfiles
 run install_utils
+run upgrade_utils
 run etc_hosts
 run install_cwagent
 run config_cwagent

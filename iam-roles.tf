@@ -1,7 +1,9 @@
 locals {
-  ssm_policy_arns = [
-    "arn:${var.accounts[var.env].partition}:iam::aws:policy/CloudWatchAgentServerPolicy",
+  base_policy_arns = [
     "arn:${var.accounts[var.env].partition}:iam::aws:policy/AmazonSSMManagedInstanceCore",
+    "arn:${var.accounts[var.env].partition}:iam::aws:policy/CloudWatchAgentServerPolicy",
+    "arn:${var.accounts[var.env].partition}:iam::aws:policy/CloudWatchReadOnlyAccess",
+    "arn:${var.accounts[var.env].partition}:iam::aws:policy/AmazonEC2ReadOnlyAccess",
   ]
 }
 
@@ -26,7 +28,7 @@ resource "aws_iam_role" "ssm_instance" {
 
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy_attachment
 resource "aws_iam_role_policy_attachment" "ssm_instance" {
-  for_each = { for arn in local.ssm_policy_arns : basename(arn) => arn }
+  for_each = { for arn in local.base_policy_arns : basename(arn) => arn }
 
   role       = aws_iam_role.ssm_instance.name
   policy_arn = each.value
@@ -65,7 +67,7 @@ resource "aws_iam_role" "alprs_bastion" {
 }
 
 resource "aws_iam_role_policy_attachment" "alprs_bastion" {
-  for_each = { for arn in local.ssm_policy_arns : basename(arn) => arn }
+  for_each = { for arn in local.base_policy_arns : basename(arn) => arn }
 
   role       = aws_iam_role.alprs_bastion.name
   policy_arn = each.value
@@ -113,7 +115,7 @@ resource "aws_iam_role" "alprs_service" {
 }
 
 resource "aws_iam_role_policy_attachment" "alprs_service" {
-  for_each = { for arn in local.ssm_policy_arns : basename(arn) => arn }
+  for_each = { for arn in local.base_policy_arns : basename(arn) => arn }
 
   role       = aws_iam_role.alprs_service.name
   policy_arn = each.value
@@ -258,7 +260,7 @@ resource "aws_iam_role" "alprs_worker" {
 }
 
 resource "aws_iam_role_policy_attachment" "alprs_worker" {
-  for_each = { for arn in local.ssm_policy_arns : basename(arn) => arn }
+  for_each = { for arn in local.base_policy_arns : basename(arn) => arn }
 
   role       = aws_iam_role.alprs_worker.name
   policy_arn = each.value

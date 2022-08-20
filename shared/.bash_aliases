@@ -403,6 +403,7 @@ bsize() (
       paste -sd+ - | bc
   )
   count=$(_bsize NumberOfObjects AllStorageTypes)
+  count=$(printf "%.0f\n" $count) # round to int
 
   # _print <label> <number> <units> <format> [suffix]
   _print() {
