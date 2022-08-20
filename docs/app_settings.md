@@ -23,11 +23,27 @@ jwt=$(curl -sX POST https://$auth0_domain/oauth/token \
 
 # use http://datastore:8080/ if running on Indexer host
 cat <<'EOF' | curl -s -d @- -H "Authorization: Bearer $jwt" \
-                         -H "Content-Type: application/json" \
-                "https://api.dev.astrometrics.us/datastore/data/set/?setId=6d17e1c0-d61b-4ec8-80ce-1e82b4a64166" \
+                            -H "Content-Type: application/json" \
+                      "https://api.dev.astrometrics.us/datastore/data/set/?setId=6d17e1c0-d61b-4ec8-80ce-1e82b4a64166" \
             | jq
-...
+__SEE_PAYLOAD_SECTION__
 EOF
+
+# verify app settings stored properly
+curl -s -H "Authorization: Bearer $jwt" \
+        http://datastore:8080/datastore/data/set/6d17e1c0-d61b-4ec8-80ce-1e82b4a64166 \
+  | jq
+
+# API request issued from the frontend
+curl -s -H "Authorization: Bearer $jwt" \
+        -H "Content-Type: application/json" \
+        -d '{"start":0,"maxHits":1,"searchTerm":"*"}' \
+        http://datastore:8080/datastore/search/6d17e1c0-d61b-4ec8-80ce-1e82b4a64166 \
+  | jq
+
+# trigger indexing if no hits were found
+psql postgresql://alprs_user:SECRET@postgresql:5432/alprs
+alprs=> UPDATE ids SET last_index = '-infinity' WHERE entity_set_id = '6d17e1c0-d61b-4ec8-80ce-1e82b4a64166';
 ```
 
 ## Payload

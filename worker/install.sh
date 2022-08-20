@@ -26,12 +26,6 @@ JAVA_HOME="/usr/lib/jvm/java-11-openjdk-arm64"
 EOF
 )
 
-install_python() (
-  hash pip3 2> /dev/null && exit
-  eval_with_retry "wait_apt_get && apt-get install -y python3.8 python3-pip"
-  pip3 --version
-)
-
 install_delta() (
   cd /tmp
   hash delta 2> /dev/null && exit
@@ -166,7 +160,6 @@ export -f git_clone
 run etc_hosts
 run apt_install
 run install_java
-run install_python
 run install_delta
 run install_psql
 run init_destdir

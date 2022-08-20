@@ -1,15 +1,17 @@
 # Emacs -*-Shell-Script-*- Mode
 
 export LSCOLORS=GxFxCxDxBxegedabagaced
+export PYGMENTIZE_STYLE=monokai
 export TIME_STYLE=long-iso
 export EDITOR=emacs
 export PAGER=less
 export AWS_PAGER=''
 export DELTA_PAGER=less
-export MOST_SWITCHES='-sw +u'
 
+unset LESSCLOSE
 export LESSQUIET=1
 export LESS='-RKMi -x4 -z-4'
+eval "$(SHELL=/bin/sh lesspipe.sh)"
 export LESS_ADVANCED_PREPROCESSOR=1
 export LESSCOLORIZER=pygmentize
 export LESS_TERMCAP_mb=$'\E[1;31m'
@@ -19,6 +21,7 @@ export LESS_TERMCAP_so=$'\E[01;44;33m'
 export LESS_TERMCAP_se=$'\E[0m'
 export LESS_TERMCAP_us=$'\E[1;32m'
 export LESS_TERMCAP_ue=$'\E[0m'
+export MOST_SWITCHES='-sw +u'
 
 export   BLACK='\033[0;30m'
 export    GRAY='\033[1;30m'
@@ -216,7 +219,7 @@ ly() {
   # ensure pygmentize installed
   _reqcmds pygmentize || return
   __ly() {
-    pygmentize -l yaml -O style=native 2> /dev/null | \
+    pygmentize -l yaml -O style=$PYGMENTIZE_STYLE 2> /dev/null | \
       less -LR
   }
   (($#)) && (cat "$@" | __ly) || __ly
@@ -228,7 +231,7 @@ _lx() {
   local style=$1; shift
   __lx() {
     xmllint --pretty $style - | \
-      pygmentize -l xml -O style=native 2> /dev/null | \
+      pygmentize -l xml -O style=$PYGMENTIZE_STYLE 2> /dev/null | \
       less -LR
   }
   (($#)) && (cat "$@" | __lx) || __lx

@@ -35,16 +35,6 @@ set_timezone() {
   timedatectl
 }
 
-custom_prompt() (
-  cd /etc/profile.d
-  [ -f custom_prompt.sh ] && exit
-  cat <<'EOF' > custom_prompt.sh
-#!/bin/bash
-export PROMPT_COMMAND='PS1="\[\033[1;36m\]\u\[\033[1;31m\]@\[\033[1;32m\]\h:\[\033[1;35m\]\w\[\033[1;31m\]$\[\033[0m\] "'
-EOF
-  chmod +x custom_prompt.sh
-)
-
 # eval_with_retry <cmd> [tries]
 eval_with_retry() {
   local cmd="$1" tries=${2:-3}
@@ -59,16 +49,16 @@ yum_update() {
   yum update -y
 }
 
-yum_install() {
+yum_install() (
   yum_update
   rpm -qa | grep -q epel-release-7 || \
-    yum install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
-  yum --enablerepo epel install -y figlet emacs-nox moreutils most jq htop pwgen nmap python3-pygments
-  (cd /usr/bin; ln -sf pygmentize-* pygmentize)
-  VERSION=v4.25.3; BINARY=yq_linux_amd64
-  wget https://github.com/mikefarah/yq/releases/download/$VERSION/$BINARY \
-    -q -O /usr/bin/yq && chmod +x /usr/bin/yq
-}
+            yum install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+  yum --enablerepo epel install -y figlet emacs-nox moreutils most jq htop pwgen nmap python3-pip
+
+  VERSION=v4.27.2 BINARY=yq_linux_amd64
+  curl -sLo /usr/bin/yq https://github.com/mikefarah/yq/releases/download/$VERSION/$BINARY
+  chmod +x  /usr/bin/yq
+)
 
 motd_banner() (
   cd /etc/update-motd.d
@@ -80,6 +70,16 @@ EOF
   chmod -x 30-banner
   chmod +x 31-banner
   update-motd
+)
+
+custom_prompt() (
+  cd /etc/profile.d
+  [ -f custom_prompt.sh ] && exit
+  cat <<'EOF' > custom_prompt.sh
+#!/bin/bash
+export PROMPT_COMMAND='PS1="\[\033[1;36m\]\u\[\033[1;31m\]@\[\033[1;32m\]\h:\[\033[1;35m\]\w\[\033[1;31m\]$\[\033[0m\] "'
+EOF
+  chmod +x custom_prompt.sh
 )
 
 upgrade_awscli() (
@@ -111,6 +111,7 @@ authorize_keys() {
 user_dotfiles() {
   aws s3 sync $S3_URL/shared    . --exclude '*' --include '.*' --exclude '.bash*' --no-progress
   aws s3 sync $S3_URL/${HOST,,} . --exclude '*' --include '.*' --no-progress
+  chmod +x .lessfilter
 }
 
 root_dotfiles() (
@@ -119,7 +120,14 @@ root_dotfiles() (
 
 $(for bucket in "${ALL_BUCKETS[@]}"; do echo -en "\nexport $bucket"; done)
 EOF
-  /usr/bin/cp -f .bashrc .bash_aliases .emacs /root
+  /usr/bin/cp -f .bashrc .bash_aliases .lessfilter .screenrc .gitconfig .emacs /root
+)
+
+install_utils() (
+  cd /usr/local/bin
+  pip3 install pygments --upgrade
+  aws s3 cp $S3_URL/shared/lesspipe.sh .
+  chmod +x ./lesspipe.sh
 )
 
 etc_hosts() (
@@ -169,13 +177,14 @@ export -f yum_update
 
 run set_hostname
 run set_timezone
-run custom_prompt
 run yum_install
 run motd_banner
+run custom_prompt
 run upgrade_awscli
 run authorize_keys $USER
 run user_dotfiles  $USER
 run root_dotfiles
+run install_utils
 run etc_hosts
 run install_cwagent
 run config_cwagent

@@ -10,16 +10,6 @@ set_timezone() {
   timedatectl
 }
 
-custom_prompt() (
-  cd /etc/profile.d
-  [ -f custom_prompt.sh ] && exit
-  cat <<'EOF' > custom_prompt.sh
-#!/bin/bash
-export PROMPT_COMMAND='PS1="\[\033[1;36m\]\u\[\033[1;31m\]@\[\033[1;32m\]\h:\[\033[1;35m\]\w\[\033[1;31m\]$\[\033[0m\] "'
-EOF
-  chmod +x custom_prompt.sh
-)
-
 # eval_with_retry <cmd> [tries]
 eval_with_retry() {
   local cmd="$1" tries=${2:-3}
@@ -48,8 +38,11 @@ apt_install() {
   eval_with_retry "wait_apt_get && add-apt-repository -y ppa:git-core/ppa"
   eval_with_retry "wait_apt_get && apt-get dist-upgrade -y"
   eval_with_retry "wait_apt_get && apt-get install -y figlet emacs-nox moreutils most \
-                    jq git unzip net-tools nmap pwgen libxml2-utils python3-pygments"
-  snap install yq
+                            jq git unzip net-tools nmap pwgen libxml2-utils python3-pip"
+
+  VERSION=v4.27.2 BINARY=yq_linux_arm64
+  curl -sLo /usr/bin/yq https://github.com/mikefarah/yq/releases/download/$VERSION/$BINARY
+  chmod +x  /usr/bin/yq
 }
 
 motd_banner() (
@@ -61,6 +54,16 @@ figlet -f small "${HOST^^}" | sed '\$d'
 EOF
   chmod -x 10-help-text 5* 8* 9*
   chmod +x 11-help-text 90* *reboot*
+)
+
+custom_prompt() (
+  cd /etc/profile.d
+  [ -f custom_prompt.sh ] && exit
+  cat <<'EOF' > custom_prompt.sh
+#!/bin/bash
+export PROMPT_COMMAND='PS1="\[\033[1;36m\]\u\[\033[1;31m\]@\[\033[1;32m\]\h:\[\033[1;35m\]\w\[\033[1;31m\]$\[\033[0m\] "'
+EOF
+  chmod +x custom_prompt.sh
 )
 
 install_awscli() (
@@ -89,6 +92,7 @@ user_dotfiles() {
   aws s3 sync $S3_URL/shared . --exclude '*' --include '.*' --no-progress
   mkdir -p .cache && touch .cache/motd.legal-displayed
   touch .sudo_as_admin_successful
+  chmod +x .lessfilter
   cat <<EOF >> .bashrc
 
 export BACKUP_BUCKET="$BACKUP_BUCKET"
@@ -97,7 +101,14 @@ EOF
 
 root_dotfiles() (
   cd /home/$USER
-  /usr/bin/cp -f .bash_aliases .bashrc .emacs /root
+  /usr/bin/cp -f .bashrc .bash_aliases .lessfilter .screenrc .gitconfig .emacs /root
+)
+
+install_utils() (
+  cd /usr/local/bin
+  pip3 install pygments --upgrade
+  aws s3 cp $S3_URL/shared/lesspipe.sh .
+  chmod +x ./lesspipe.sh
 )
 
 install_certbot() {
@@ -165,13 +176,14 @@ export -f apt_update
 
 run set_hostname
 run set_timezone
-run custom_prompt
 run apt_install
 run motd_banner
+run custom_prompt
 run install_awscli
 run authorize_keys $USER
 run user_dotfiles  $USER
 run root_dotfiles
+run install_utils
 run install_cwagent
 run config_cwagent
 run start_cwagent

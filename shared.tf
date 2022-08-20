@@ -34,14 +34,20 @@ ${file("${path.module}/shared/.bash_aliases")}
 ${file("${path.module}/shared/.bash_aliases_ubuntu")}
 EOF
     }, {
+    path = "shared/lesspipe.sh"
+    file = "${path.module}/shared/lesspipe.sh"
+    }, {
+    path = "shared/.lessfilter"
+    file = "${path.module}/shared/.lessfilter"
+    }, {
     path = "shared/.gitconfig"
-    data = file("${path.module}/shared/.gitconfig")
+    file = "${path.module}/shared/.gitconfig"
     }, {
     path = "shared/.screenrc"
-    data = file("${path.module}/shared/.screenrc")
+    file = "${path.module}/shared/.screenrc"
     }, {
     path = "shared/.emacs"
-    data = file("${path.module}/shared/.emacs")
+    file = "${path.module}/shared/.emacs"
   }]
 }
 
