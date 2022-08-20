@@ -47,3 +47,38 @@ In order to expand storage to accommodate ongoing growth, perform the following 
     Filesystem      Size  Used Avail Use% Mounted on
     /dev/nvme1n1    150G  1.3G  149G   1% /opt/postgresql
     ```
+
+## "`alprs.sql`"
+
+"`alprs.sql`" is a carefully curated SQL script to bootstrap an empty
+`alprs` database.  
+It contains the required EDM objects, configured NCRIC organization,
+its roles and entity sets for select agencies, permissions granted
+to select roles and admin users, and app settings.  
+To maintain its lean size, it **should never contain any ingested
+ALPR data**!
+
+To export an updated "`alprs.sql.gz`", perform the following steps:
+
+1. Reprovision a **clean** environment without any ingested data.
+2. Make state changes to the database, such as adding entity sets
+   and modifying permissions.
+3. Stop all apps that may cause database changes, including Conductor,
+   Datastore, Indexer, Rundeck jobs, Shuttle and Flapper processes.
+4. Run the following commands:
+    ```bash
+    $ ssh alprsdevpg
+
+      ubuntu@alprsdev-postgresql:~$ sudo su -l postgres
+    postgres@alprsdev-postgresql:~$ psql postgresql://alprs_user:$(< /opt/postgresql/users/alprs_user)@localhost/alprs
+                            alprs=> UPDATE ids SET last_index = '-infinity';
+                            alprs=> exit
+    postgres@alprsdev-postgresql:~$ pg_dump alprs > alprs.sql
+    postgres@alprsdev-postgresql:~$ exit
+      ubuntu@alprsdev-postgresql:~$ sudo cp /var/lib/postgresql/alprs.sql .
+      ubuntu@alprsdev-postgresql:~$ sudo chown ubuntu:ubuntu alprs.sql
+      ubuntu@alprsdev-postgresql:~$ gzip -k9 alprs.sql
+      ubuntu@alprsdev-postgresql:~$ exit
+
+    $ scp alprsdevpg:alprs.sql.gz .
+    ```
