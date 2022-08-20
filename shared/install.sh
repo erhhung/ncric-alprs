@@ -31,8 +31,11 @@ EOF
   cp -a .bashrc .bash_aliases .gitconfig .emacs \
     .screenrc .sudo_as_admin_successful /etc/skel
   adduser --disabled-login --gecos "" openlattice
+
   cat <<'EOF' >> .bash_aliases
-alias ol='sudo su -l openlattice'
+alias ol='sudo su -l openlattice '
+alias olstart='ol -c scripts/start.sh'
+alias olstop='ol -c "killall java"'
 EOF
   cat <<'EOF' >> /home/openlattice/.bashrc
 
