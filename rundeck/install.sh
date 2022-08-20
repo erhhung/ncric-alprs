@@ -120,17 +120,23 @@ start_rundeck() {
 }
 
 import_project() (
-  local jar proj=AstroMetrics
-  jar="${proj,,}.rdproject.jar"
+  proj=AstroMetrics
   mkdir -p rundeck
   cd rundeck
+
   if eval_with_retry "rd projects list" | grep -q $proj; then
-    # eval_with_retry "rd projects delete -p $proj -y"
-    echo "Rundeck project \"$proj\" already exists!"
+    # project already exists; backup before overwriting
+    echo "Archiving Rundeck project \"$proj\"..."
+    jar="${proj,,}_$(date "+%Y-%m-%d").rdproject.jar"
+    args=(-p $proj -f $jar -i jobs -i configs -i executions)
+    eval_with_retry "rd projects archives export ${args[*]}"
+    aws s3 cp $jar s3://$BACKUP_BUCKET/rundeck/$jar --no-progress
   else
     echo "Creating Rundeck project \"$proj\"..."
     eval_with_retry "rd projects create -p $proj"
   fi
+
+  jar="${proj,,}.rdproject.jar"
   aws s3 cp "$S3_URL/rundeck/$jar" . --no-progress
   eval_with_retry "rd projects archives import -f $jar -p $proj"
 )
