@@ -35,3 +35,15 @@ module "rundeck_user_data" {
   bucket = data.aws_s3_bucket.user_data.id
   files  = local.rundeck_user_data
 }
+
+module "rundeck_config" {
+  source = "./modules/config"
+
+  service = "rundeck"
+  path    = "${path.module}/rundeck/config"
+  bucket  = aws_s3_bucket.buckets["config"].id
+
+  values = merge(local.config_values, {
+    POSTGRESQL_HOST = module.postgresql_server.private_domain
+  })
+}

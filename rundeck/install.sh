@@ -24,25 +24,17 @@ install_rundeck() (
   yum install -y rundeck-4.4.0.20220714-1 rundeck-cli
 )
 
+install_plugins() (
+  cd ~/libext
+  # https://github.com/rundeck-plugins/rundeck-s3-log-plugin
+  PLUGIN=rundeck-s3-log-plugin VERSION=1.0.13
+  curl -sLO https://github.com/rundeck-plugins/$PLUGIN/releases/download/v$VERSION/$PLUGIN-$VERSION.jar
+)
+
 # args: [stage]
 config_rundeck() (
   case `whoami` in
     root)
-      cd /etc/rundeck
-      grep -q 'admin:admin' realm.properties || exit 0
-      # change default admin password
-      sed -i "s/admin:admin/admin:$rundeck_pass/" realm.properties
-      # use PostgreSQL instead of H2
-      while read  sed; do
-        sed -Ei "$sed" rundeck-config.properties
-      done <<EOT
-s/dataSource\\.dbCreate.+/dataSource.dbCreate=update/
-s|dataSource\\.url.+|dataSource.url=jdbc:postgresql://$PG_HOST:5432/rundeck?sslmode=require|
-/dataSource\\.url.+/a dataSource.driverClassName=org.postgresql.Driver
-/dataSource\\.url.+/a dataSource.password=$rundeck_pass
-/dataSource\\.url.+/a dataSource.username=rundeck_user
-s/config\\.password=.+/config.password=$rundeck_pass/
-EOT
       cd /etc/ssh
       # send RD_* environment variables to remote workers
       sed -Ei $'/^Host \*$/a \\\tSendEnv RD_*' ssh_config
@@ -75,6 +67,14 @@ EOT
   />
 </project>
 EOF
+          cd /etc/rundeck
+          # change default admin password
+          sed -i "s/admin:admin/admin:$rundeck_pass/" realm.properties
+          # install "rundeck-config.properties" and "framework.properties",
+          # customized to use PostgreSQL instead of H2 as primary database,
+          # and S3 bucket instead of local disk to store job execution logs
+          aws s3 sync s3://$CONFIG_BUCKET/rundeck/ .
+          find . -type f -exec chmod 640 {} \;
           ;;
         after_start)
           cd ~/libext/cache/openssh-node-execution*
@@ -252,6 +252,7 @@ export -f curl_rundeck
 
 run install_java
 run install_rundeck
+run install_plugins rundeck
 run config_rundeck
 run config_rundeck rundeck before_start
 run start_rundeck

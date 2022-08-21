@@ -20,7 +20,11 @@ _reqcmds envsubst jq || exit $?
 file="$1"; shift
 while [ $# -gt 0 ]; do
   eval "export $1"; shift
+  dosub=true
 done
 
+# don't feed minified output through envsubst
+# unless at least one VAR=value was provided
 sed -E '/^[[:blank:]]*(#|$)/d; s/[[:blank:]]*#.*//' "$file" | \
-  envsubst | jq -sR '{"text":.}'
+  ([ "$dosub" ] && envsubst || cat) | \
+  jq -sR '{"text": .|rtrimstr("\n")}'

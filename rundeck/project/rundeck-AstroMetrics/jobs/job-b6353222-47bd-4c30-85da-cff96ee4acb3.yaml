@@ -104,7 +104,7 @@
     weekday:
       day: '*'
     year: '*'
-  scheduleEnabled: false
+  scheduleEnabled: true
   sequence:
     commands:
     - description: hourly

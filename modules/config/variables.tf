@@ -3,8 +3,8 @@ variable "service" {
   type        = string
 
   validation {
-    condition     = contains(["conductor", "datastore", "indexer", "shuttle", "flapper"], var.service)
-    error_message = "Valid values for service: conductor/datastore/indexer/shuttle/flapper."
+    condition     = contains(["conductor", "datastore", "indexer", "rundeck", "shuttle", "flapper"], var.service)
+    error_message = "Valid values for service: conductor|datastore|indexer|rundeck|shuttle|flapper."
   }
 }
 

@@ -59,7 +59,8 @@ module "shared_user_data" {
 }
 
 locals {
-  # sed -En 's/^.+\$\{([a-zA-Z0-9_]+)\}.*$/\1/p' *.yaml | sort | uniq
+  # list placeholder variables in YAML/properties templates:
+  # (shopt -s nullglob; sed -En 's/^.+\$\{([a-zA-Z0-9_]+)\}.*$/\1/p' *.{yaml,properties} | sort | uniq)
   #
   # NOTE: the reason why there are no _HOST config values here even though
   # nearly all config files require POSTGRESQL_HOST and ELASTICSEARCH_HOST
@@ -69,8 +70,9 @@ locals {
   config_values = {
     AWS_REGION              = local.region
     APP_DOMAIN              = local.app_domain
-    ALPRS_PASSWORD          = local.alprs_pass
     ATLAS_PASSWORD          = local.atlas_pass
+    ALPRS_PASSWORD          = local.alprs_pass
+    RUNDECK_PASSWORD        = local.rundeck_pass
     AUTH0_SPA_CLIENT_ID     = var.AUTH0_SPA_CLIENT_ID
     AUTH0_SPA_CLIENT_SECRET = var.AUTH0_SPA_CLIENT_SECRET
     AUTH0_M2M_CLIENT_ID     = var.AUTH0_M2M_CLIENT_ID
