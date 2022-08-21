@@ -130,6 +130,25 @@ PYNTEGRATIONS_PATH="$PYNTEGRATIONS_PATH"
 EOF
 )
 
+extra_aliases() {
+  echo -e \\n >> .bash_aliases
+  cat <<'EOF' >> .bash_aliases
+alprs() {
+  psql $(aws s3 cp s3://$CONFIG_BUCKET/shuttle/shuttle.yaml - | \
+    yq '.postgres.config |
+        (.username + ":" + .password) as $creds | .jdbcUrl |
+        sub(".+//([^?]+).*$", "postgresql://" + $creds + "@${1}")')
+}
+
+atlas() {
+  psql $(aws s3 cp s3://$CONFIG_BUCKET/flapper/flapper.yaml - | \
+    yq '.datalakes[] | select(.name == "atlas") |
+        (.username + ":" + .password) as $creds | .url |
+        sub(".+//(.+)$", "postgresql://" + $creds + "@${1}")')
+}
+EOF
+}
+
 build_cli_app() (
   # build and then install
   app=$1 path="${1^^}_PATH"
@@ -169,6 +188,7 @@ run copy_scripts   $USER
 run clone_repos    $USER
 run install_pylibs $USER
 run user_dotfiles  $USER
+run extra_aliases  $USER
 run build_cli_app  $USER shuttle
 run build_cli_app  $USER flapper
 run config_flapper $USER
