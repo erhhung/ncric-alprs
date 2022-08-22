@@ -1,6 +1,6 @@
 upgrade_bash() {
   cd /tmp
-  yum groupinstall -y "Development Tools"
+  eval_with_retry 'yum groupinstall -y "Development Tools"'
   curl -s https://ftp.gnu.org/gnu/bash/bash-5.1.16.tar.gz | tar -xz
   (cd bash* && ./configure -q --prefix=/ && make -s && make install)
   rm -rf bash*
@@ -43,17 +43,17 @@ eval_with_retry() {
 }
 
 yum_update() {
-  yum update -y
+  eval_with_retry "yum update -y"
 }
 
 yum_install() (
   yum_update
   rpm -qa | grep -q epel-release-7 || \
-            yum install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
-  yum --enablerepo epel install -y figlet emacs-nox moreutils most jq htop pwgen nmap python3-pip
+            eval_with_retry "yum install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm"
+  eval_with_retry "yum --enablerepo epel install -y figlet emacs-nox moreutils most jq htop pwgen nmap python3-pip"
 
-  VERSION=v4.27.2 BINARY=yq_linux_amd64
-  curl -sLo /usr/bin/yq https://github.com/mikefarah/yq/releases/download/$VERSION/$BINARY
+  VERSION=v4.27.2 ARCH=linux_amd64
+  curl -sLo /usr/bin/yq https://github.com/mikefarah/yq/releases/download/$VERSION/yq_$ARCH
   chmod +x  /usr/bin/yq
 )
 

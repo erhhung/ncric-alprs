@@ -29,8 +29,9 @@ EOF
 install_delta() (
   cd /tmp
   hash delta 2> /dev/null && exit
-  wget -q https://github.com/dandavison/delta/releases/download/0.12.0/git-delta_0.12.0_arm64.deb
-  eval_with_retry "wait_apt_get && dpkg -iE git-delta_0.12.0_arm64.deb"
+  VERSION=0.12.0 ARCH=arm64
+  wget -q https://github.com/dandavison/delta/releases/download/$VERSION/git-delta_${VERSION}_$ARCH.deb
+  eval_with_retry "wait_apt_get && dpkg -iE git-delta_${VERSION}_$ARCH.deb"
   rm git-delta*
 )
 

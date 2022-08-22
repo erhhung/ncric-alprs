@@ -40,8 +40,8 @@ apt_install() {
   eval_with_retry "wait_apt_get && apt-get install -y figlet emacs-nox moreutils most \
                             jq git unzip net-tools nmap pwgen libxml2-utils python3-pip"
 
-  VERSION=v4.27.2 BINARY=yq_linux_arm64
-  curl -sLo /usr/bin/yq https://github.com/mikefarah/yq/releases/download/$VERSION/$BINARY
+  VERSION=v4.27.2 ARCH=linux_arm64
+  curl -sLo /usr/bin/yq https://github.com/mikefarah/yq/releases/download/$VERSION/yq_$ARCH
   chmod +x  /usr/bin/yq
 }
 

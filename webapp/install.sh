@@ -4,17 +4,18 @@
 
 install_node() (
   hash node 2> /dev/null && exit
-  yum install -y gcc-c++ make
+  eval_with_retry "yum install -y gcc-c++ make"
   curl -sL https://rpm.nodesource.com/setup_14.x | bash -
-  yum install -y nodejs
+  eval_with_retry "yum install -y nodejs"
   node -v && npm -v
 )
 
 install_delta() (
   cd /tmp
   hash delta 2> /dev/null && exit
-  wget -q https://github.com/dandavison/delta/releases/download/0.12.0/delta-0.12.0-x86_64-unknown-linux-gnu.tar.gz
-  tar xzvf delta-0.12.0-x86_64-unknown-linux-gnu.tar.gz -C /usr/bin --strip 1 delta-0.12.0-x86_64-unknown-linux-gnu/delta
+  VERSION=0.12.0 ARCH=x86_64-unknown-linux-gnu
+  wget -q https://github.com/dandavison/delta/releases/download/$VERSION/delta-${VERSION}-$ARCH.tar.gz
+  tar xzvf delta-${VERSION}-$ARCH.tar.gz -C /usr/bin --strip 1 delta-${VERSION}-$ARCH/delta
   rm -f delta-*.tar.gz
 )
 
@@ -124,7 +125,6 @@ export -f change_logo
 
 run install_node
 run install_delta
-run yum_update
 run clone_repos   $USER
 run config_webapp $USER
 run config_orgapp $USER

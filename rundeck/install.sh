@@ -7,7 +7,7 @@ export SHUTTLE_ARGS="--shuttle-config $CONFIG_BUCKET REGION --read-rate-limit 0"
 
 install_java() (
   hash java 2> /dev/null && exit
-  amazon-linux-extras install -y java-openjdk11
+  eval_with_retry "amazon-linux-extras install -y java-openjdk11"
   java --version
   cat <<'EOF' >> /etc/environment
 JAVA_HOME="/usr/lib/jvm/jre-11-openjdk"
@@ -21,7 +21,8 @@ install_rundeck() (
     2> /dev/null | bash -s rundeck
   # rundeck-4.5.0.20220811-1 fails
   # to start due to database error
-  yum install -y rundeck-4.4.0.20220714-1 rundeck-cli
+  VERSION=4.4.0.20220714-1
+  eval_with_retry "yum install -y rundeck-$VERSION rundeck-cli"
 )
 
 install_plugins() (
