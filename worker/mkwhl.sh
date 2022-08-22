@@ -35,7 +35,7 @@ cd $tmp_dir
 # while read file; do
 #   sed -i '' "s|$_URL|$API_URL|" $file
 # done < <(
-#   grep -rl $_URL
+#   grep -rl $_URL .
 # )
 
 # replace AWS region parameter values
@@ -43,7 +43,7 @@ _REGION='us-gov-west-1'
 while read file; do
   sed -i '' "s/$_REGION/$REGION/" $file
 done < <(
-  grep -rl $_REGION
+  grep -rl $_REGION .
 )
 
 WHL="${prj_dir}.whl"
