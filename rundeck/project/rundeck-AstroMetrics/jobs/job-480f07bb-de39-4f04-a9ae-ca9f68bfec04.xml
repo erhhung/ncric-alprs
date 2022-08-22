@@ -1,0 +1,60 @@
+<joblist>
+  <job>
+    <context>
+      <options preserveOrder='true'>
+        <option name='fetch_size' value='60'>
+          <description>API read chunk size in minutes</description>
+        </option>
+        <option name='batch_size' value='1000'>
+          <description>Batch size for writes to Atlas</description>
+        </option>
+      </options>
+    </context>
+    <defaultTab>nodes</defaultTab>
+    <description><![CDATA[Pull data from Flock Safety API server daily at midnight for the entire previous day
+* Raw data is written by Flapper into the "flock_reads" table in the Atlas database]]></description>
+    <dispatch>
+      <excludePrecedence>true</excludePrecedence>
+      <keepgoing>false</keepgoing>
+      <rankOrder>ascending</rankOrder>
+      <successOnEmptyNodeFilter>false</successOnEmptyNodeFilter>
+      <threadcount>1</threadcount>
+    </dispatch>
+    <executionEnabled>true</executionEnabled>
+    <id>480f07bb-de39-4f04-a9ae-ca9f68bfec04</id>
+    <loglevel>INFO</loglevel>
+    <name>Recurring Flock: Pull RAW data daily by API</name>
+    <nodeFilterEditable>false</nodeFilterEditable>
+    <nodefilters>
+      <filter>name: Worker</filter>
+    </nodefilters>
+    <nodesSelectedByDefault>true</nodesSelectedByDefault>
+    <plugins />
+    <schedule>
+      <month month='*' />
+      <time hour='0' minute='10' seconds='0' />
+      <weekday day='*' />
+      <year year='*' />
+    </schedule>
+    <scheduleEnabled>false</scheduleEnabled>
+    <sequence keepgoing='false' strategy='node-first'>
+      <command>
+        <description>entire previous day</description>
+        <script><![CDATA[#!/usr/bin/env bash
+
+# start at midnight PST of previous day
+start=$(date -d "-1 days" "+%Y-%m-%dT00:00:00%:z")
+
+# FLAPPER variables are defined in /etc/environment
+$FLAPPER_PATH --file $FLAPPER_CONF \
+              --interval   @option.fetch_size@ \
+              --batch-size @option.batch_size@ \
+              --start $start \
+              --days 1]]></script>
+        <scriptargs />
+      </command>
+    </sequence>
+    <timeZone>America/Los_Angeles</timeZone>
+    <uuid>480f07bb-de39-4f04-a9ae-ca9f68bfec04</uuid>
+  </job>
+</joblist>
