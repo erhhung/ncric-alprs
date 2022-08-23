@@ -121,6 +121,6 @@ for host in ${hosts[@]}; do
 
   printf "Stopping services on host \"$host\"..."
   # skip first line of script, the function declaration
-  ssh "alprs${env}${abbrev}" "$(tail +2 <<< "$script")"
+  ssh "alprs${env}${abbrev}" "$(tail +2 <<< "$script")" > /dev/null 2>&1
   echo "DONE."
 done
