@@ -158,6 +158,11 @@ install_cwagent() (
 )
 
 config_cwagent() (
+  cd /etc/profile.d
+  cat <<'EOF' > cwagent_path.sh
+PATH="$PATH:/opt/aws/amazon-cloudwatch-agent/bin"
+EOF
+  chmod +x cwagent_path.sh
   cd /opt/aws/amazon-cloudwatch-agent/etc
   aws s3 cp $S3_URL/${HOST,,}/cwagent.json amazon-cloudwatch-agent.json
 )

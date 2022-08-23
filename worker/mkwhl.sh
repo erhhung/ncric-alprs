@@ -16,7 +16,20 @@ _reqcmds() {
     fi
   done
 }
-_reqcmds md5 || exit $?
+_reqcmds python3 unzip zip md5 || exit $?
+
+# convert x.y.z version to 9-digit number for comparison
+# _ver2num 3.14.159 = 003014159
+_ver2num() {
+  printf "%03d%03d%03d" $(tr . ' ' <<< "$1") 2> /dev/null
+}
+
+p3ver=$(python3 -V)
+p3ver=$(_ver2num ${p3ver/* /})
+if [ $p3ver -lt 003009000 ]; then
+  echo >&2 "Python 3.9 or later required."
+  exit 1
+fi
 
 clean_up() {
   cd /tmp; rm -rf $tmp_dir
