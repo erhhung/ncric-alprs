@@ -138,7 +138,7 @@ upgrade_utils() (
 etc_hosts() (
   cd /etc
   grep -q postgresql hosts && exit
-  tab=$(printf "\t")
+  printf -v tab "\t"
   cat <<EOF >> hosts
 
 $PG_IP${tab}postgresql

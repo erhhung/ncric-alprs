@@ -6,7 +6,7 @@ create_xfs_volume() (
   if ! file -sL /dev/nvme1n1 | grep -q filesystem; then
     mkfs.xfs -f -L postgresql /dev/nvme1n1
   fi
-  tab=$(printf "\t")
+  printf -v tab "\t"
   cat <<EOF >> /etc/fstab
 LABEL=postgresql${tab}/opt/postgresql${tab}xfs${tab}defaults,nofail${tab}0 2
 EOF

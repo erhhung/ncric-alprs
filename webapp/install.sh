@@ -43,6 +43,46 @@ clone_repos() {
   git up
 }
 
+# indent lines from stdin by n spaces
+indent_code() {
+  local sp=${1:-0}
+  eval "printf -v sp ' %.0s' {1..$sp}"
+  [ "$1" ] && sed "s/^/$sp/" || cat
+}
+
+# replace_code <file> <match> <in|ex> <match> <in|ex>
+# in|ex: start/end line is <in>clusive or <ex>clusive
+# the replacement content will be obtained from stdin
+replace_code() {
+  local   file=$1 code=$(cat)
+  local match0=$2  ex0=$3 line
+  local match1=$4  ex1=$5 state
+  (
+    while IFS= read line; do
+      case $state in
+        started)
+          if [[ "$line" == *$match1* ]]; then
+            [ "$ex1" == ex ] && echo "$line"
+            state=ended
+          fi
+          ;;
+        ended)
+          echo "$line"
+          ;;
+        *)
+          if [[ "$line" == *$match0* ]]; then
+            [ "$ex0" == ex ] && echo "$line"
+            state=started
+            echo "$code"
+          else
+            echo "$line"
+          fi
+          ;;
+      esac
+    done <   "$file"
+  ) | sponge "$file"
+}
+
 config_app() (
   cat <<EOF > .npmrc
 @fortawesome:registry=https://npm.fontawesome.com/
@@ -64,6 +104,8 @@ EOF
 config_webapp() {
   cd astrometrics
   config_app
+
+  # tweak branding and support contact
   cd src
   while read file; do
     sed -Ei 's/\bAstrometrics\b/AstroMetrics/' $file
@@ -71,6 +113,39 @@ config_webapp() {
   while read file; do
     sed -Ei "s/[a-zA-Z0-9_.+-]+@openlattice\\.com\b/$SUPPORT_EMAIL/g" $file
   done < <(egrep -rl '@openlattice\.com\b')
+
+  # show Data Quality tab to all users
+  # (currently showing to owners only)
+  cd containers/app
+  cat <<'EOF' | indent_code 8 | \
+    replace_code AppContainer.js \
+      '<Route path={Routes.EXPLORE} component={ExploreContainer} />' ex \
+      '<Redirect to={Routes.EXPLORE} />'                             ex
+<Route path={Routes.QUALITY} component={QualityContainer} />
+{
+  isAdmin && (
+    <Route path={Routes.AUDIT} component={AuditContainer} />
+  )
+}
+EOF
+  cat <<'EOF' | indent_code 4 | \
+    replace_code AppNavigationContainer.js \
+      '<NavLinkWrapper to={Routes.EXPLORE}>' in \
+      '</NavigationContentWrapper>'          ex
+<NavLinkWrapper to={Routes.EXPLORE}>
+  Search
+</NavLinkWrapper>
+<NavLinkWrapper to={Routes.QUALITY}>
+  Data Quality
+</NavLinkWrapper>
+{
+  isAdmin && (
+    <NavLinkWrapper to={Routes.AUDIT}>
+      Audit Log
+    </NavLinkWrapper>
+  )
+}
+EOF
 }
 
 config_orgapp() {
@@ -120,6 +195,8 @@ archive_build() {
 }
 
 export -f git_clone
+export -f indent_code
+export -f replace_code
 export -f config_app
 export -f change_logo
 

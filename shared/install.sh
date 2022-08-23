@@ -8,7 +8,7 @@ etc_hosts() (
   [ "$DATASTORE_IP" ] && host=datastore ip=$DATASTORE_IP
   [ "$host" ] || exit 0
   grep -q $host hosts && exit
-  tab=$(printf "\t")
+  printf -v tab "\t"
   cat <<EOF >> hosts
 
 ${ip}${tab}${host}

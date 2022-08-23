@@ -43,14 +43,14 @@
         <script><![CDATA[#!/usr/bin/env bash
 
 # start at midnight PST of previous day
-start=$(date -d "-1 days" "+%Y-%m-%dT00:00:00%:z")
+start=$(date -d "-1 day" "+%Y-%m-%dT00:00:00%:z")
 
 # FLAPPER variables are defined in /etc/environment
 $FLAPPER_PATH --file $FLAPPER_CONF \
               --interval   @option.fetch_size@ \
               --batch-size @option.batch_size@ \
               --start $start \
-              --days 1]]></script>
+              --hours 24]]></script>
         <scriptargs />
       </command>
     </sequence>
