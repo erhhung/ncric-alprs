@@ -73,7 +73,7 @@ class BOSS4ImagesIntegration(Integration):
         base_url="https://api.openlattice.com",
         flight_name="ncric_boss4_images_flight.yaml",
         clean_table_name_root="boss4_hr_images",
-        standardize_table_name=True,
+        standardize_table_name=False,
         clean_table_suffix=None
     ):
 
@@ -102,7 +102,7 @@ class BOSS4ImageSourcesIntegration(Integration):
         super().__init__(
             sql=sql,
             clean_table_name_root=clean_table_name_root,
-            standardize_clean_table_name=True,
+            standardize_clean_table_name=False,
             if_exists="replace",
             flight_path=resource_filename(__name__, flight_name),
             base_url=base_url,
@@ -127,7 +127,7 @@ class BOSS4AgenciesIntegration(Integration):
         super().__init__(
             sql=sql,
             clean_table_name_root=clean_table_name_root,
-            standardize_clean_table_name=True,
+            standardize_clean_table_name=False,
             if_exists="replace",
             flight_path=resource_filename(__name__, flight_name),
             base_url=base_url,
