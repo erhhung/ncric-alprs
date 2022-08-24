@@ -175,7 +175,7 @@ config_project() {
   rm  $config
 
   shopt -s expand_aliases
-  . .bash_aliases
+  set +x; . .bash_aliases; set -x
   cd rundeck
   local az=$(myaz)
   cat <<EOF > keys.txt

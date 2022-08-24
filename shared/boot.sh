@@ -147,7 +147,7 @@ EOF
 
 install_cwagent() (
   shopt -s expand_aliases
-  . .bash_aliases
+  set +x; . .bash_aliases; set -x
   cd /tmp
   az=$(myaz) region=${az:0:-1}
   deb=amazon-cloudwatch-agent.deb

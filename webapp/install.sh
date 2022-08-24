@@ -54,6 +54,7 @@ indent_code() {
 # in|ex: start/end line is <in>clusive or <ex>clusive
 # the replacement content will be obtained from stdin
 replace_code() {
+  set +x
   local   file=$1 code=$(cat)
   local match0=$2  ex0=$3 line
   local match1=$4  ex1=$5 state
@@ -81,6 +82,7 @@ replace_code() {
       esac
     done <   "$file"
   ) | sponge "$file"
+  set -x
 }
 
 config_app() (
