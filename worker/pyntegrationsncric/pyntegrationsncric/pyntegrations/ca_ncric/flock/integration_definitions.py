@@ -12,7 +12,7 @@ class FLOCKIntegration(Integration):
     def __init__(self, sql=None, flight_path=None,
                  clean_table_name_suffix='',
                  org_id="1446ff84-7112-42ec-828d-f181f45e4d20",
-                 base_url="https://api.openlattice.com"):
+                 base_url="http://datastore:8080"):
 
         if sql is None:
             sql = """select f."readid",f."timestamp", f."type", f."plate", f."confidence",
@@ -120,8 +120,8 @@ class FLOCKIntegration(Integration):
 # Defaults to yesterday, midnight to midnight.
 class FLOCKImageSourceIntegration(Integration):
     def __init__(self, sql=None, flight_file=None,
-                 clean_table_name_suffix='',
-                 base_url="https://api.openlattice.com"):
+                 clean_table_name_suffix="",
+                 base_url="http://datastore:8080"):
 
         if sql is None:
             sql = """select distinct \"cameraid\", \"cameraname\" from flock_reads
@@ -155,8 +155,8 @@ class FLOCKImageSourceIntegration(Integration):
 # Defaults to yesterday, midnight to midnight.
 class FLOCKAgenciesIntegration(Integration):
     def __init__(self, sql=None, flight_file=None,
-                 clean_table_name_suffix='',
-                 base_url="https://api.openlattice.com"):
+                 clean_table_name_suffix="",
+                 base_url="http://datastore:8080"):
 
         if sql is None:
             sql = """select distinct \"cameranetworkid\", \"cameranetworkname\" from flock_reads
@@ -189,12 +189,13 @@ class FLOCKAgenciesIntegration(Integration):
 
 class FLOCKImagesIntegration(Integration):
     def __init__(self, sql=None, flight_file=None,
-                 clean_table_name_suffix='',
-                 base_url="https://api.openlattice.com"):
+                 clean_table_name_suffix="",
+                 base_url="http://datastore:8080"):
         if sql is None:
             sql = "select \"readid\", \"image\" from flock_reads where \"timestamp\" between current_date - interval '1 day' and current_date - interval '0 days';"
         if flight_file is None:
             flight_file = "flock_images_flight.yaml"
+
         super().__init__(
             sql=sql,
             clean_table_name_root="zzz_clean_flock_images" + clean_table_name_suffix,
@@ -229,8 +230,8 @@ class FlockHotlistIntegration(Integration):
             ) temp where "timestamp" between current_date - interval '1 day' and current_date + interval '1 day';
             ''',
                  flight_file="flock_hotlist_flight.yaml",
-                 clean_table_suffix='',
-                 base_url="https://api.openlattice.com"):
+                 clean_table_suffix="",
+                 base_url="http://datastore:8080"):
 
         super().__init__(
             sql=sql,
@@ -279,7 +280,7 @@ class FLOCKAgencyStandardizationFixIntegration(Integration):
 
     def __init__(self, sql,
                  flight_file="flock_agencies_standardized_fix.yaml",
-                 base_url="https://api.openlattice.com"):
+                 base_url="http://datastore:8080"):
 
         super().__init__(
             sql=sql,
@@ -316,7 +317,7 @@ class FLOCKAgencyStandardizationIntegration(Integration):
     # just set integration.integrate_table(sql = "select * from standardized_agency_names_flock")
     def __init__(self, sql="select * from standardized_agency_names_flock",
                  flight_file="flock_agencies_standardized.yaml",
-                 base_url="https://api.openlattice.com"):
+                 base_url="http://datastore:8080"):
 
         super().__init__(
             sql=sql,

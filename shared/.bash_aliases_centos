@@ -1,0 +1,2 @@
+alias yi='sudo yum install'
+alias yu='sudo yum update -y'

@@ -1,5 +1,5 @@
 module "postgresql_sg" {
-  source = "./modules/secgrp"
+  source = "./modules/secgroup"
 
   name        = "postgresql-sg"
   description = "Allow PostgreSQL traffic"
@@ -8,14 +8,18 @@ module "postgresql_sg" {
   rules = {
     ingress_5432 = {
       from_port   = 5432
-      to_port     = 5432
-      protocol    = "tcp"
       cidr_blocks = local.subnet_cidrs["private"]
     }
   }
 }
 
 # https://registry.terraform.io/providers/hashicorp/external/latest/docs/data-sources/data_source
+data "external" "postgresql_cwagent_json" {
+  program = [
+    "${path.module}/shared/cwagent.sh",
+    "postgresql",
+  ]
+}
 data "external" "postgresql_conf" {
   program = [
     "${path.module}/shared/minconf.sh",
@@ -30,7 +34,11 @@ data "external" "pg_hba_conf" {
 }
 
 locals {
-  pg_user_data = [{
+  postgresql_user_data = [{
+    path = "postgresql/cwagent.json"
+    data = data.external.postgresql_cwagent_json.result.json
+    type = "application/json"
+    }, {
     path = "postgresql/postgresql.conf"
     data = data.external.postgresql_conf.result.text
     }, {
@@ -51,7 +59,7 @@ locals {
     type = "application/gzip"
     }, {
     path = "postgresql/bootstrap.sh"
-    data = <<-EOT
+    data = <<-EOF
 ${file("${path.module}/shared/prolog.sh")}
 ${templatefile("${path.module}/postgresql/boot.tftpl", {
     ENV       = var.env
@@ -70,24 +78,19 @@ ${templatefile("${path.module}/postgresql/boot.tftpl", {
 ${file("${path.module}/shared/boot.sh")}
 ${file("${path.module}/postgresql/install.sh")}
 ${file("${path.module}/shared/epilog.sh")}
-EOT
+EOF
 }]
 }
 
-# https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_object
-resource "aws_s3_object" "pg_user_data" {
-  for_each = { for obj in local.pg_user_data : basename(obj.path) => obj }
+module "postgresql_user_data" {
+  source = "./modules/userdata"
 
-  bucket       = data.aws_s3_bucket.user_data.id
-  key          = "userdata/${each.value.path}"
-  content_type = lookup(each.value, "type", "text/plain")
-  content      = lookup(each.value, "data", null) == null ? null : chomp(each.value.data)
-  source       = lookup(each.value, "file", null) == null ? null : each.value.file
-  source_hash  = lookup(each.value, "file", null) != null ? filemd5(each.value.file) : md5(each.value.data)
+  bucket = data.aws_s3_bucket.user_data.id
+  files  = local.postgresql_user_data
 }
 
 locals {
-  pg_bootstrap = <<EOT
+  postgresql_bootstrap = <<-EOT
 ${templatefile("${path.module}/shared/boot.tftpl", {
   BUCKET = local.user_data_bucket
   HOST   = "postgresql"
@@ -100,18 +103,19 @@ module "postgresql_server" {
   source = "./modules/instance"
 
   depends_on = [
-    aws_s3_object.shared_user_data,
-    aws_s3_object.pg_user_data,
+    module.shared_user_data,
+    module.postgresql_user_data,
   ]
   ami_id           = local.applied_amis["ubuntu_20arm"].id
   instance_type    = var.instance_types["postgresql"]
   instance_name    = "PostgreSQL"
   root_volume_size = 32
   subnet_id        = module.main_vpc.subnet_ids["private1"]
+  private_ip       = local.private_ips["postgresql"]
   security_groups  = [module.postgresql_sg.id]
   instance_profile = aws_iam_instance_profile.alprs_service.name
   key_name         = aws_key_pair.admin.key_name
-  user_data        = chomp(local.pg_bootstrap)
+  user_data        = chomp(local.postgresql_bootstrap)
 }
 
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/volume_attachment

@@ -29,4 +29,4 @@ _altcmd() {
 yq=$(_altcmd yq4 yq)
 
 sed -E 's/^ *([a-z0-9]+) *= */\1: /' "$1" | \
-  "$yq" -o=json -I=0 -M -
+  "$yq" -o json -I 0 -M -

@@ -4,7 +4,7 @@ data "external" "rdproject_jar" {
 }
 
 locals {
-  rd_user_data = [{
+  rundeck_user_data = [{
     path = "rundeck/astrometrics.rdproject.jar"
     file = "${path.module}/rundeck/astrometrics.rdproject.jar"
     type = "application/java-archive"
@@ -26,14 +26,24 @@ ${file("${path.module}/rundeck/install.sh")}
 EOT
 }
 
-# https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_object
-resource "aws_s3_object" "rd_user_data" {
-  for_each   = { for obj in local.rd_user_data : basename(obj.path) => obj }
-  depends_on = [data.external.rdproject_jar]
+module "rundeck_user_data" {
+  source = "./modules/userdata"
 
-  bucket       = data.aws_s3_bucket.user_data.id
-  key          = "userdata/${each.value.path}"
-  content_type = each.value.type
-  source       = each.value.file
-  source_hash  = filemd5(each.value.file)
+  depends_on = [
+    data.external.rdproject_jar,
+  ]
+  bucket = data.aws_s3_bucket.user_data.id
+  files  = local.rundeck_user_data
+}
+
+module "rundeck_config" {
+  source = "./modules/config"
+
+  service = "rundeck"
+  path    = "${path.module}/rundeck/config"
+  bucket  = aws_s3_bucket.buckets["config"].id
+
+  values = merge(local.config_values, {
+    POSTGRESQL_HOST = module.postgresql_server.private_domain
+  })
 }

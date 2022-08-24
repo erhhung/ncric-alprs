@@ -1,5 +1,6 @@
-# This user data script is a continuation
-# of the shared "boot.sh" script.
+# This user data script is a continuation of
+# the shared "boot.sh" script. It's included
+# on Conductor/Datastore/Indexer hosts only.
 
 etc_hosts() (
   cd /etc
@@ -7,7 +8,7 @@ etc_hosts() (
   [ "$DATASTORE_IP" ] && host=datastore ip=$DATASTORE_IP
   [ "$host" ] || exit 0
   grep -q $host hosts && exit
-  tab=$(printf "\t")
+  printf -v tab "\t"
   cat <<EOF >> hosts
 
 ${ip}${tab}${host}
@@ -20,14 +21,21 @@ create_user() (
   cat <<EOF >> .bashrc
 export CONFIG_BUCKET="$CONFIG_BUCKET"
 EOF
+  echo -e \\n >> .bash_aliases
+  cat <<'EOF' >> .bash_aliases
+alias psj='ps auxw | grep -v grep | grep java'
+alias mol='most +1000000 /opt/openlattice/logging/*[!0-9].log'
+EOF
   # adduser copies files from /etc/skel
   # into the new user's home directory
   cp -a .bashrc .bash_aliases .gitconfig .emacs \
     .screenrc .sudo_as_admin_successful /etc/skel
   adduser --disabled-login --gecos "" openlattice
-  cat <<'EOF' >> .bash_aliases
 
-alias ol='sudo su -l openlattice'
+  cat <<'EOF' >> .bash_aliases
+alias ol='sudo su -l openlattice '
+alias olstart='ol -c scripts/start.sh'
+alias olstop='ol -c "killall java"'
 EOF
   cat <<'EOF' >> /home/openlattice/.bashrc
 
@@ -42,8 +50,7 @@ EOF
 
 install_java() (
   hash java 2> /dev/null && exit
-  wait_apt_get
-  apt-get install -y openjdk-11-jdk
+  eval_with_retry "wait_apt_get && apt-get install -y openjdk-11-jdk"
   java --version
   cat <<'EOF' >> /etc/environment
 JAVA_HOME="/usr/lib/jvm/java-11-openjdk-arm64"
@@ -53,9 +60,9 @@ EOF
 install_delta() (
   cd /tmp
   hash delta 2> /dev/null && exit
-  wget -q https://github.com/dandavison/delta/releases/download/0.12.0/git-delta_0.12.0_arm64.deb
-  wait_apt_get
-  dpkg -i git-delta_0.12.0_arm64.deb
+  VERSION=0.12.0 ARCH=arm64
+  wget -q https://github.com/dandavison/delta/releases/download/$VERSION/git-delta_${VERSION}_$ARCH.deb
+  eval_with_retry "wait_apt_get && dpkg -iE git-delta_${VERSION}_$ARCH.deb"
   rm git-delta*
 )
 

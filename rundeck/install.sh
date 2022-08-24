@@ -7,7 +7,7 @@ export SHUTTLE_ARGS="--shuttle-config $CONFIG_BUCKET REGION --read-rate-limit 0"
 
 install_java() (
   hash java 2> /dev/null && exit
-  amazon-linux-extras install -y java-openjdk11
+  eval_with_retry "amazon-linux-extras install -y java-openjdk11"
   java --version
   cat <<'EOF' >> /etc/environment
 JAVA_HOME="/usr/lib/jvm/jre-11-openjdk"
@@ -21,28 +21,21 @@ install_rundeck() (
     2> /dev/null | bash -s rundeck
   # rundeck-4.5.0.20220811-1 fails
   # to start due to database error
-  yum install -y rundeck-4.4.0.20220714-1 rundeck-cli
+  VERSION=4.4.0.20220714-1
+  eval_with_retry "yum install -y rundeck-$VERSION rundeck-cli"
+)
+
+install_plugins() (
+  cd ~/libext
+  # https://github.com/rundeck-plugins/rundeck-s3-log-plugin
+  PLUGIN=rundeck-s3-log-plugin VERSION=1.0.13
+  curl -sLO https://github.com/rundeck-plugins/$PLUGIN/releases/download/v$VERSION/$PLUGIN-$VERSION.jar
 )
 
 # args: [stage]
 config_rundeck() (
   case `whoami` in
     root)
-      cd /etc/rundeck
-      grep -q 'admin:admin' realm.properties || exit 0
-      # change default admin password
-      sed -i "s/admin:admin/admin:$rundeck_pass/" realm.properties
-      # use PostgreSQL instead of H2
-      while read  sed; do
-        sed -Ei "$sed" rundeck-config.properties
-      done <<EOT
-s/dataSource\\.dbCreate.+/dataSource.dbCreate=update/
-s|dataSource\\.url.+|dataSource.url=jdbc:postgresql://$PG_HOST:5432/rundeck?sslmode=require|
-/dataSource\\.url.+/a dataSource.driverClassName=org.postgresql.Driver
-/dataSource\\.url.+/a dataSource.password=$rundeck_pass
-/dataSource\\.url.+/a dataSource.username=rundeck_user
-s/config\\.password=.+/config.password=$rundeck_pass/
-EOT
       cd /etc/ssh
       # send RD_* environment variables to remote workers
       sed -Ei $'/^Host \*$/a \\\tSendEnv RD_*' ssh_config
@@ -75,6 +68,14 @@ EOT
   />
 </project>
 EOF
+          cd /etc/rundeck
+          # change default admin password
+          sed -i "s/admin:admin/admin:$rundeck_pass/" realm.properties
+          # install "rundeck-config.properties" and "framework.properties",
+          # customized to use PostgreSQL instead of H2 as primary database,
+          # and S3 bucket instead of local disk to store job execution logs
+          aws s3 sync s3://$CONFIG_BUCKET/rundeck/ .
+          find . -type f -exec chmod 640 {} \;
           ;;
         after_start)
           cd ~/libext/cache/openssh-node-execution*
@@ -119,29 +120,27 @@ start_rundeck() {
   systemctl status rundeckd
 }
 
-# eval_with_retry <cmd> [tries]
-eval_with_retry() {
-  local cmd="$1" tries=${2:-3}
-  while ! eval "$cmd" && [ $((--tries)) -gt 0 ]; do
-    echo "Retrying: $cmd"
-    sleep 1
-  done
-  sleep 1
-}
-
-import_project() {
-  local jar proj=AstroMetrics
-  jar="${proj,,}.rdproject.jar"
-  echo "Creating Rundeck project: $proj"
+import_project() (
+  proj=AstroMetrics
   mkdir -p rundeck
   cd rundeck
+
   if eval_with_retry "rd projects list" | grep -q $proj; then
-     eval_with_retry "rd projects delete -p $proj -y"
+    # project already exists; backup before overwriting
+    echo "Archiving Rundeck project \"$proj\"..."
+    jar="${proj,,}_$(date "+%Y-%m-%d").rdproject.jar"
+    args=(-p $proj -f $jar -i jobs -i configs -i executions)
+    eval_with_retry "rd projects archives export ${args[*]}"
+    aws s3 cp $jar s3://$BACKUP_BUCKET/rundeck/$jar --no-progress
+  else
+    echo "Creating Rundeck project \"$proj\"..."
+    eval_with_retry "rd projects create -p $proj"
   fi
+
+  jar="${proj,,}.rdproject.jar"
   aws s3 cp "$S3_URL/rundeck/$jar" . --no-progress
-  eval_with_retry "rd projects create -p $proj"
   eval_with_retry "rd projects archives import -f $jar -p $proj"
-}
+)
 
 import_ssh_key() {
   local path=keys/worker
@@ -176,12 +175,12 @@ config_project() {
   rm  $config
 
   shopt -s expand_aliases
-  . .bash_aliases
+  set +x; . .bash_aliases; set -x
   cd rundeck
   local az=$(myaz)
   cat <<EOF > keys.txt
 keys/region            ${az:0:-1}
-keys/api_url           $API_URL
+keys/api_url           http://datastore:8080
 keys/s3_bucket         $SFTP_BUCKET
 keys/s3_prefix/boss4   boss4
 keys/s3_prefix/scso    scso
@@ -254,6 +253,7 @@ export -f curl_rundeck
 
 run install_java
 run install_rundeck
+run install_plugins rundeck
 run config_rundeck
 run config_rundeck rundeck before_start
 run start_rundeck

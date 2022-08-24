@@ -1,7 +1,9 @@
 locals {
-  ssm_policy_arns = [
-    "arn:${var.accounts[var.env].partition}:iam::aws:policy/CloudWatchAgentServerPolicy",
+  base_policy_arns = [
     "arn:${var.accounts[var.env].partition}:iam::aws:policy/AmazonSSMManagedInstanceCore",
+    "arn:${var.accounts[var.env].partition}:iam::aws:policy/CloudWatchAgentServerPolicy",
+    "arn:${var.accounts[var.env].partition}:iam::aws:policy/CloudWatchReadOnlyAccess",
+    "arn:${var.accounts[var.env].partition}:iam::aws:policy/AmazonEC2ReadOnlyAccess",
   ]
 }
 
@@ -26,7 +28,7 @@ resource "aws_iam_role" "ssm_instance" {
 
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy_attachment
 resource "aws_iam_role_policy_attachment" "ssm_instance" {
-  for_each = { for arn in local.ssm_policy_arns : basename(arn) => arn }
+  for_each = { for arn in local.base_policy_arns : basename(arn) => arn }
 
   role       = aws_iam_role.ssm_instance.name
   policy_arn = each.value
@@ -65,7 +67,7 @@ resource "aws_iam_role" "alprs_bastion" {
 }
 
 resource "aws_iam_role_policy_attachment" "alprs_bastion" {
-  for_each = { for arn in local.ssm_policy_arns : basename(arn) => arn }
+  for_each = { for arn in local.base_policy_arns : basename(arn) => arn }
 
   role       = aws_iam_role.alprs_bastion.name
   policy_arn = each.value
@@ -74,7 +76,7 @@ resource "aws_iam_role_policy_attachment" "alprs_bastion" {
 data "aws_iam_policy_document" "alprs_buckets" {
   statement {
     effect    = "Allow"
-    actions   = ["s3:ListBucket"]
+    actions   = ["s3:ListBucket", "s3:GetBucketLocation"]
     resources = [for type, _ in var.buckets : aws_s3_bucket.buckets[type].arn]
   }
   statement {
@@ -113,7 +115,7 @@ resource "aws_iam_role" "alprs_service" {
 }
 
 resource "aws_iam_role_policy_attachment" "alprs_service" {
-  for_each = { for arn in local.ssm_policy_arns : basename(arn) => arn }
+  for_each = { for arn in local.base_policy_arns : basename(arn) => arn }
 
   role       = aws_iam_role.alprs_service.name
   policy_arn = each.value
@@ -122,7 +124,7 @@ resource "aws_iam_role_policy_attachment" "alprs_service" {
 data "aws_iam_policy_document" "backup_bucket" {
   statement {
     effect    = "Allow"
-    actions   = ["s3:ListBucket"]
+    actions   = ["s3:ListBucket", "s3:GetBucketLocation"]
     resources = [aws_s3_bucket.buckets["backup"].arn]
   }
   statement {
@@ -135,7 +137,7 @@ data "aws_iam_policy_document" "backup_bucket" {
 data "aws_iam_policy_document" "config_bucket" {
   statement {
     effect    = "Allow"
-    actions   = ["s3:ListBucket"]
+    actions   = ["s3:ListBucket", "s3:GetBucketLocation"]
     resources = [aws_s3_bucket.buckets["config"].arn]
   }
   statement {
@@ -258,7 +260,7 @@ resource "aws_iam_role" "alprs_worker" {
 }
 
 resource "aws_iam_role_policy_attachment" "alprs_worker" {
-  for_each = { for arn in local.ssm_policy_arns : basename(arn) => arn }
+  for_each = { for arn in local.base_policy_arns : basename(arn) => arn }
 
   role       = aws_iam_role.alprs_worker.name
   policy_arn = each.value
@@ -266,8 +268,11 @@ resource "aws_iam_role_policy_attachment" "alprs_worker" {
 
 data "aws_iam_policy_document" "ingest_buckets" {
   statement {
-    effect  = "Allow"
-    actions = ["s3:ListBucket"]
+    effect = "Allow"
+    actions = [
+      "s3:ListBucket",
+      "s3:GetBucketLocation",
+    ]
     resources = [
       aws_s3_bucket.buckets["sftp"].arn,
       aws_s3_bucket.buckets["media"].arn,

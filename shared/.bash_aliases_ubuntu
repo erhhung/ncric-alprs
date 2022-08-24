@@ -1,0 +1,5 @@
+alias ag='sudo apt-get '
+alias agu='ag update'
+alias agi='ag install'
+alias agd='ag dist-upgrade -y'
+alias agr='ag autoremove -y --purge'

@@ -13,11 +13,11 @@ db_pass = os.environ.get("RD_OPTION_DB_PASS")
 db_host = os.environ.get("RD_OPTION_DB_HOST")
 db_name = os.environ.get("RD_OPTION_DB_NAME")
 
-''' For Boss data, the cleaning function gets called *within* the function "get_raw_data_from_S3".
-    So first, ALPRIntegration class declares the "clean_row" function. THen it calls it within the following  
-    "get_raw_data_from_S3" function.
-    This is different than the rest of pyntegrations.  
+''' For BOSS data, the cleaning function gets called *within* the function "get_raw_data_from_S3".
+    So first, ALPRIntegration class declares the "clean_row" function, then it calls it within the
+    following "get_raw_data_from_S3" function. This is different than the rest of pyntegrations.
 '''
+
 
 class ALPRIntegration(Integration):
     def __init__(
@@ -37,7 +37,7 @@ class ALPRIntegration(Integration):
 
         super().__init__(
             if_exists="replace",
-            base_url="https://api.openlattice.com",
+            base_url="http://datastore:8080",
             atlas_organization_id=atlas_organization_id)
 
         self.s3_bucket = s3_bucket
@@ -117,7 +117,7 @@ class ALPRIntegration(Integration):
         newdict['agencyAcronym'] = row.agencyAcronym
         newdict['datasource'] = self.datasource
         newdict['LPRCameraName'] = row.LPRCameraName
-        newdict['standardized_agency_name'] = row.standardized_agency_name      #PUT BACK WHEN TABLE EXISTS
+        newdict['standardized_agency_name'] = row.standardized_agency_name
 
         if self.datasource == "BOSS4":
             datasource = "None"
@@ -134,11 +134,11 @@ class ALPRIntegration(Integration):
         newdict['recordedby2_id'] = self.join_string(
             filter(lambda x: x != "None", [str(row.LPREventID), str(row.agencyOriNumber), datasource]))
         newdict['recordedby3_id'] = self.join_string(
-            filter(lambda x: x != "None", [str(row.LPREventID), str(row.standardized_agency_name), datasource])) #row.standardized_agency_name
+            filter(lambda x: x != "None", [str(row.LPREventID), str(row.standardized_agency_name), datasource]))
         newdict['collectedby_id'] = self.join_string(
             filter(lambda x: x != "None", [str(row.LPRCameraID), str(row.agencyOriNumber), datasource]))
         newdict['collectedby2_id'] = self.join_string(
-            filter(lambda x: x != "None", [str(row.LPRCameraID), str(row.standardized_agency_name), datasource])) #row.standardized_agency_name
+            filter(lambda x: x != "None", [str(row.LPRCameraID), str(row.standardized_agency_name), datasource]))
         newdict['locatedat1_id'] = self.join_string(
             filter(lambda x: x != "None" and x is not None, [str(row.LPRCameraID), newdict['location_id'], datasource]))
         newdict['locatedat2_id'] = self.join_string(
@@ -231,15 +231,15 @@ class ALPRIntegration(Integration):
             boss4_cols = ["eventDateTime", "latlon", "location_id", "vehicle_record_id",
                           "VehicleLicensePlateID", "agencyName", "agencyAcronym", "datasource",
                           "LPRCameraName", "standardized_agency_name", "camera_id", "agency_id",
-                          "has_id", "recordedby1_id", "recordedby2_id",
-                          "recordedby3_id", "collectedby_id", "collectedby2_id", "locatedat1_id",
+                          "has_id", "recordedby1_id", "recordedby2_id", "recordedby3_id",
+                          "collectedby_id", "collectedby2_id", "locatedat1_id",
                           "locatedat2_id", "locatedat3_id"]
             empty = pd.DataFrame(columns=boss4_cols).astype('string')
             empty.to_sql(
                 self.raw_table_name,
                 engine,
                 if_exists='replace',
-                dtype=sqlalchemy.types.VARCHAR, #dtypes,
+                dtype=sqlalchemy.types.VARCHAR,  # dtypes,
                 index=False
             )
             if self.raw_table_name_images:
@@ -251,9 +251,8 @@ class ALPRIntegration(Integration):
                     dtype=sqlalchemy.types.VARCHAR,  # dtypes,
                     index=False
                 )
+            # return f"select * from {self.raw_table_name}"
             return self.raw_table_name, self.raw_table_name_images
-            #  return f"select * from {self.raw_table_name}"
-
 
         # filter out any bad dates
         if self.date_end is not None:
@@ -342,12 +341,14 @@ class ALPRIntegration(Integration):
 
 
 class ALPRImagesIntegration(Integration):
-    '''## For the Hotlist images, we will reuse this class but input "ncric_boss4_hotlistimages_flight.yaml"
-   and add a clean table suffix of "hotlist"
-   and hotlist sql="select \"LPREventID\", \"LPRVehiclePlatePhoto\", \"LPRAdditionalPhoto\" 
-   from hotlist_daily  inner join boss4_hourly on \"plate\" = \"VehicleLicensePlateID\" " \
-                                                "inner join boss4_images_hourly using(\"LPREventID\");"
-   It's all the same property values, just different entity sets'''
+    '''
+    For the Hotlist images, we will reuse this class but input "ncric_boss4_hotlistimages_flight.yaml"
+    and add a clean table suffix of "hotlist"
+    and hotlist sql="select \"LPREventID\", \"LPRVehiclePlatePhoto\", \"LPRAdditionalPhoto\"
+    from hotlist_daily inner join boss4_hourly on \"plate\" = \"VehicleLicensePlateID\"
+                       inner join boss4_images_hourly using(\"LPREventID\");"
+    It's all the same property values, just different entity sets
+    '''
     def clean_row(cls, row, datasource):
         newdict = {}
         if row.LPRVehiclePlatePhoto is not None:

@@ -1,10 +1,10 @@
 variable "service" {
-  description = "Name of microservice"
+  description = "Service name/S3 prefix"
   type        = string
 
   validation {
-    condition     = contains(["conductor", "datastore", "indexer", "shuttle", "flapper"], var.service)
-    error_message = "Valid values for service: conductor/datastore/indexer/shuttle/flapper."
+    condition     = contains(["conductor", "datastore", "indexer", "rundeck", "shuttle", "flapper"], var.service)
+    error_message = "Valid values for service: conductor|datastore|indexer|rundeck|shuttle|flapper."
   }
 }
 
@@ -21,4 +21,5 @@ variable "bucket" {
 variable "values" {
   description = "Placeholder values"
   type        = map(string)
+  default     = {}
 }

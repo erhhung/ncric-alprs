@@ -1,0 +1,70 @@
+# https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch-Agent-Configuration-File-Details.html
+# This config file applies to ALL hosts. Host-specific
+# "cwagent_logs.yaml" file may be appended if defined.
+
+agent:
+  metrics_collection_interval: 60
+  run_as_user: cwagent
+
+metrics:
+  aggregation_dimensions:
+  - - InstanceId
+  append_dimensions:
+    ImageId: '${aws:ImageId}'
+    InstanceId: '${aws:InstanceId}'
+    InstanceType: '${aws:InstanceType}'
+  metrics_collected:
+    cpu:
+      measurement:
+      - cpu_usage_idle
+      - cpu_usage_iowait
+      - cpu_usage_user
+      - cpu_usage_system
+      metrics_collection_interval: 60
+      resources:
+      - '*'
+      totalcpu: true
+    mem:
+      measurement:
+      - mem_total
+      - mem_free
+      - mem_used
+      - mem_used_percent
+      - mem_available
+      - mem_available_percent
+      metrics_collection_interval: 60
+    swap:
+      measurement:
+      - swap_used_percent
+      metrics_collection_interval: 60
+    disk:
+      measurement:
+      - disk_total
+      - disk_free
+      - disk_used
+      - disk_used_percent
+      metrics_collection_interval: 60
+      resources:
+      - '*'
+    diskio:
+      measurement:
+      - reads
+      - writes
+      - read_bytes
+      - write_bytes
+      metrics_collection_interval: 60
+      resources:
+      - '*'
+    net:
+      measurement:
+      - bytes_recv
+      - bytes_sent
+      metrics_collection_interval: 60
+      resources:
+      - '*'
+    statsd:
+      metrics_aggregation_interval: 60
+      metrics_collection_interval: 10
+      service_address: ':8125'
+    collectd:
+      metrics_aggregation_interval: 60

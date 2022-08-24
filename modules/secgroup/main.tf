@@ -26,8 +26,8 @@ resource "aws_security_group_rule" "rules" {
 
   security_group_id = aws_security_group.group.id
   type              = regex("^[a-z]+", each.key)
-  cidr_blocks       = each.value.cidr_blocks
   from_port         = each.value.from_port
-  to_port           = each.value.to_port
-  protocol          = each.value.protocol
+  to_port           = coalesce(each.value.to_port, each.value.from_port)
+  protocol          = coalesce(each.value.protocol, "tcp")
+  cidr_blocks       = each.value.cidr_blocks
 }

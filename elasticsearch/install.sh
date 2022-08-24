@@ -3,7 +3,7 @@
 
 install_java() (
   hash java 2> /dev/null && exit
-  apt-get install -y openjdk-11-jdk
+  eval_with_retry "wait_apt_get && apt-get install -y openjdk-11-jdk"
   java --version
   cat <<'EOF' >> /etc/environment
 ES_JAVA_HOME="/usr/lib/jvm/java-11-openjdk-arm64"
@@ -15,7 +15,7 @@ create_xfs_volume() (
   if ! file -sL /dev/nvme1n1 | grep -q filesystem; then
     mkfs.xfs -f -L elastic /dev/nvme1n1
   fi
-  tab=$(printf "\t")
+  printf -v tab "\t"
   cat <<EOF >> /etc/fstab
 LABEL=elastic${tab}/opt/elasticsearch${tab}xfs${tab}defaults,nofail${tab}0 2
 EOF
@@ -28,16 +28,15 @@ EOF
 )
 
 install_elasticsearch() (
-  apt-get install -y apt-transport-https
+  eval_with_retry "wait_apt_get && apt-get install -y apt-transport-https"
   curl -s https://artifacts.elastic.co/GPG-KEY-elasticsearch | apt-key add -
   cd /etc/apt/sources.list.d
   cat <<'EOF' > elastic-7.x.list
 deb https://artifacts.elastic.co/packages/7.x/apt stable main
 EOF
-  apt-get update
-  wait_apt_get
+  apt_update
+  eval_with_retry "wait_apt_get && apt-get install -y elasticsearch kibana nginx"
   . /etc/environment
-  apt-get install -y elasticsearch kibana nginx
   cd /usr/share/elasticsearch/bin
   ./elasticsearch-plugin install analysis-phonetic
   sed -Ei '/^PATH=/s/(.*)"$/\1:\/usr\/share\/elasticsearch\/bin"/' /etc/environment

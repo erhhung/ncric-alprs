@@ -50,9 +50,9 @@ variable "subnet_id" {
   }
 }
 
-variable "security_groups" {
-  description = "IDs of VPC security groups"
-  type        = list(string)
+variable "private_ip" {
+  description = "Static private IP"
+  type        = string
   default     = null
 }
 
@@ -60,6 +60,12 @@ variable "assign_public_ip" {
   description = "Assign public IP?"
   type        = bool
   default     = false
+}
+
+variable "security_groups" {
+  description = "IDs of VPC security groups"
+  type        = list(string)
+  default     = null
 }
 
 variable "instance_profile" {

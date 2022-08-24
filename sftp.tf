@@ -5,7 +5,7 @@
 # reference implementation: https://github.com/PatientPing/terraform-aws-transfer-sftp
 
 module "sftp_sg" {
-  source = "./modules/secgrp"
+  source = "./modules/secgroup"
 
   name        = "sftp-sg"
   description = "Allow SSH traffic"
@@ -14,8 +14,6 @@ module "sftp_sg" {
   rules = {
     ingress_22 = {
       from_port   = 22
-      to_port     = 22
-      protocol    = "tcp"
       cidr_blocks = ["0.0.0.0/0"]
     }
   }
@@ -100,11 +98,11 @@ resource "aws_route53_record" "sftp" {
   zone_id        = local.zone_id
   name           = local.sftp_domain
   type           = "A"
-#  set_identifier = "US"
+  set_identifier = "US"
   records        = [aws_eip.sftp.public_ip]
   ttl            = 60
 
-#  geolocation_routing_policy {
-#    country = "US"
-#  }
+  geolocation_routing_policy {
+    country = "US"
+  }
 }

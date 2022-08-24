@@ -23,11 +23,16 @@ jwt=$(curl -sX POST https://$auth0_domain/oauth/token \
 
 # use http://datastore:8080/ if running on Indexer host
 cat <<'EOF' | curl -s -d @- -H "Authorization: Bearer $jwt" \
-                         -H "Content-Type: application/json" \
-                "https://api.dev.astrometrics.us/datastore/entity-sets" \
+                            -H "Content-Type: application/json" \
+                      https://api.dev.astrometrics.us/datastore/entity-sets \
             | jq
-...
+__SEE_PAYLOAD_SECTION__
 EOF
+
+# trigger indexing of all EDM objects
+curl -s -H "Authorization: Bearer $jwt" \
+        -o /dev/null -w '%{http_code}\n' \
+  http://datastore:8080/datastore/search/edm/index
 ```
 
 ## Payload

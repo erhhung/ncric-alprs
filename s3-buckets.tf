@@ -81,19 +81,58 @@ resource "aws_s3_bucket_acl" "buckets" {
 }
 
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket_lifecycle_configuration
-resource "aws_s3_bucket_lifecycle_configuration" "backup" {
-  bucket = aws_s3_bucket.buckets["backup"].id
+resource "aws_s3_bucket_lifecycle_configuration" "sftp" {
+  bucket = aws_s3_bucket.buckets["sftp"].id
 
   rule {
-    id     = "backup"
+    id     = "glacier-30-expire-180"
+    status = "Enabled"
+
+    transition {
+      days          = 30
+      storage_class = "GLACIER"
+    }
+    expiration {
+      days = 180
+    }
+  }
+}
+
+resource "aws_s3_bucket_lifecycle_configuration" "media" {
+  bucket = aws_s3_bucket.buckets["media"].id
+
+  rule {
+    id     = "infrequent-30"
     status = "Enabled"
 
     transition {
       days          = 30
       storage_class = "STANDARD_IA"
     }
+  }
+}
+
+resource "aws_s3_bucket_lifecycle_configuration" "backup" {
+  bucket = aws_s3_bucket.buckets["backup"].id
+
+  rule {
+    id     = "infrequent-30"
+    status = "Enabled"
+
     transition {
-      days          = 90
+      days          = 30
+      storage_class = "STANDARD_IA"
+    }
+  }
+  rule {
+    id     = "postgresql-glacier-30-expire-365"
+    status = "Enabled"
+
+    filter {
+      prefix = "postgresql/"
+    }
+    transition {
+      days          = 30
       storage_class = "GLACIER"
     }
     expiration {
@@ -106,7 +145,7 @@ resource "aws_s3_bucket_lifecycle_configuration" "audit" {
   bucket = aws_s3_bucket.buckets["audit"].id
 
   rule {
-    id     = "audit"
+    id     = "expire-30"
     status = "Enabled"
 
     expiration {

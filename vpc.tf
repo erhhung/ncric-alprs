@@ -3,8 +3,13 @@ locals {
     public  = ["10.0.10.0/24", "10.0.11.0/24"]
     private = ["10.0.20.0/24", "10.0.21.0/24"]
   }
+  # convert host numbers (last octet) to full IP addresses
+  private_ips = { for host, ip in var.private_ips : host =>
+    cidrhost(local.subnet_cidrs.private[0], ip)
+  }
   all_subnet_cidrs = flatten(values(local.subnet_cidrs))
 }
+
 module "main_vpc" {
   source = "./modules/vpc"
 
@@ -25,7 +30,7 @@ locals {
 }
 
 module "egress_only_sg" {
-  source = "./modules/secgrp"
+  source = "./modules/secgroup"
 
   name        = "egress-only-sg"
   description = "Allow only outbound traffic"
@@ -33,7 +38,7 @@ module "egress_only_sg" {
 }
 
 module "private_ssh_sg" {
-  source = "./modules/secgrp"
+  source = "./modules/secgroup"
 
   name        = "private-ssh-sg"
   description = "Allow SSH from instances"
@@ -42,8 +47,6 @@ module "private_ssh_sg" {
   rules = {
     ingress_22 = {
       from_port   = 22
-      to_port     = 22
-      protocol    = "tcp"
       cidr_blocks = local.subnet_cidrs["private"]
     }
   }

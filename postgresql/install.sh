@@ -6,7 +6,7 @@ create_xfs_volume() (
   if ! file -sL /dev/nvme1n1 | grep -q filesystem; then
     mkfs.xfs -f -L postgresql /dev/nvme1n1
   fi
-  tab=$(printf "\t")
+  printf -v tab "\t"
   cat <<EOF >> /etc/fstab
 LABEL=postgresql${tab}/opt/postgresql${tab}xfs${tab}defaults,nofail${tab}0 2
 EOF
@@ -21,13 +21,11 @@ install_postgresql() (
   cat <<EOF > postgresql-pgdg.list
 deb https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main
 EOF
-  apt-get update
-  wait_apt_get
-  apt-get install -y postgresql-14 postgresql-contrib
+  apt_update
+  eval_with_retry "wait_apt_get && apt-get install -y postgresql-14 postgresql-contrib"
   cd /home/$USER
+  echo -e \\n >> .bash_aliases
   cat <<'EOF' >> .bash_aliases
-
-
 psql() {
   [ "$USER" == 'postgres' ] && $(which psql) "$@" || \
     \sudo -E su postgres -c   "$(which psql)  $@"

@@ -50,7 +50,7 @@
           <description>Auth0 user password</description>
           <hidden>true</hidden>
         </option>
-        <option name='fetch_size' value='20000' />
+        <option name='fetch_size' value='5000' />
       </options>
     </context>
     <defaultTab>nodes</defaultTab>
@@ -82,7 +82,7 @@
       <weekday day='*' />
       <year year='*' />
     </schedule>
-    <scheduleEnabled>false</scheduleEnabled>
+    <scheduleEnabled>true</scheduleEnabled>
     <sequence keepgoing='false' strategy='node-first'>
       <command>
         <description>2 days ago</description>
