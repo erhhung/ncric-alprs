@@ -108,6 +108,10 @@ start_postgresql() {
   systemctl status  postgresql --no-pager
 }
 
+user_dotfiles() {
+  aws s3 sync $S3_URL/postgresql . --exclude '*' --include '.*' --no-progress
+}
+
 create_databases() {
   cd /opt/postgresql
   [ -d users ] && exit
@@ -187,6 +191,7 @@ run create_xfs_volume
 run install_postgresql
 run config_postgresql
 run start_postgresql
+run user_dotfiles     postgres
 run create_databases  postgres
 run create_db_objects postgres
 run create_backup_sh  postgres

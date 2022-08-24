@@ -1,0 +1,11 @@
+-- https://wiki.postgresql.org/wiki/Psqlrc
+\set QUIET 1
+\set PROMPT1 '%n%[%033[1;31m@%[%033[1;32m%/%[%033[1;31m%R%#%[%033[1;34m%x%[%033[0m '
+\set PROMPT2 '%n%[%033[1;31m@%[%033[1;32m%/%[%033[1;34m%R%#%[%033[0m '
+\set COMP_KEYWORD_CASE upper
+-- \set PAGER OFF
+\set HISTSIZE 1000
+\pset null 'NULL'
+-- \timing
+\x auto
+\c org_1446ff84711242ec828df181f45e4d20

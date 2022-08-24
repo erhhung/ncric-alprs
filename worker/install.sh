@@ -113,6 +113,7 @@ install_pylibs() (
 )
 
 user_dotfiles() (
+  aws s3 sync $S3_URL/postgresql . --exclude '*' --include '.*' --no-progress
   cat <<EOF >> .bashrc
 export CONFIG_BUCKET="$CONFIG_BUCKET"
 export MEDIA_BUCKET="$MEDIA_BUCKET"

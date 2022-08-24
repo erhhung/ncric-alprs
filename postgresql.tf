@@ -45,6 +45,9 @@ locals {
     path = "postgresql/pg_hba.conf"
     data = data.external.pg_hba_conf.result.text
     }, {
+    path = "postgresql/.psqlrc"
+    file = "${path.module}/postgresql/.psqlrc"
+    }, {
     # "alprs.sql" contains the exported EDM (entity data model) that was
     # originally imported from api.openlattice.com by starting Conductor
     # once with the "edmsync" flag
