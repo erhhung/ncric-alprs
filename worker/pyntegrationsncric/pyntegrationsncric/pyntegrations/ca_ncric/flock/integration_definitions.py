@@ -1,12 +1,18 @@
 from pyntegrationsncric.pyntegrations.ca_ncric.utils.integration_base_classes import Integration
 from pkg_resources import resource_filename
 import pandas as pd
+import sqlalchemy
+import os
 
 # Defaults to yesterday, midnight to today's midnight.
 # Defaults to NCRIC org, but other org can be specified (e.g. legacy flock db)
 # If current time is Monday anytime, this will choose Sunday midnight to Tuesday midnight (Mon evening)
 # naming columns to avoid image columns
 
+db_user = os.environ.get("RD_OPTION_DB_USER")
+db_pass = os.environ.get("RD_OPTION_DB_PASS")
+db_host = os.environ.get("RD_OPTION_DB_HOST")
+db_name = os.environ.get("RD_OPTION_DB_NAME")
 
 class FLOCKIntegration(Integration):
     def __init__(self, sql=None, flight_path=None,
@@ -19,7 +25,7 @@ class FLOCKIntegration(Integration):
                 f."latitude", f."longitude", f."cameraid", f."cameraname", f."platestate", f."speed",
                 f."direction", f."model", f."hotlistid", f."hotlistname", f."cameralocationlat",
                 f."cameralocationlon", f."cameranetworkid", f."cameranetworkname", s."standardized_agency_name"
-                from flock_reads f left join standardized_agency_names_flock s on cast(f.cameranetworkid as text) = s."ol.id"
+                from flock_reads f left join standardized_agency_names s on cast(f.cameranetworkid as text) = s."ol.name"
                 where \"timestamp\" between current_date - interval '1 day' and current_date + interval '1 day';"""
             clean_table_name_root = "clean_flock_recurring"
         else:
@@ -32,7 +38,7 @@ class FLOCKIntegration(Integration):
             sql=sql,
             atlas_organization_id=org_id,
             clean_table_name_root="_".join(filter(None, [clean_table_name_root, clean_table_name_suffix])),
-            standardize_clean_table_name=True,
+            standardize_clean_table_name=False,
             if_exists="replace",
             flight_path=flight_path,
             base_url=base_url)
@@ -94,7 +100,7 @@ class FLOCKIntegration(Integration):
         return new_dict
 
     def add_new_agencies(cls, sql="""select distinct cameranetworkname, cameranetworkid, standardized_agency_name
-        from flock_reads f left join standardized_agency_names_flock s
+        from flock_reads f left join standardized_agency_names s
             on cast(f.cameranetworkid as text) = s.\"ol.id\""""):
         """
         Function to add new agencies every time Flock integration runs
@@ -103,9 +109,10 @@ class FLOCKIntegration(Integration):
         necessary standardization values are already existing for the fix)
         """
 
-        cls.engine = cls.flight.get_atlas_engine_for_organization()
+        cls.engine = cls.sqlalchemy.create_engine(
+            f"postgresql://{db_user}:{db_pass}@{db_host}:5432/{db_name}")
         data = pd.read_sql(sql, cls.engine)
-        print(data)
+        # print(data)
         data = data[pd.isnull(data['standardized_agency_name'])][['cameranetworkname', 'cameranetworkid']]
         if len(data) > 0:
             data = data.rename({'cameranetworkid': 'ol.id', 'cameranetworkname': 'ol.name'})

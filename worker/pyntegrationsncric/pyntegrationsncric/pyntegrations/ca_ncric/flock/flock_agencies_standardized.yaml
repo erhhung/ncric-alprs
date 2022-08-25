@@ -13,16 +13,16 @@ entityDefinitions:
         column: "standardized_agency_name"
     name: "agencies"
 
-  agencies2:
-    fqn: "ol.agency"
-    entitySetName: "NCRICStandardizedAgenciesFLOCK"
-    propertyDefinitions:
-      ol.id:
-        type: "ol.id"
-        column: "standardized_agency_name"
-      ol.name:
-        type: "ol.name"
-        column: "standardized_agency_name"
-    name: "agencies2"
+#  agencies2:
+#    fqn: "ol.agency"
+#    entitySetName: "NCRICStandardizedAgenciesFLOCK"
+#    propertyDefinitions:
+#      ol.id:
+#        type: "ol.id"
+#        column: "standardized_agency_name"
+#      ol.name:
+#        type: "ol.name"
+#        column: "standardized_agency_name"
+#    name: "agencies2"
 
 associationDefinitions: {}
