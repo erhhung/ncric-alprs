@@ -9,3 +9,4 @@
 -- \timing
 \x auto
 \c org_1446ff84711242ec828df181f45e4d20
+SET search_path = "$user", public, postgis, integrations, openlattice, entitysets, transporter, staging;
