@@ -108,10 +108,6 @@ start_postgresql() {
   systemctl status  postgresql --no-pager
 }
 
-user_dotfiles() {
-  aws s3 sync $S3_URL/postgresql . --exclude '*' --include '.*' --no-progress
-}
-
 create_databases() {
   cd /opt/postgresql
   [ -d users ] && exit
@@ -139,7 +135,7 @@ ALTER USER atlas_user CREATEDB CREATEROLE;
 EOT
 }
 
-create_db_objects() {
+import_tables() {
   cd /opt/postgresql
   [ -d init ] && exit
   mkdir init
@@ -153,7 +149,11 @@ create_db_objects() {
   psql < ncric.sql
 }
 
-create_backup_sh() {
+user_dotfiles() {
+  aws s3 sync $S3_URL/postgresql . --exclude '*' --include '.*' --no-progress
+}
+
+add_backup_sh() {
   cat <<EOF > backup.sh
 #!/bin/bash
 
@@ -191,8 +191,8 @@ run create_xfs_volume
 run install_postgresql
 run config_postgresql
 run start_postgresql
-run user_dotfiles     postgres
-run create_databases  postgres
-run create_db_objects postgres
-run create_backup_sh  postgres
+run create_databases postgres
+run import_tables    postgres
+run user_dotfiles    postgres
+run add_backup_sh    postgres
 run add_backup_cron
