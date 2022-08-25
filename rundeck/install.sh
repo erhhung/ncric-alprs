@@ -140,6 +140,14 @@ import_project() (
   jar="${proj,,}.rdproject.jar"
   aws s3 cp "$S3_URL/rundeck/$jar" . --no-progress
   eval_with_retry "rd projects archives import -f $jar -p $proj"
+
+  if [ "$ENV" == dev ]; then
+    jobs=($(rd jobs list -% %id))  # disable all jobs on DEV
+    rd jobs unschedulebulk -i $(IFS=,; echo "${jobs[*]}") -y
+  fi
+  rd jobs list -f - -F yaml | \
+    yq '.[] | ["job=", .id, " scheduled=", .scheduleEnabled]
+            | join("")'
 )
 
 import_ssh_key() {

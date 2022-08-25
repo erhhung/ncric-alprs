@@ -21,6 +21,9 @@
 (setq sh-basic-offset   2)
 (setq sh-indentation    2)
 
+(custom-set-variables
+ '(sort-fold-case t t)
+ )
 (setq make-backup-files nil)
 
   (line-number-mode t)

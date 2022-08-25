@@ -69,16 +69,40 @@ To export an updated "`alprs.sql.gz`", perform the following steps:
     ```bash
     $ ssh alprsdevpg
 
-      ubuntu@alprsdev-postgresql:~$ sudo su -l postgres
-    postgres@alprsdev-postgresql:~$ psql postgresql://alprs_user:$(< /opt/postgresql/users/alprs_user)@localhost/alprs
-                            alprs=> UPDATE ids SET last_index = '-infinity';
-                            alprs=> exit
-    postgres@alprsdev-postgresql:~$ pg_dump alprs > alprs.sql
-    postgres@alprsdev-postgresql:~$ exit
-      ubuntu@alprsdev-postgresql:~$ sudo cp /var/lib/postgresql/alprs.sql .
-      ubuntu@alprsdev-postgresql:~$ sudo chown ubuntu:ubuntu alprs.sql
+      ubuntu@alprsdev-postgresql:~$ psql
+    postgres@org_1446ff84711242ec828df181f45e4d20=# \c alprs
+                   postgres@alprs=# UPDATE ids SET last_index = '-infinity';
+                   postgres@alprs=# \q
+      ubuntu@alprsdev-postgresql:~$ sudo su postgres bash -c "pg_dump alprs" > alprs.sql
       ubuntu@alprsdev-postgresql:~$ gzip -k9 alprs.sql
       ubuntu@alprsdev-postgresql:~$ exit
 
     $ scp alprsdevpg:alprs.sql.gz .
+    ```
+
+## "`ncric.sql`"
+
+"`ncric.sql`" is a curated SQL script to bootstrap an empty NCRIC
+`org_1446ff84711242ec828df181f45e4d20` (aka "Atlas") database.  
+It contains, at present, without any ingested ALPR data, only the
+`standardized_agency_names` table in the `integrations` schema.
+
+To export an updated "`ncric.sql.gz`", perform the following steps:
+
+1. Run the following commands:
+    ```bash
+    $ ssh alprsdevpg
+
+    ubuntu@alprsdev-postgresql:~$ sudo su postgres bash -c "pg_dump -C --no-acl \
+                                    -n integrations -T 'boss4*' -T 'flock*' -T 'scso*' \
+                                    org_1446ff84711242ec828df181f45e4d20" > ncric.sql
+    ```
+2. Edit "`ncric.sql`" and **sort the lines** containing
+   data for the `standardized_agency_names` table.
+3. Run the following commands:
+    ```bash
+      ubuntu@alprsdev-postgresql:~$ gzip -k9 ncric.sql
+      ubuntu@alprsdev-postgresql:~$ exit
+
+    $ scp alprsdevpg:ncric.sql.gz .
     ```
