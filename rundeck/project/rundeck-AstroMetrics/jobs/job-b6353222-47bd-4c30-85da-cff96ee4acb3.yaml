@@ -98,7 +98,7 @@
   schedule:
     month: '*'
     time:
-      hour: '00'
+      hour: '*'
       minute: '10'
       seconds: '0'
     weekday:

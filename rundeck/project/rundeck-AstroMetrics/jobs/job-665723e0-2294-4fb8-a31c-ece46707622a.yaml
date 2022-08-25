@@ -99,7 +99,7 @@
   schedule:
     month: '*'
     time:
-      hour: '00'
+      hour: '*'
       minute: '15'
       seconds: '0'
     weekday:

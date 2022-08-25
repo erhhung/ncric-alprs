@@ -36,7 +36,7 @@
       <weekday day='*' />
       <year year='*' />
     </schedule>
-    <scheduleEnabled>false</scheduleEnabled>
+    <scheduleEnabled>true</scheduleEnabled>
     <sequence keepgoing='false' strategy='node-first'>
       <command>
         <description>entire previous day</description>

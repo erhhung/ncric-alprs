@@ -77,7 +77,7 @@
     <plugins />
     <schedule>
       <month month='*' />
-      <time hour='00' minute='10' seconds='0' />
+      <time hour='*' minute='10' seconds='0' />
       <weekday day='*' />
       <year year='*' />
     </schedule>
