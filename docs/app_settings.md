@@ -35,6 +35,11 @@ curl -s -H "Authorization: Bearer $jwt" \
         http://datastore:8080/datastore/data/set/6d17e1c0-d61b-4ec8-80ce-1e82b4a64166 \
   | jq
 
+# ensure 57 entity sets are referenced
+curl -s -H "Authorization: Bearer $jwt" \
+        http://datastore:8080/datastore/data/set/6d17e1c0-d61b-4ec8-80ce-1e82b4a64166 \
+  | jq '.[0]."ol.appdetails"[0] | fromjson | .AGENCY_VEHICLE_RECORDS_ENTITY_SETS | keys | length'
+
 # API request issued from the frontend
 curl -s -H "Authorization: Bearer $jwt" \
         -H "Content-Type: application/json" \
@@ -46,6 +51,25 @@ curl -s -H "Authorization: Bearer $jwt" \
 psql postgresql://alprs_user:SECRET@postgresql:5432/alprs
 alprs=> UPDATE ids SET last_index = '-infinity' WHERE entity_set_id = '6d17e1c0-d61b-4ec8-80ce-1e82b4a64166';
 ```
+
+## Delete & Redo
+
+To delete existing entities from the `6d17e1c0-d61b-4ec8-80ce-1e82b4a64166`
+(`app.settings`) entity set, invoke the following APIs:
+
+1. Get entities:
+  ```
+  GET https://api.dev.astrometrics.us/datastore/data/set/6d17e1c0-d61b-4ec8-80ce-1e82b4a64166
+  ```
+2. Delete entities:
+  ```
+  # delete ALL entities in an entity set
+  DELETE https://api.dev.astrometrics.us/datastore/data/set/6d17e1c0-d61b-4ec8-80ce-1e82b4a64166/all?type=Hard
+
+  # delete specific entities in an entity set
+  DELETE https://api.dev.astrometrics.us/datastore/data/set/6d17e1c0-d61b-4ec8-80ce-1e82b4a64166?type=Hard
+  ["00000000-0000-0000-8000-0000000000dc", ...]
+  ```
 
 ## Payload
 
@@ -144,22 +168,3 @@ console.log(JSON.stringify(payload, undefined, 2));
   }
 ]
 ```
-
-## Delete & Redo
-
-To delete existing entities from the `6d17e1c0-d61b-4ec8-80ce-1e82b4a64166`
-(`app.settings`) entity set, invoke the following APIs:
-
-1. Get entity IDs:
-  ```
-  GET https://api.dev.astrometrics.us/datastore/data/set/6d17e1c0-d61b-4ec8-80ce-1e82b4a64166
-  ```
-2. Delete entities:
-  ```
-  # delete ALL entities in an entity set
-  DELETE https://api.dev.astrometrics.us/datastore/data/set/6d17e1c0-d61b-4ec8-80ce-1e82b4a64166/all?type=Hard
-
-  # delete specific entities in an entity set
-  DELETE https://api.dev.astrometrics.us/datastore/data/set/6d17e1c0-d61b-4ec8-80ce-1e82b4a64166?type=Hard
-  ["00000000-0000-0000-8000-0000000000dc", ...]
-  ```

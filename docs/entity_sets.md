@@ -35,6 +35,42 @@ curl -s -H "Authorization: Bearer $jwt" \
   http://datastore:8080/datastore/search/edm/index
 ```
 
+## Permissions
+
+It is imperative that all entity sets (at current count there should be 88) are granted
+proper permissions using the **Lattice Orgs** webapp (http://localhost:9001/ after SSH
+tunneling into the **bastion host**):
+
+1. Log into Lattice Orgs as **ol@dev.astrometrics.us**
+2. Select the **NCRIC organization**
+3. Select **Manage Permissions** from the **⋮** icon to the right of the NCRIC title
+4. Make sure relevant admin and owner users are granted proper permissions
+    * Admin users: "NCRIC - ADMIN", ol@dev.astrometrics.us, ol@astrometrics.us, eyuan@maiveric.com, mashiq@maiveric.com
+        * Grant `owner`, `read`, `write`, `integrate`, `link`, `materialize`
+    * Owner users: brodrigues@ncric.ca.gov, agent.blue@maiveric.com
+        * Grant `owner`, `read`, `write`
+5. Go back to the NCRIC organization view and select **People** at the top
+6. Grant the same set of admin users **all 4 roles** and the owners all roles except "`NCRIC - ADMIN`"
+    * All roles: "`NCRIC - ADMIN`", "`AstroMetrics - OWNER`", "`AstroMetrics - READ`", "`AstroMetrics - WRITE`"
+7. Repeat for **each admin user** (excluding owner users):
+    1. Select the user to show user view
+    2. Under **Data Sets**, there are 10 entity sets listed "per page", and there are currently 88
+    3. If new entity sets have been added, click on the **Add data set** button and select those new entity sets (search might help)
+    4. On the **Assign Permissions To Data Sets** page of the dialog, select all 6 permissions and click **Continue**
+    5. Retry the process if, for some reason, the dialog shows that an error has occurred
+8. Go back to the NCRIC organization view and select **Roles** at the top
+9. Repeat for **each role**:
+    1. Select the role to show role view
+    2. Under **Data Sets**, there are 10 entity sets listed "per page", and there are currently 88
+    3. If new entity sets have been added, click on the **Add data set** button and select those new entity sets (search might help)
+    4. On the **Assign Permissions To Data Sets** page of the dialog, select the permissions relevant to the role and click **Continue**
+        * "**`NCRIC - ADMIN`**": `owner`, `read`, `write`, `integrate`, `link`, `materialize`
+        * "**`AstroMetrics - OWNER`**": `owner`, `read`, `write`
+        * "**`AstroMetrics - READ`**": `read`
+        * "**`AstroMetrics - WRITE`**": `write`
+    5. Retry the process if, for some reason, the dialog shows that an error has occurred
+10. Go back to the NCRIC organization view and verify that **all (currently 88) entity sets appear** on the **Data Sets** tab
+
 ## Payload
 
 _**NOTE**: These entity sets are already reflected in the PostgreSQL init script "`alprs.sql`"._
@@ -663,39 +699,3 @@ _**NOTE**: These entity sets are already reflected in the PostgreSQL init script
   }
 ]
 ```
-
-## Permissions
-
-It is imperative that all entity sets (at current count there should be 88) are granted
-proper permissions using the **Lattice Orgs** webapp (http://localhost:9001/ after SSH
-tunneling into the **bastion host**):
-
-1. Log into Lattice Orgs as **ol@dev.astrometrics.us**
-2. Select the **NCRIC organization**
-3. Select **Manage Permissions** from the **⋮** icon to the right of the NCRIC title
-4. Make sure relevant admin and owner users are granted proper permissions
-    * Admin users: "NCRIC - ADMIN", ol@dev.astrometrics.us, ol@astrometrics.us, eyuan@maiveric.com, mashiq@maiveric.com
-        * Grant `owner`, `read`, `write`, `integrate`, `link`, `materialize`
-    * Owner users: brodrigues@ncric.ca.gov, agent.blue@maiveric.com
-        * Grant `owner`, `read`, `write`
-5. Go back to the NCRIC organization view and select **People** at the top
-6. Grant the same set of admin users **all 4 roles** and the owners all roles except "`NCRIC - ADMIN`"
-    * All roles: "`NCRIC - ADMIN`", "`AstroMetrics - OWNER`", "`AstroMetrics - READ`", "`AstroMetrics - WRITE`"
-7. Repeat for **each admin user** (excluding owner users):
-    1. Select the user to show user view
-    2. Under **Data Sets**, there are 10 entity sets listed "per page", and there are currently 88
-    3. If new entity sets have been added, click on the **Add data set** button and select those new entity sets (search might help)
-    4. On the **Assign Permissions To Data Sets** page of the dialog, select all 6 permissions and click **Continue**
-    5. Retry the process if, for some reason, the dialog shows that an error has occurred
-8. Go back to the NCRIC organization view and select **Roles** at the top
-9. Repeat for **each role**:
-    1. Select the role to show role view
-    2. Under **Data Sets**, there are 10 entity sets listed "per page", and there are currently 88
-    3. If new entity sets have been added, click on the **Add data set** button and select those new entity sets (search might help)
-    4. On the **Assign Permissions To Data Sets** page of the dialog, select the permissions relevant to the role and click **Continue**
-        * "**`NCRIC - ADMIN`**": `owner`, `read`, `write`, `integrate`, `link`, `materialize`
-        * "**`AstroMetrics - OWNER`**": `owner`, `read`, `write`
-        * "**`AstroMetrics - READ`**": `read`
-        * "**`AstroMetrics - WRITE`**": `write`
-    5. Retry the process if, for some reason, the dialog shows that an error has occurred
-10. Go back to the NCRIC organization view and verify that **all (currently 88) entity sets appear** on the **Data Sets** tab
