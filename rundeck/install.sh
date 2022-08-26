@@ -69,8 +69,15 @@ config_rundeck() (
 </project>
 EOF
           cd /etc/rundeck
-          # change default admin password
-          sed -i "s/admin:admin/admin:$rundeck_pass/" realm.properties
+          # change default admin password and
+          # allow login as devadmin|prodadmin
+          while read -r expr; do
+            sed -Ei "$expr" realm.properties
+          done <<EOT
+/^${ENV}admin:/d
+s/^admin:[^,]+,/admin: $rundeck_pass,/
+s/^admin:.+$/\0\n$ENV\0/
+EOT
           # install "rundeck-config.properties" and "framework.properties",
           # customized to use PostgreSQL instead of H2 as primary database,
           # and S3 bucket instead of local disk to store job execution logs
