@@ -65,6 +65,24 @@ To export an updated "`alprs.sql.gz`", perform the following steps:
    and modifying permissions.
 3. Stop all apps that may cause database changes, including Conductor,
    Datastore, Indexer, Rundeck jobs, Shuttle and Flapper processes.
+    ```bash
+    $ ./stop.sh bastion worker indexer datastore conductor
+
+    Stop services on hosts:
+      * bastion
+      * worker
+      * indexer
+      * datastore
+      * conductor
+    Proceed? [y/N] y
+
+    Retrieving Terraform output variables...DONE.
+    Stopping services on host "bastion"...DONE.
+    Stopping services on host "worker"...DONE.
+    Stopping services on host "indexer"...DONE.
+    Stopping services on host "datastore"...DONE.
+    Stopping services on host "conductor"...DONE.
+    ```
 4. Run the following commands:
     ```bash
     $ ssh alprsdevpg

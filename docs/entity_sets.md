@@ -103,6 +103,16 @@ _**NOTE**: These entity sets are already reflected in the PostgreSQL init script
   },
   {
     "entityTypeId": "3c6dad54-c4b4-4dfb-bd8b-d8dd56e342ec",
+    "name": "NCRICVehicleRecordsAndersonCityPD",
+    "title": "Anderson City PD",
+    "organizationId": "1446ff84-7112-42ec-828d-f181f45e4d20",
+    "contacts": [
+      "devops@astrometrics.us"
+    ],
+    "flags": []
+  },
+  {
+    "entityTypeId": "3c6dad54-c4b4-4dfb-bd8b-d8dd56e342ec",
     "name": "NCRICVehicleRecordsAthertonPD",
     "title": "Atherton PD",
     "organizationId": "1446ff84-7112-42ec-828d-f181f45e4d20",
@@ -223,6 +233,16 @@ _**NOTE**: These entity sets are already reflected in the PostgreSQL init script
   },
   {
     "entityTypeId": "3c6dad54-c4b4-4dfb-bd8b-d8dd56e342ec",
+    "name": "NCRICVehicleRecordsFairfieldPD",
+    "title": "Fairfield PD",
+    "organizationId": "1446ff84-7112-42ec-828d-f181f45e4d20",
+    "contacts": [
+      "devops@astrometrics.us"
+    ],
+    "flags": []
+  },
+  {
+    "entityTypeId": "3c6dad54-c4b4-4dfb-bd8b-d8dd56e342ec",
     "name": "NCRICVehicleRecordsFremontPD",
     "title": "Fremont PD",
     "organizationId": "1446ff84-7112-42ec-828d-f181f45e4d20",
@@ -333,6 +353,16 @@ _**NOTE**: These entity sets are already reflected in the PostgreSQL init script
   },
   {
     "entityTypeId": "3c6dad54-c4b4-4dfb-bd8b-d8dd56e342ec",
+    "name": "NCRICVehicleRecordsMillbraePD",
+    "title": "Millbrae PD",
+    "organizationId": "1446ff84-7112-42ec-828d-f181f45e4d20",
+    "contacts": [
+      "devops@astrometrics.us"
+    ],
+    "flags": []
+  },
+  {
+    "entityTypeId": "3c6dad54-c4b4-4dfb-bd8b-d8dd56e342ec",
     "name": "NCRICVehicleRecordsModestoPD",
     "title": "Modesto PD",
     "organizationId": "1446ff84-7112-42ec-828d-f181f45e4d20",
@@ -435,6 +465,16 @@ _**NOTE**: These entity sets are already reflected in the PostgreSQL init script
     "entityTypeId": "3c6dad54-c4b4-4dfb-bd8b-d8dd56e342ec",
     "name": "NCRICVehicleRecordsSFOAirportPolice",
     "title": "SFO Airport Police",
+    "organizationId": "1446ff84-7112-42ec-828d-f181f45e4d20",
+    "contacts": [
+      "devops@astrometrics.us"
+    ],
+    "flags": []
+  },
+  {
+    "entityTypeId": "3c6dad54-c4b4-4dfb-bd8b-d8dd56e342ec",
+    "name": "NCRICVehicleRecordsSalinasPD",
+    "title": "Salinas PD",
     "organizationId": "1446ff84-7112-42ec-828d-f181f45e4d20",
     "contacts": [
       "devops@astrometrics.us"
@@ -626,29 +666,31 @@ _**NOTE**: These entity sets are already reflected in the PostgreSQL init script
 
 ## Permissions
 
-It is imperative that all entity sets (at current count there should be 84) are granted
+It is imperative that all entity sets (at current count there should be 88) are granted
 proper permissions using the **Lattice Orgs** webapp (http://localhost:9001/ after SSH
 tunneling into the **bastion host**):
 
 1. Log into Lattice Orgs as **ol@dev.astrometrics.us**
 2. Select the **NCRIC organization**
 3. Select **Manage Permissions** from the **⋮** icon to the right of the NCRIC title
-4. Make sure relevant admin users are granted full permissions
-    * Admin users: NCRIC - ADMIN, ol@dev.astrometrics.us, ol@astrometrics.us, eyuan@maiveric.com, mashiq@maiveric.com
-    * All permissions: `owner`, `read`, `write`, `integrate`, `link`, `materialize`
+4. Make sure relevant admin and owner users are granted proper permissions
+    * Admin users: "NCRIC - ADMIN", ol@dev.astrometrics.us, ol@astrometrics.us, eyuan@maiveric.com, mashiq@maiveric.com
+        * Grant `owner`, `read`, `write`, `integrate`, `link`, `materialize`
+    * Owner users: brodrigues@ncric.ca.gov, agent.blue@maiveric.com
+        * Grant `owner`, `read`, `write`
 5. Go back to the NCRIC organization view and select **People** at the top
-6. Grant the same set of admin users **all 4 roles**
+6. Grant the same set of admin users **all 4 roles** and the owners all roles except "`NCRIC - ADMIN`"
     * All roles: "`NCRIC - ADMIN`", "`AstroMetrics - OWNER`", "`AstroMetrics - READ`", "`AstroMetrics - WRITE`"
-7. Repeat for **each admin user**:
+7. Repeat for **each admin user** (excluding owner users):
     1. Select the user to show user view
-    2. Under **Data Sets**, there are 10 entity sets listed "per page", and there are currently 84
+    2. Under **Data Sets**, there are 10 entity sets listed "per page", and there are currently 88
     3. If new entity sets have been added, click on the **Add data set** button and select those new entity sets (search might help)
     4. On the **Assign Permissions To Data Sets** page of the dialog, select all 6 permissions and click **Continue**
     5. Retry the process if, for some reason, the dialog shows that an error has occurred
 8. Go back to the NCRIC organization view and select **Roles** at the top
 9. Repeat for **each role**:
     1. Select the role to show role view
-    2. Under **Data Sets**, there are 10 entity sets listed "per page", and there are currently 84
+    2. Under **Data Sets**, there are 10 entity sets listed "per page", and there are currently 88
     3. If new entity sets have been added, click on the **Add data set** button and select those new entity sets (search might help)
     4. On the **Assign Permissions To Data Sets** page of the dialog, select the permissions relevant to the role and click **Continue**
         * "**`NCRIC - ADMIN`**": `owner`, `read`, `write`, `integrate`, `link`, `materialize`
@@ -656,4 +698,4 @@ tunneling into the **bastion host**):
         * "**`AstroMetrics - READ`**": `read`
         * "**`AstroMetrics - WRITE`**": `write`
     5. Retry the process if, for some reason, the dialog shows that an error has occurred
-10. Go back to the NCRIC organization view and verify that **all (currently 84) entity sets appear** on the **Data Sets** tab
+10. Go back to the NCRIC organization view and verify that **all (currently 88) entity sets appear** on the **Data Sets** tab
