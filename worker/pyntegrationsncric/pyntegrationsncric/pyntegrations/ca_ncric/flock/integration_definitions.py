@@ -25,7 +25,7 @@ class FLOCKIntegration(Integration):
                 f."latitude", f."longitude", f."cameraid", f."cameraname", f."platestate", f."speed",
                 f."direction", f."model", f."hotlistid", f."hotlistname", f."cameralocationlat",
                 f."cameralocationlon", f."cameranetworkid", f."cameranetworkname", s."standardized_agency_name"
-                from flock_reads f left join standardized_agency_names s on cast(f.cameranetworkid as text) = s."ol.name"
+                from flock_reads f left join standardized_agency_names s on f.cameranetworkname = s."ol.name"
                 where \"timestamp\" between current_date - interval '1 day' and current_date + interval '1 day';"""
             clean_table_name_root = "clean_flock_recurring"
         else:
@@ -101,7 +101,7 @@ class FLOCKIntegration(Integration):
 
     def add_new_agencies(cls, sql="""select distinct cameranetworkname, cameranetworkid, standardized_agency_name
         from flock_reads f left join standardized_agency_names s
-            on cast(f.cameranetworkid as text) = s.\"ol.id\""""):
+            on f.cameranetworkname = s.\"ol.name\""""):
         """
         Function to add new agencies every time Flock integration runs
         This probably won't be useful majority of the time, but we want to capture all "standardizations"
@@ -115,7 +115,7 @@ class FLOCKIntegration(Integration):
         # print(data)
         data = data[pd.isnull(data['standardized_agency_name'])][['cameranetworkname', 'cameranetworkid']]
         if len(data) > 0:
-            data = data.rename({'cameranetworkid': 'ol.id', 'cameranetworkname': 'ol.name'})
+            data = data.rename({'cameranetworkname': 'ol.name'})
             data['ol.datasource'] = "FLOCK"
             data['standardized_agency_name'] = data['ol.name']
             data.to_sql("standardized_agency_names_flock", cls.engine, if_exists="append", index=False)
@@ -322,7 +322,7 @@ class FLOCKAgencyStandardizationFixIntegration(Integration):
 class FLOCKAgencyStandardizationIntegration(Integration):
     # sql is necessary here, but we don't actually clean any files...
     # just set integration.integrate_table(sql = "select * from standardized_agency_names_flock")
-    def __init__(self, sql="select * from standardized_agency_names_flock",
+    def __init__(self, sql="select * from standardized_agency_names",
                  flight_file="flock_agencies_standardized.yaml",
                  base_url="http://datastore:8080"):
 
