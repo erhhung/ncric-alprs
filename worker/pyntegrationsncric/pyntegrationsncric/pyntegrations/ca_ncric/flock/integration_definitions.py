@@ -51,7 +51,7 @@ class FLOCKIntegration(Integration):
         """
 
         # Empty pd.Series for storing the cleaned row
-        new_dict = pd.Series()
+        new_dict = pd.Series(dtype='object')
 
         # Reformat variables as needed
         new_dict['vehicle_record_id'] = f'{str(row.readid)}_FLOCK'
@@ -151,7 +151,7 @@ class FLOCKImageSourceIntegration(Integration):
         :return: a cleaned row of data corresponding to a imagesource from the FLOCK data set
         """
 
-        new_dict = pd.Series()
+        new_dict = pd.Series(dtype=pd.StringDtype())
         new_dict['camera_id'] = str(row.cameraid)
         new_dict['LPRCameraName'] = row.cameraname
         new_dict['datasource'] = "FLOCK"
@@ -186,7 +186,7 @@ class FLOCKAgenciesIntegration(Integration):
         :return: a cleaned row of data corresponding to a agencies (cameranetworks) from the FLOCK data set
         """
 
-        new_dict = pd.Series()
+        new_dict = pd.Series(dtype=pd.StringDtype())
         new_dict['agency_id'] = str(row.cameranetworkid)
         new_dict['agencyName'] = row.cameranetworkname
         new_dict['datasource'] = "FLOCK"
@@ -213,7 +213,7 @@ class FLOCKImagesIntegration(Integration):
 
     def clean_row(cls, row):
 
-        new_dict = pd.Series()
+        new_dict = pd.Series(dtype='object')
 
         new_dict['vehicle_record_id'] = f'{str(row.readid)}_FLOCK'
         new_dict['LPRVehiclePlatePhoto'] = row.image
@@ -255,7 +255,7 @@ class FlockHotlistIntegration(Integration):
         :return: a cleaned row of data from the FLOCK data set
         """
 
-        new_dict = pd.Series()
+        new_dict = pd.Series(dtype='object')
 
         new_dict['vehicle_record_id'] = f'{str(row.readid)}_FLOCK'
         new_dict['VehicleLicensePlateID'] = str(row.plate)
@@ -305,7 +305,7 @@ class FLOCKAgencyStandardizationFixIntegration(Integration):
         """
 
         # Empty pd.Series for storing the cleaned row
-        new_dict = pd.Series()
+        new_dict = pd.Series(dtype='object')
 
         # Reformat variables as needed
         new_dict['vehicle_record_id'] = f'{str(row.readid)}_FLOCK'
