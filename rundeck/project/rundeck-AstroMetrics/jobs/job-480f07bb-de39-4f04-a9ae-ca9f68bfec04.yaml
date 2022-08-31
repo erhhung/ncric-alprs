@@ -28,7 +28,7 @@
   schedule:
     month: '*'
     time:
-      hour: '0'
+      hour: '00'
       minute: '10'
       seconds: '0'
     weekday:
@@ -53,4 +53,5 @@
     keepgoing: false
     strategy: node-first
   timeZone: America/Los_Angeles
+  timeout: 6h
   uuid: 480f07bb-de39-4f04-a9ae-ca9f68bfec04

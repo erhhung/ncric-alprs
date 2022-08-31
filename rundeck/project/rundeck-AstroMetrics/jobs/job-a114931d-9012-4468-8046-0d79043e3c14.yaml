@@ -96,7 +96,7 @@
     weekday:
       day: '*'
     year: '*'
-  scheduleEnabled: false
+  scheduleEnabled: true
   sequence:
     commands:
     - description: 3 hours a day ago
@@ -113,14 +113,23 @@
 
         agencies = [
           "Atherton PD",
+          "Anderson City PD",
+          "Benicia PD",
           "CHP",
           "Danville PD",
+          "Dixon PD",
+          "Fairfield PD",
+          "Fremont PD",
           "GGB Vista Point",
           "Livermore PD",
+          "Millbrae PD",
+          "Morgan Hill PD",
           "Napa PD",
           "NCRIC",
           "Piedmont PD",
+          "Salinas PD",
           "San Mateo PD",
+          "Santa Clara PD",
           "Vacaville PD",
           "Vallejo PD"
         ]
@@ -155,13 +164,13 @@
                     select count(*) from (
                         select f.readid, f.image, s.standardized_agency_name
                         from flock_reads f
-                        left join standardized_agency_names_flock s
-                        on cast(f.cameranetworkid as text) = s."ol.id"
+                        left join standardized_agency_names s
+                        on f.cameranetworkname = s."ol.name"
                         where "timestamp" >= '{dt_start}'
                           and "timestamp" <= '{dt_end}'
                           and s.standardized_agency_name = '{agency}'
                     ) t''')
-                records = pd.DataFrame(result).loc[0, 0]
+                records = pd.DataFrame(result).iloc[0, 0]
                 print(f"{records} records to process")
                 chunks = math.ceil(records / limit)
 
@@ -173,8 +182,8 @@
                             f.image as "LPRVehiclePlatePhoto",
                             s.standardized_agency_name
                         from flock_reads f
-                        left join standardized_agency_names_flock s
-                        on cast(f.cameranetworkid as text) = s."ol.id"
+                        left join standardized_agency_names s
+                        on f.cameranetworkname = s."ol.name"
                         where "timestamp" >= '{dt_start}'
                           and "timestamp" <= '{dt_end}'
                           and s.standardized_agency_name = '{agency}'

@@ -32,7 +32,7 @@
     <plugins />
     <schedule>
       <month month='*' />
-      <time hour='0' minute='10' seconds='0' />
+      <time hour='00' minute='10' seconds='0' />
       <weekday day='*' />
       <year year='*' />
     </schedule>
@@ -55,6 +55,7 @@ $FLAPPER_PATH --file $FLAPPER_CONF \
       </command>
     </sequence>
     <timeZone>America/Los_Angeles</timeZone>
+    <timeout>6h</timeout>
     <uuid>480f07bb-de39-4f04-a9ae-ca9f68bfec04</uuid>
   </job>
 </joblist>

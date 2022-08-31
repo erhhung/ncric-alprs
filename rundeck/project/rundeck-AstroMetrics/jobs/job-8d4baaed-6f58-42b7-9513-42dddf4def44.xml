@@ -75,7 +75,7 @@
       <weekday day='*' />
       <year year='*' />
     </schedule>
-    <scheduleEnabled>false</scheduleEnabled>
+    <scheduleEnabled>true</scheduleEnabled>
     <sequence keepgoing='false' strategy='node-first'>
       <command>
         <description>6 hours a day ago</description>
@@ -92,14 +92,23 @@ import os
 
 agencies = [
   "Atherton PD",
+  "Anderson City PD",
+  "Benicia PD",
   "CHP",
   "Danville PD",
+  "Dixon PD",
+  "Fairfield PD",
+  "Fremont PD",
   "GGB Vista Point",
   "Livermore PD",
+  "Millbrae PD",
+  "Morgan Hill PD",
   "Napa PD",
   "NCRIC",
   "Piedmont PD",
+  "Salinas PD",
   "San Mateo PD",
+  "Santa Clara PD",
   "Vacaville PD",
   "Vallejo PD"
 ]
@@ -134,8 +143,8 @@ try:
                 f."direction", f."model", f."hotlistid", f."hotlistname", f."cameralocationlat",
                 f."cameralocationlon", f."cameranetworkid", f."cameranetworkname", s."standardized_agency_name"
             from flock_reads f
-            left join standardized_agency_names_flock s
-            on cast(f.cameranetworkid as text) = s."ol.id"
+            left join standardized_agency_names s
+            on f.cameranetworkname = s."ol.name"
             where "timestamp" >= '{dt_start}'
               and "timestamp" <= '{dt_end}'
               and s.standardized_agency_name = '{agency}'
@@ -147,7 +156,7 @@ try:
 
         print(f"Integrating MAIN table for {agency}!")
         result = engine.execute(f"select count(*) from {main_table}")
-        records = pd.DataFrame(result).loc[0, 0]
+        records = pd.DataFrame(result).iloc[0, 0]
         print(f"{records} records to process")
         chunks = math.ceil(records / limit)
 
@@ -182,8 +191,8 @@ try:
         sql="select * from standardized_agency_names",
         base_url=api_url)
     sagency_integration.integrate_table(
-        sql="select * from standardized_agency_names_flock",
-        drop_table_on_success=True,
+        sql="select * from standardized_agency_names",
+        drop_table_on_success=False,
         shuttle_path=shuttle_path,
         shuttle_args=shuttle_args)
 
