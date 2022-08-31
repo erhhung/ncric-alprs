@@ -26,27 +26,38 @@ install_rundeck() (
 )
 
 install_plugins() (
+  mkdir -p plugins
+  cd plugins
+  # https://github.com/rundeck-plugins/openssh-node-execution
+  PLUGIN=openssh-node-execution VERSION=2.0.2
+  curl -sLO https://github.com/rundeck-plugins/$PLUGIN/releases/download/$VERSION/$PLUGIN-$VERSION.zip
+  unzip -ojd $PLUGIN-$VERSION $PLUGIN-$VERSION.zip '*/ssh-*.sh'
+  unzip -o                    $PLUGIN-$VERSION.zip '*/resources/*'
+  # work around "rd_secure_passphrase: invalid indirect expansion" error
+  # https://github.com/rundeck-plugins/openssh-node-execution/issues/21
+  sed -Ei 's/\$\{\!rd_secure_passphrase\}/${rd_secure_passphrase+x}/g' $PLUGIN-$VERSION/ssh-*.sh
   cd ~/libext
   # https://github.com/rundeck-plugins/rundeck-s3-log-plugin
   PLUGIN=rundeck-s3-log-plugin VERSION=1.0.13
   curl -sLO https://github.com/rundeck-plugins/$PLUGIN/releases/download/v$VERSION/$PLUGIN-$VERSION.jar
 )
 
-# args: [stage]
 config_rundeck() (
   case `whoami` in
     root)
       cd /etc/ssh
       # send RD_* environment variables to remote workers
       sed -Ei $'/^Host \*$/a \\\tSendEnv RD_*' ssh_config
+      cd /etc/init.d
+      # update init.d script to use patched openssh-node-execution plugin
+      cmd='sleep 2m; cp -a plugins/openssh-node-execution*/ libext/cache'
+      sed -Ei "s|^(.+runuser.+-c).+$|\1 '$cmd' \&> /dev/null \&\n\0|" rundeckd
       ;;
     rundeck)
-      case "$1" in
-        before_start)
-          # https://docs.rundeck.digitalstacks.net/l/en/document-formats/resource-xml
-          mkdir -p projects/AstroMetrics/etc
-          cd projects/AstroMetrics/etc
-          cat <<EOF > resources.xml
+      # https://docs.rundeck.digitalstacks.net/l/en/document-formats/resource-xml
+      mkdir -p projects/AstroMetrics/etc
+      cd projects/AstroMetrics/etc
+      cat <<EOF > resources.xml
 <?xml version="1.0" encoding="UTF-8"?>
 
 <project>
@@ -68,29 +79,21 @@ config_rundeck() (
   />
 </project>
 EOF
-          cd /etc/rundeck
-          # change default admin password and
-          # allow login as devadmin|prodadmin
-          while read -r expr; do
-            sed -Ei "$expr" realm.properties
-          done <<EOT
+      cd /etc/rundeck
+      # change default admin password and
+      # allow login as devadmin|prodadmin
+      while read -r expr; do
+        sed -Ei "$expr" realm.properties
+      done <<EOT
 /^${ENV}admin:/d
 s/^admin:[^,]+,/admin: $rundeck_pass,/
 s/^admin:.+$/\0\n$ENV\0/
 EOT
-          # install "rundeck-config.properties" and "framework.properties",
-          # customized to use PostgreSQL instead of H2 as primary database,
-          # and S3 bucket instead of local disk to store job execution logs
-          aws s3 sync s3://$CONFIG_BUCKET/rundeck/ .
-          find . -type f -exec chmod 640 {} \;
-          ;;
-        after_start)
-          cd ~/libext/cache/openssh-node-execution*
-          # work around "rd_secure_passphrase: invalid indirect expansion" error
-          # https://github.com/rundeck-plugins/openssh-node-execution/issues/21
-          sed -Ei 's/\$\{\!rd_secure_passphrase\}/${rd_secure_passphrase+x}/g' ssh-copy.sh
-          ;;
-      esac
+      # install "rundeck-config.properties" and "framework.properties",
+      # customized to use PostgreSQL instead of H2 as primary database,
+      # and S3 bucket instead of local disk to store job execution logs
+      aws s3 sync s3://$CONFIG_BUCKET/rundeck/ .
+      find . -type f -exec chmod 640 {} \;
       ;;
     $USER)
       mkdir -p .rd
@@ -270,11 +273,10 @@ run install_java
 run install_rundeck
 run install_plugins rundeck
 run config_rundeck
-run config_rundeck rundeck before_start
+run config_rundeck rundeck
 run start_rundeck
 run config_rundeck $USER
 run import_project $USER
 run import_ssh_key $USER
 run config_worker  $USER
 run config_project $USER
-run config_rundeck rundeck after_start
