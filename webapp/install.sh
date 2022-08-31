@@ -73,8 +73,15 @@ replace_code() {
         *)
           if [[ "$line" == *$match0* ]]; then
             [ "$ex0" == ex ] && echo "$line"
-            state=started
             echo "$code"
+            if [[ "$line" == *$match1* ]]; then
+              # echo start/end line at most
+              # once if they match the same
+              [ "$ex1$ex0" == exin ] && echo "$line"
+              state=ended
+            else
+              state=started
+            fi
           else
             echo "$line"
           fi
@@ -147,6 +154,13 @@ EOF
     </NavLinkWrapper>
   )
 }
+EOF
+  cd ../quality
+  cat <<'EOF' | indent_code 4 | \
+    replace_code QualityDashboard.js \
+      'rows.sort' in 'rows.sort' in
+// sort table by Count in descending order, then by Agency in ascending order
+rows.sort((a, b) => a[2] != b[2] ? b[2] - a[2] : a[0].localeCompare(b[0]));
 EOF
 }
 
