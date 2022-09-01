@@ -170,6 +170,47 @@ import_ssh_key() {
   rm $file
 }
 
+curl_rundeck() {
+  local cookies=/tmp/cookies
+  [ -f $cookies ] || echo "#EMPTY" > $cookies
+  curl -b $cookies -c $cookies -s \
+    "http://localhost:4440/$1" "${@:2}"
+  echo
+}
+
+config_worker() {
+  # first authenticate and
+  # store JSESSIONID cookie
+  curl_rundeck j_security_check \
+    -d j_password=$rundeck_pass \
+    -d j_username=admin -i | \
+    grep -q user/error && return 1
+
+  params=(
+    project=AstroMetrics
+    serviceName=ResourceModelSource
+    configPrefix=resources.source
+  )
+  uri='project/AstroMetrics/nodes/sources'
+  token=$(curl_rundeck $uri | grep web_ui_token | \
+        sed -En 's/.+"TOKEN":"([0-9a-f]+)".+/\1/p')
+  route='framework/saveProjectPluginsAjax'
+  route+="?$(IFS=\&; echo "${params[*]}")"
+  curl_rundeck "$route" \
+    -H "x-rundeck-token-uri: /$uri"  \
+    -H "x-rundeck-token-key: $token" \
+    -H 'Content-Type: application/json' \
+    -d '{"plugins":[{
+        "type":"file",
+        "extra":{},
+        "config":{
+          "format":"resourcexml",
+          "file":"/var/lib/rundeck/projects/AstroMetrics/etc/resources.xml",
+          "requireFileExists":"true",
+          "writeable":"true"
+        }}]}'
+}
+
 set_property() {
   local file=$1 key=$2 value="$3"
   ( grep -v "$key:" $file
@@ -221,47 +262,6 @@ EOF
     eval_with_retry "rd keys create -p $path -t password -f /tmp/$path"
   done < keys.txt
   rm -rf /tmp/keys
-}
-
-curl_rundeck() {
-  local cookies=/tmp/cookies
-  [ -f $cookies ] || echo "#EMPTY" > $cookies
-  curl -b $cookies -c $cookies -s \
-    "http://localhost:4440/$1" "${@:2}"
-  echo
-}
-
-config_worker() {
-  # first authenticate and
-  # store JSESSIONID cookie
-  curl_rundeck j_security_check \
-    -d j_password=$rundeck_pass \
-    -d j_username=admin -i | \
-    grep -q user/error && return 1
-
-  params=(
-    project=AstroMetrics
-    serviceName=ResourceModelSource
-    configPrefix=resources.source
-  )
-  uri='project/AstroMetrics/nodes/sources'
-  token=$(curl_rundeck $uri | grep web_ui_token | \
-        sed -En 's/.+"TOKEN":"([0-9a-f]+)".+/\1/p')
-  route='framework/saveProjectPluginsAjax'
-  route+="?$(IFS=\&; echo "${params[*]}")"
-  curl_rundeck "$route" \
-    -H "x-rundeck-token-uri: /$uri"  \
-    -H "x-rundeck-token-key: $token" \
-    -H 'Content-Type: application/json' \
-    -d '{"plugins":[{
-        "type":"file",
-        "extra":{},
-        "config":{
-          "format":"resourcexml",
-          "file":"/var/lib/rundeck/projects/AstroMetrics/etc/resources.xml",
-          "requireFileExists":"true",
-          "writeable":"true"
-        }}]}'
 }
 
 export -f wait_service

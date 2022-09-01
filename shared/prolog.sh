@@ -11,6 +11,7 @@ __ts() {
 }
 
 cd /root 2> /dev/null
+export TERM=xterm-256color
 script=$(basename "$0" .sh)
 exec > >(tee -a /$script.log | logger -t $script ) 2>&1
 echo -e "[`__ts`|root] ===== BEGIN ${script^^} =====\n"
