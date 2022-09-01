@@ -70,6 +70,9 @@ private_ips = {
 lock_ami_versions = false
 
 data_volume_sizes = {
+  # IMPORTANT! periodic pg_basebackup duplicates all data
+  # into a temp directory on the same data volume, so the
+  # total storage must be at least twice the actual usage
   postgresql    = 4096
   elasticsearch = 1024
 }
