@@ -11,7 +11,7 @@ export DELTA_PAGER=less
 unset LESSCLOSE
 export LESSQUIET=1
 export LESS='-RKMi -x4 -z-4'
-eval "$(SHELL=/bin/sh lesspipe.sh)"
+[ "$TERM" ] && eval "$(SHELL=/bin/sh lesspipe.sh)"
 export LESS_ADVANCED_PREPROCESSOR=1
 export LESSCOLORIZER=pygmentize
 export LESS_TERMCAP_mb=$'\E[1;31m'
