@@ -15,7 +15,7 @@ _reqcmds() {
     fi
   done
 }
-_reqcmds terraform egrep jq || exit $?
+_reqcmds jq || exit $?
 
 _altcmd() {
   local cmd
@@ -34,7 +34,7 @@ config=".ssh/config"
 mkdir -p /tmp/.ssh && cp -a ~/$config ~/$known /tmp/.ssh/
 
 printf 'Retrieving Terraform output variables...'
-env=$(terraform output -raw env)
+env=$(./tf.sh output -raw env)
 
 # use GNU sed on BSD/macOS
 # gsed: brew install gnu-sed
@@ -55,7 +55,7 @@ done < <(
 echo "DONE."
 
 get_outputs() {
-  terraform output -json | \
+  ./tf.sh output -json | \
     jq -r  "to_entries[] | select(.key | endswith(\"_$1\")) |
                               \"\(.key | rtrimstr(\"_$1\")) \(.value.value)\""
 }

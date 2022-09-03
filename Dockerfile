@@ -1,7 +1,7 @@
 FROM ubuntu:22.04
 
-LABEL name="maiveric/aws-infra"
-LABEL description="MaiVERIC deployment environment with Terraform, Python 3.10, and utilities like jq and yq"
+LABEL name="maiveric/terraform"
+LABEL description="MaiVERIC deployment environment with Terraform, Java, Python, and utilities like jq and yq"
 
 # https://learn.hashicorp.com/tutorials/terraform/install-cli
 

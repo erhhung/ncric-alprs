@@ -8,17 +8,6 @@
 
 cd $(dirname "$0")
 
-_reqcmds() {
-  local cmd
-  for cmd in "$@"; do
-    if ! hash $cmd 2> /dev/null; then
-      echo >&2 "Please install \"$cmd\" first!"
-      return 1
-    fi
-  done
-}
-_reqcmds terraform || exit $?
-
 _altcmd() {
   local cmd
   for cmd in "$@"; do
@@ -60,5 +49,5 @@ highlight() {
 }
 
 for addr in "$@"; do
-  terraform taint "$(full_addr "$addr")" | highlight
+  ./tf.sh taint "$(full_addr "$addr")" | highlight
 done

@@ -6,16 +6,7 @@
 #
 # usage: stop.sh [name_no_tf_ext] ...
 
-_reqcmds() {
-  local cmd
-  for cmd in "$@"; do
-    if ! hash $cmd 2> /dev/null; then
-      echo >&2 "Please install \"$cmd\" first!"
-      return 1
-    fi
-  done
-}
-_reqcmds terraform || exit $?
+cd $(dirname "$0")
 
 # prompt user for Y/N
 # single-key response
@@ -87,7 +78,7 @@ fi
 ask >&2 "Proceed?" N || exit
 
 printf '\nRetrieving Terraform output variables...'
-env=$(terraform output -raw env)
+env=$(./tf.sh output -raw env)
 echo "DONE."
 
 stop_bastion() {

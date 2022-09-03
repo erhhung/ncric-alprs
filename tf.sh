@@ -1,5 +1,20 @@
 #!/usr/bin/env bash
 
+cd "$(dirname "$0")"
+
+if [ ! "$1" ]; then
+  script=$(basename "$0")
+  tfvars=$(find config -name '*.tfvars' | head -1)
+  cat <<EOF
+Run Terraform command from custom Docker container
+that has all the necessary tools already installed.
+
+  Usage: $script <terraform_command>
+Example: $script plan -var-file $tfvars
+EOF
+  exit
+fi
+
 _reqcmds() {
   local cmd
   for cmd in "$@"; do
@@ -15,14 +30,16 @@ _log() {
   # show color output but strip color from log file
   pee cat "sed 's/\x1b\[[0-9;]*[mGKHF]//g' >> $log"
 }
+log=$(basename "$0" .sh).log
+rm -f "$log"
 
 docker_build() {
-  echo "Building Docker image \"$tag:latest\"..."
+  _log >&2 <<< "Building Docker image \"$tag:latest\"..."
   docker build \
     --no-cache \
     -t $tag  . \
-    --progress plain  2>&1 |    _log
-  [ ${PIPESTATUS[0]} -eq 0 ] && _log <<< "" || exit ${PIPESTATUS[0]}
+    --progress plain  2>&1 |    _log >&2
+  [ ${PIPESTATUS[0]} -eq 0 ] && _log >&2 <<< "" || exit ${PIPESTATUS[0]}
 }
 
 docker_run() {
@@ -37,8 +54,6 @@ docker_run() {
   exit ${PIPESTATUS[0]}
 }
 
-cd "$(dirname  "$0")"
-log=$(basename "$0" .sh).log; rm -f "$log"
 tag=$(sed -En "s/LABEL name=\"(.+)\"/\1/p" Dockerfile)
-[ "$(docker images --format '{{.Repository}}' $tag)" ] || docker_build
+[ "$(docker images --format {{.ID}} $tag)" ] || docker_build
 docker_run terraform "$@"
