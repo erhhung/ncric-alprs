@@ -16,7 +16,17 @@ _reqcmds() {
     fi
   done
 }
-_reqcmds python3 unzip zip md5 || exit $?
+_reqcmds python3 unzip zip md5sum || exit $?
+
+_altcmd() {
+  local cmd
+  for cmd in "$@"; do
+    if hash $cmd 2> /dev/null; then
+      printf $cmd && return
+    fi
+  done
+  return 1
+}
 
 # convert x.y.z version to 9-digit number for comparison
 # _ver2num 3.14.159 = 003014159
@@ -32,21 +42,25 @@ if [ $p3ver -lt 003009000 ]; then
 fi
 
 clean_up() {
-  cd /tmp; rm -rf $tmp_dir
+  cd /tmp; # rm -rf $tmp_dir
 }
 trap clean_up EXIT
 
 tmp_dir="$(mktemp -d)"
 prj_dir="$(realpath "$(dirname "$0")/$PROJECT")"
-cp -a $prj_dir/ $tmp_dir
+cp -a $prj_dir/* $tmp_dir
 cd $tmp_dir
 
 [ -f setup.py ] || exit $?
 
+# use GNU sed on BSD/macOS
+# gsed: brew install gnu-sed
+sed=$(_altcmd gsed sed)
+
 # replace "base_url" parameter values
 # _URL='http://datastore:8080'
 # while read file; do
-#   sed -i '' "s|$_URL|$API_URL|" $file
+#   $sed -i "s|$_URL|$API_URL|" $file
 # done < <(
 #   grep -rl $_URL .
 # )
@@ -54,7 +68,7 @@ cd $tmp_dir
 # replace AWS region parameter values
 _REGION='us-gov-west-1'
 while read file; do
-  sed -i '' "s/$_REGION/$REGION/" $file
+  $sed -i "s/$_REGION/$REGION/" $file
 done < <(
   grep -rl $_REGION .
 )
@@ -79,4 +93,5 @@ find . -type f -exec touch -t 202201010000 "{}" \;
 # -x exclude files
 zip -rDX9Tq $WHL . -x \*.whl
 
-echo -n '{"md5":"'$(md5 -q $WHL)'"}'
+md5=($(md5sum $WHL))
+echo -n '{"md5":"'$md5'"}'

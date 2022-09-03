@@ -12,7 +12,7 @@ _reqcmds() {
     fi
   done
 }
-_reqcmds zip md5 || exit $?
+_reqcmds zip md5sum || exit $?
 
 cd "$(dirname "$0")/project"
 [ -d META-INF ] || exit $?
@@ -33,4 +33,5 @@ find . -type f -exec touch -t 202201010000 "{}" \;
 # -x exclude files
 zip -rDX9Tq $JAR . -x \*.yaml
 
-echo -n '{"md5":"'$(md5 -q $JAR)'"}'
+md5=($(md5sum $JAR))
+echo -n '{"md5":"'$md5'"}'
