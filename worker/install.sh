@@ -14,7 +14,7 @@ EOF
 
 apt_install() {
   apt_update
-  eval_with_retry "wait_apt_get && apt-get install -y libpq-dev"
+  eval_with_retry "wait_apt_get && apt-get install -y python3-dev libpq-dev libevent-dev"
 }
 
 install_java() (
@@ -34,6 +34,12 @@ install_delta() (
   eval_with_retry "wait_apt_get && dpkg -iE git-delta_${VERSION}_$ARCH.deb"
   rm git-delta*
 )
+
+install_pgcli() {
+  pip3 install pgcli
+  mkdir -p .config/pgcli
+  aws s3 cp $S3_URL/postgresql/pgcli.conf .config/pgcli/config --no-progress
+}
 
 install_psql() (
   curl -s https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add -
@@ -136,14 +142,14 @@ extra_aliases() {
   echo -e \\n >> .bash_aliases
   cat <<'EOF' >> .bash_aliases
 alprs() {
-  psql $(aws s3 cp s3://$CONFIG_BUCKET/shuttle/shuttle.yaml - | \
+  pgcli $(aws s3 cp s3://$CONFIG_BUCKET/shuttle/shuttle.yaml - | \
     yq '.postgres.config |
         (.username + ":" + .password) as $creds | .jdbcUrl |
         sub(".+//([^?]+).*$", "postgresql://" + $creds + "@${1}")')
 }
 
 atlas() {
-  psql $(aws s3 cp s3://$CONFIG_BUCKET/flapper/flapper.yaml - | \
+  pgcli $(aws s3 cp s3://$CONFIG_BUCKET/flapper/flapper.yaml - | \
     yq '.datalakes[] | select(.name == "atlas") |
         (.username + ":" + .password) as $creds | .url |
         sub(".+//(.+)$", "postgresql://" + $creds + "@${1}")')
@@ -182,6 +188,7 @@ run etc_hosts
 run apt_install
 run install_java
 run install_delta
+run install_pgcli  $USER
 run install_psql
 run init_destdir
 run config_sshd

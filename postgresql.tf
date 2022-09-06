@@ -45,6 +45,9 @@ locals {
     path = "postgresql/pg_hba.conf"
     data = data.external.pg_hba_conf.result.text
     }, {
+    path = "postgresql/pgcli.conf"
+    file = "${path.module}/postgresql/pgcli.conf"
+    }, {
     path = "postgresql/.psqlrc"
     file = "${path.module}/postgresql/.psqlrc"
     }, {
