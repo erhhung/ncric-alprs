@@ -141,18 +141,29 @@ EOF
 extra_aliases() {
   echo -e \\n >> .bash_aliases
   cat <<'EOF' >> .bash_aliases
-alprs() {
-  pgcli $(aws s3 cp s3://$CONFIG_BUCKET/shuttle/shuttle.yaml - | \
+_alprs_url() {
+  aws s3 cp s3://$CONFIG_BUCKET/shuttle/shuttle.yaml - | \
     yq '.postgres.config |
         (.username + ":" + .password) as $creds | .jdbcUrl |
-        sub(".+//([^?]+).*$", "postgresql://" + $creds + "@${1}")')
+        sub(".+//([^?]+).*$", "postgresql://" + $creds + "@${1}")'
 }
-
-atlas() {
-  pgcli $(aws s3 cp s3://$CONFIG_BUCKET/flapper/flapper.yaml - | \
+_atlas_url() {
+  aws s3 cp s3://$CONFIG_BUCKET/flapper/flapper.yaml - | \
     yq '.datalakes[] | select(.name == "atlas") |
         (.username + ":" + .password) as $creds | .url |
-        sub(".+//(.+)$", "postgresql://" + $creds + "@${1}")')
+        sub(".+//(.+)$", "postgresql://" + $creds + "@${1}")'
+}
+_alprs() {
+  psql $(_alprs_url) "$@"
+}
+_atlas() {
+  psql $(_atlas_url) "$@"
+}
+alprs() {
+  pgcli $(_alprs_url) "$@"
+}
+atlas() {
+  pgcli $(_atlas_url) "$@"
 }
 EOF
 }

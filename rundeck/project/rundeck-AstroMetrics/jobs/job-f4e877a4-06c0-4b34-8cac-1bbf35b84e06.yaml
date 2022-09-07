@@ -167,7 +167,7 @@
 
                 print(f"Integrating MAIN table for {agency}!")
                 result = engine.execute(f"select count(*) from {main_table}")
-                records = pd.DataFrame(result).loc[0, 0]
+                records = pd.DataFrame(result).iloc[0, 0]
                 print(f"{records} records to process")
                 chunks = math.ceil(records / limit)
 

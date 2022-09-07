@@ -1,8 +1,12 @@
 from auth0.v3.authentication import GetToken
+from auth0.v3.exceptions import RateLimitError
 import openlattice
 import requests
 import json
 import os
+import sys
+import time
+import random
 
 
 def post_jira(username, password, summary, description="", project=None, assignee=None,
@@ -84,16 +88,41 @@ def get_jwt(username=None, password=None, client_id=None, base_url='http://datas
         raise ValueError("Not all necessary variables for authentication are present!")
 
     get_token = GetToken(domain)
-    token = get_token.login(
-        client_id=env['client_id'],
-        client_secret="",
-        username=env['user'],
-        password=env['password'],
-        scope=scope,
-        realm=realm,
-        audience=base_url,
-        grant_type='http://auth0.com/oauth/grant-type/password-realm'
-    )
+    # Allow retries with exponential backoff (5, 10, 20,
+    # 40 +/- 2 seconds) to accommodate rate limit errors
+    tries = 0
+    delay = 0
+    token = None
+    while not token:
+        try:
+            token = get_token.login(
+                client_id=env['client_id'],
+                client_secret="",
+                username=env['user'],
+                password=env['password'],
+                scope=scope,
+                realm=realm,
+                audience=base_url,
+                grant_type='http://auth0.com/oauth/grant-type/password-realm')
+
+        except RateLimitError as e:
+            tries += 1
+            if tries == 10:
+                msg = 'Giving up retrying Auth0 authentication!'
+                print(msg, file=sys.stderr)
+                raise e
+            msg = f'{e.status_code} Auth0 {type(e).__name__}: {e.message}'
+            print(msg, file=sys.stderr)
+            # get next base backoff delay
+            for backoff in 5, 10, 20, 40:
+                if delay < backoff:
+                    delay = backoff
+                    break
+            # prevent surge by adding +/- 2 seconds
+            sleep = delay + random.randrange(-2, 3)
+            msg = f'Retrying Auth0 authentication after {sleep} seconds...'
+            print(msg, file=sys.stderr)
+            time.sleep(sleep)
     return token['id_token']
 
 
