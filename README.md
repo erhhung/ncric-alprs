@@ -2,13 +2,13 @@
 
 ## Local Environment
 
-Add to "`~/.bash_profile`":
+Terraform and other deployment tools have been baked into a custom Docker
+image that will be built and run by "`tf.sh`". So, aside from **Docker**
+itself, no additional tools need to be installed in the local environment.
 
-```bash
-export TF_CLI_ARGS_init="-compact-warnings -upgrade"
-export TF_CLI_ARGS_plan="-compact-warnings"
-export TF_CLI_ARGS_apply="-compact-warnings"
-```
+Of course, AWS credentials under "`~/.aws`" and SSH keys under "`~/.ssh`"
+are still required, as is a properly formatted "`~/.ssh/config`" to get
+updated by "`upssh.sh`".
 
 ## AWS Environment
 
@@ -46,7 +46,7 @@ aws s3api put-bucket-encryption \
 ## Terraform Init
 
 ```bash
-terraform init -backend-config config/dev.conf -upgrade
+./tf.sh init -backend-config config/dev.conf
 ```
 
 ## Terraform Apply
@@ -59,9 +59,9 @@ _Due to some `for_each` values that depend on resource attributes that cannot be
 aws s3 cp s3://alprs-infra-dev/tfstate/dev.tfvars config/
 
 # explicit -target is only necessary if provisioning the tfstate for the first time
-terraform apply -var-file config/dev.tfvars -target aws_ses_domain_dkim.astrometrics
+./tf.sh apply -var-file config/dev.tfvars -target aws_ses_domain_dkim.astrometrics
 
-terraform apply -var-file config/dev.tfvars
+./tf.sh apply -var-file config/dev.tfvars
 ```
 
 ## EC2 Instances

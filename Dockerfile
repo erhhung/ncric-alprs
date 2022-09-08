@@ -30,6 +30,10 @@ RUN apt-get update \
  && apt-get install -y python3-pip openjdk-11-jdk \
  && mkdir -p /infra
 
+ENV TF_CLI_ARGS_init="-compact-warnings -upgrade"
+ENV TF_CLI_ARGS_plan="-compact-warnings"
+ENV TF_CLI_ARGS_apply="-compact-warnings"
+
 WORKDIR /infra
 
 CMD bash

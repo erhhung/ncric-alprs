@@ -49,7 +49,7 @@ docker_run() {
     -v $(pwd):/infra \
     -v $HOME/.aws:/root/.aws \
     -v $HOME/.ssh:/root/.ssh \
-    --name astrometrics \
+    --name maiveric-infra \
     $tag "$@" 2>&1 | _log
   exit ${PIPESTATUS[0]}
 }

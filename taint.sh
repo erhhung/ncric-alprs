@@ -49,5 +49,8 @@ highlight() {
 }
 
 for addr in "$@"; do
-  ./tf.sh taint "$(full_addr "$addr")" | highlight
+  output=$(./tf.sh taint "$(full_addr "$addr")" 2>&1)
+  [ $? -eq 0 ] && highlight <<< "$output" && continue
+  echo >&2 "$output"
+  exit 1
 done

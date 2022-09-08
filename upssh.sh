@@ -27,14 +27,18 @@ _altcmd() {
   return 1
 }
 
+printf 'Retrieving Terraform output variables...'
+env=$(./tf.sh output -raw env 2>&1)
+if [ $? -ne 0 ]; then
+  echo >&2 "$env"
+  exit 1
+fi
+
  known=".ssh/known_hosts"
 config=".ssh/config"
 
-# first make backup copies in case update goes awry...
+# first make backup copies in case the update goes awry...
 mkdir -p /tmp/.ssh && cp -a ~/$config ~/$known /tmp/.ssh/
-
-printf 'Retrieving Terraform output variables...'
-env=$(./tf.sh output -raw env)
 
 # use GNU sed on BSD/macOS
 # gsed: brew install gnu-sed
