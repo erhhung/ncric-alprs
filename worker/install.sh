@@ -17,6 +17,11 @@ apt_install() {
   eval_with_retry "wait_apt_get && apt-get install -y python3-dev libpq-dev libevent-dev"
 }
 
+upgrade_pip() {
+  pip3 install -U pip
+  pip3 install -U pyOpenSSL
+}
+
 install_java() (
   hash java 2> /dev/null && exit
   eval_with_retry "wait_apt_get && apt-get install -y openjdk-11-jdk"
@@ -114,7 +119,7 @@ install_pylibs() (
     # rename file to conform to wheel naming convention
     whl=$(unzip -l $wheel.whl | sed -En "s|.+($wheel-[0-9.]+)\.dist-info/WHEEL|\1-py3-none-any.whl|p")
     mv -f $wheel.whl $whl
-    pip3  install -I $whl
+    pip3 install $whl
   done
 )
 
@@ -197,6 +202,7 @@ export -f git_clone
 
 run etc_hosts
 run apt_install
+run upgrade_pip    $USER
 run install_java
 run install_delta
 run install_pgcli  $USER
