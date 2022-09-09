@@ -53,8 +53,9 @@ coif = "!f() { \
   b=$(git ls-remote -h origin ${1:-%}); \
   [ -n \"$b\" ] && git checkout $1; \
 }; f"
-# add *existing* files and commit
-cm = !git add -A && git commit -m
+cm = commit -m
+# add & commit new & existing files
+cma = !git add -A && git commit -m
 touch = commit --allow-empty -m
 save = !git cm "SAVED"
 wipe = !git cm "WIPED" -q && git reset HEAD~1 --hard

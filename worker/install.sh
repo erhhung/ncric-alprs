@@ -19,6 +19,8 @@ apt_install() {
 
 upgrade_pip() {
   pip3 install -U pip
+  # upgrade existing pyOpenSSL package
+  # to use latest cryptography package
   pip3 install -U pyOpenSSL
 }
 
