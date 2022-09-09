@@ -3,7 +3,7 @@ organizationId: 1446ff84-7112-42ec-828d-f181f45e4d20
 entityDefinitions:
   agencies:
     fqn: "ol.agency"
-    entitySetName: "NCRICStandardizedAgencies"
+    entitySetName: "astrometrics_1446ff84711242ec828df181f45e4d20_appstandardizedagencies"
     propertyDefinitions:
       ol.id:
         type: "ol.id"
