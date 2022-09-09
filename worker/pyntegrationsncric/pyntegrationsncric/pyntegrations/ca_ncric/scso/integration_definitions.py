@@ -60,7 +60,7 @@ class SCSOImageSourcesIntegration(Integration):
         sql,
         base_url="http://datastore:8080",
         clean_table_name_root="zzz_clean_scso_imagesources",
-        flight_name="ncric_scso_imagesource_flight.yaml"
+        flight_name="ncric_scso_imagesources_flight.yaml"
     ):
         super().__init__(
             sql=sql,

@@ -3,7 +3,7 @@ organizationId: 1446ff84-7112-42ec-828d-f181f45e4d20
 entityDefinitions:
   imagesources:
     fqn: "ol.imagesource"
-    entitySetName: "NCRICImageSources"
+    entitySetName: "astrometrics_1446ff84711242ec828df181f45e4d20_appcamera"
     propertyDefinitions:
       ol.id:
         type: "ol.id"
@@ -15,20 +15,5 @@ entityDefinitions:
         type: "ol.datasource"
         column: "datasource"
     name: "imagesources"
-
-  imagesources1:
-    fqn: "ol.imagesource"
-    entitySetName: "NCRICImageSourcesSCSO"
-    propertyDefinitions:
-      ol.id:
-        type: "ol.id"
-        column: "camera_id"
-      ol.name:
-        type: "ol.name"
-        column: "LPRCameraName"
-      ol.datasource:
-        type: "ol.datasource"
-        column: "datasource"
-    name: "imagesources1"
 
 associationDefinitions: {}

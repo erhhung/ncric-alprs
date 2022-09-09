@@ -16,19 +16,4 @@ entityDefinitions:
         column: "LPRAdditionalPhoto"
     name: "vehiclerecords"
 
-  vehiclerecords1:
-    fqn: "ol.vehicle"
-    entitySetName: "NCRICVehicleRecordsSCSO"
-    propertyDefinitions:
-      ol.id:
-        type: "ol.id"
-        column: "vehicle_record_id"
-      ol.licenseplateimage:
-        type: "ol.licenseplateimage"
-        column: "LPRVehiclePlatePhoto"
-      ol.vehicleimage:
-        type: "ol.vehicleimage"
-        column: "LPRAdditionalPhoto"
-    name: "vehiclerecords1"
-
 associationDefinitions: {}

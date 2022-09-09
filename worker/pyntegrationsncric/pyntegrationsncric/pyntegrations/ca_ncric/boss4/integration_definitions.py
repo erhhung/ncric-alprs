@@ -95,7 +95,7 @@ class BOSS4ImageSourcesIntegration(Integration):
     # 'select distinct "LPRCameraID", "LPRCameraName", "datasource" from boss4_hourly'
     # imagesources uses the same flight everywhere, so we can specify here the flight
     def __init__(self, sql, base_url="http://datastore:8080",
-                 flight_name="ncric_boss4_imagesource_flight.yaml",
+                 flight_name="ncric_boss4_imagesources_flight.yaml",
                  clean_table_name_root="boss4_imagesources",
                  drop_table_on_success=False
                  ):
