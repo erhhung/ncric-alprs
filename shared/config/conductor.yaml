@@ -1,4 +1,4 @@
-reportEmailAddress: alprs@bounce.${APP_DOMAIN}
+reportEmailAddress: astrometrics@${APP_DOMAIN}
 searchConfiguration:
   elasticsearchUrl: ${ELASTICSEARCH_HOST}
   elasticsearchCluster: alprs
