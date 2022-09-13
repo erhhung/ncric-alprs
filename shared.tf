@@ -88,5 +88,6 @@ locals {
     MEDIA_SECRET_KEY        = aws_iam_access_key.users["alprs-media"].secret
     SES_ACCESS_KEY          = aws_iam_access_key.users["alprs-mail"].id
     SMTP_PASSWORD           = aws_iam_access_key.users["alprs-mail"].ses_smtp_password_v4
+    SENDER_EMAIL            = local.alprs_sender_email
   }
 }

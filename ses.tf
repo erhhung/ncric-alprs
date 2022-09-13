@@ -14,13 +14,14 @@ resource "aws_route53_record" "ses_verification" {
 }
 
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/ses_domain_mail_from
-resource "aws_ses_domain_mail_from" "astrometrics" {
-  domain           = aws_ses_domain_identity.astrometrics.domain
-  mail_from_domain = local.app_domain
-}
+#resource "aws_ses_domain_mail_from" "astrometrics" {
+#  domain           = aws_ses_domain_identity.astrometrics.domain
+#  mail_from_domain = local.app_domain
+#}
 
 locals {
-  mail_from_domain   = aws_ses_domain_mail_from.astrometrics.mail_from_domain
+  mail_from_domain = local.app_domain
+  #mail_from_domain = aws_ses_domain_mail_from.astrometrics.mail_from_domain
   alprs_sender_email = "astrometrics@${local.mail_from_domain}"
 }
 
