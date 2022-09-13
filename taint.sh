@@ -3,8 +3,17 @@
 # run "terraform taint" command on each argument while
 # expanding recognized names into their full addresses
 
-#   usage: taint.sh <alias_or_address> ...
+#   usage: taint.sh <alias_or_address|all> ...
 # example: taint.sh bastion postgresql
+
+[ "${1,,}" == all ] && set -- \
+  postgresql \
+  elasticsearch \
+  conductor \
+  datastore \
+  indexer \
+  bastion \
+  worker
 
 cd $(dirname "$0")
 
