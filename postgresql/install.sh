@@ -78,11 +78,11 @@ EOF
 
   cd conf
   mv postgresql.conf postgresql-default.conf
-  aws s3 cp $PG_CONF postgresql.conf --no-progress
+  aws s3 cp $S3_URL/postgresql/postgresql.conf . --no-progress
   shared_buffers=$(awk '/MemTotal.*kB/ {print int($2 /1024/1024 / 2)+1}' /proc/meminfo)
   sed -Ei "s/^shared_buffers.+$/shared_buffers = ${shared_buffers}GB/" postgresql.conf
   mv pg_hba.conf pg_hba-default.conf
-  aws s3 cp $PG_HBA pg_hba.conf --no-progress
+  aws s3 cp $S3_URL/postgresql/pg_hba.conf . --no-progress
   run generate_cert
   mv /tmp/server.* .
   chown -h postgres:postgres *
@@ -140,11 +140,11 @@ import_tables() {
   [ -d init ] && exit
   mkdir init
   cd init
-  aws s3 cp $ALPRS_SQL alprs.sql.gz --no-progress
+  aws s3 cp $S3_URL/postgresql/alprs.sql.gz . --no-progress
   gunzip -f alprs.sql.gz
   sed -Ei "s|https://astrometrics\\.us|$APP_URL|" alprs.sql
   psql alprs < alprs.sql
-  aws s3 cp $NCRIC_SQL ncric.sql.gz --no-progress
+  aws s3 cp $S3_URL/postgresql/ncric.sql.gz . --no-progress
   gunzip -f ncric.sql.gz
   psql < ncric.sql
 }
@@ -154,35 +154,19 @@ user_dotfiles() {
 }
 
 add_backup_sh() {
-  cat <<EOF > backup.sh
-#!/bin/bash
-
-TEMP="/opt/postgresql/temp"
-
-# destination file will be overwritten multiple times per day by cron job
-dest="s3://$BACKUP_BUCKET/postgresql/pg_backup_\$(date "+%Y-%m-%d").tar.bz"
-
-clean() {
-  rm -rf \$TEMP/*
-}
-clean
-trap clean EXIT
-
-nice pg_basebackup -D \$TEMP -X stream
-nice tar cjf - -C \$TEMP . | nice aws s3 cp - \$dest --no-progress
-EOF
+  aws s3 cp $S3_URL/postgresql/backup.sh . --no-progress
   chmod +x backup.sh
 }
 
 add_backup_cron() (
   cd /etc/cron.d
-  cat <<'EOF' > pg_backup
-USER=root
-HOME=/root
+  cat <<EOF > pg_backup
+USER=postgres
+HOME=/var/lib/postgresql
 PATH=/bin:/usr/bin:/usr/sbin:/usr/local/bin:/snap/bin
 
 # min hr dom mon dow user command
-0 2,8,12,16,20 * * * root su postgres -c 'bash -c "$HOME/backup.sh"'
+30 4,10,16,22 * * * postgres bash -c "\$HOME/backup.sh $BACKUP_BUCKET"
 EOF
   chmod 644 pg_backup
 )

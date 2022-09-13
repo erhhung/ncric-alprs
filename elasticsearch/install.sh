@@ -74,7 +74,7 @@ EOF
 
       cd conf
       mv elasticsearch.yml elasticsearch-default.yml
-      aws s3 cp $ES_YML elasticsearch.yml --no-progress
+      aws s3 cp $S3_URL/elasticsearch/elasticsearch.yml . --no-progress
       heap_size=$(awk '/MemTotal.*kB/ {print int($2 /1024/1024 / 2)}' /proc/meminfo)
       cat <<EOF > jvm.options.d/heap.options
 -Xms${heap_size}g
@@ -85,14 +85,14 @@ EOF
 
       cd /etc/kibana
       mv kibana.yml kibana-default.yml
-      aws s3 cp $KB_YML kibana.yml --no-progress
+      aws s3 cp $S3_URL/elasticsearch/kibana.yml . --no-progress
       chmod 660 kibana.yml
       chown root:kibana *
       ;;
     after_start)
       cd /opt/elasticsearch/conf
       # create index template to apply common settings
-      aws s3 cp $ES_TEMPLATE template.json --no-progress
+      aws s3 cp $S3_URL/elasticsearch/template.json . --no-progress
       chown elasticsearch:elasticsearch template.json
 
       # https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping-settings-limit.html
@@ -139,7 +139,7 @@ config_nginx() (
     grep -v stream | xargs rm -f
   rm -f sites-enabled/default
 
-  aws s3 cp $NG_CONF nginx.conf --no-progress
+  aws s3 cp $S3_URL/elasticsearch/nginx.conf . --no-progress
   while read service listen port; do
     cat <<EOF > conf.d/http_$service.conf
 # https://docs.nginx.com/nginx/admin-guide/load-balancer/http-load-balancer/

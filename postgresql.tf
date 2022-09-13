@@ -64,17 +64,16 @@ locals {
     file = "${path.module}/postgresql/ncric.sql.gz"
     type = "application/gzip"
     }, {
+    path = "postgresql/backup.sh"
+    file = "${path.module}/postgresql/backup.sh"
+    }, {
     path = "postgresql/bootstrap.sh"
     data = <<-EOF
 ${file("${path.module}/shared/prolog.sh")}
 ${templatefile("${path.module}/postgresql/boot.tftpl", {
-    ENV       = var.env
-    S3_URL    = local.user_data_s3_url
-    APP_URL   = local.app_url
-    PG_CONF   = "${local.user_data_s3_url}/postgresql/postgresql.conf"
-    PG_HBA    = "${local.user_data_s3_url}/postgresql/pg_hba.conf"
-    ALPRS_SQL = "${local.user_data_s3_url}/postgresql/alprs.sql.gz"
-    NCRIC_SQL = "${local.user_data_s3_url}/postgresql/ncric.sql.gz"
+    ENV     = var.env
+    S3_URL  = local.user_data_s3_url
+    APP_URL = local.app_url
     # passwords are created in keys.tf
     alprs_pass    = local.alprs_pass
     atlas_pass    = local.atlas_pass
