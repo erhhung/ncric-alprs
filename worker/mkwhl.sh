@@ -42,12 +42,13 @@ if [ $p3ver -lt 003009000 ]; then
 fi
 
 clean_up() {
-  cd /tmp; # rm -rf $tmp_dir
+  rm -rf $tmp_dir
 }
 trap clean_up EXIT
 
-tmp_dir="$(mktemp -d)"
-prj_dir="$(realpath "$(dirname "$0")/$PROJECT")"
+tmp_dir=$(mktemp -d)
+src_dir=$(realpath "$(dirname "$0")")
+prj_dir="$src_dir/$PROJECT"
 cp -a $prj_dir/* $tmp_dir
 cd $tmp_dir
 
@@ -73,8 +74,8 @@ done < <(
   grep -rl $_REGION .
 )
 
-WHL="${prj_dir}.whl"
-rm -f $WHL
+WHL="$src_dir/$PROJECT.whl"
+rm -f "$WHL"
 
 python3 ./setup.py -q bdist_wheel &> /dev/null
 
@@ -91,7 +92,7 @@ find . -type f -exec touch -t 202201010000 "{}" \;
 # -T test integrity
 # -q quiet operation
 # -x exclude files
-zip -rDX9Tq $WHL . -x \*.whl
+zip -rDX9Tq "$WHL" . -x \*.whl
 
-md5=($(md5sum $WHL))
+md5=($(md5sum "$WHL"))
 echo -n '{"md5":"'$md5'"}'

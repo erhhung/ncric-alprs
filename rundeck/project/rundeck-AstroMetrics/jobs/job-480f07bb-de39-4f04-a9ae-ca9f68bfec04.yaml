@@ -16,6 +16,14 @@
       threadcount: '1'
     filter: 'name: Worker'
   nodesSelectedByDefault: true
+  notification:
+    onfailure:
+      email:
+        attachLog: true
+        attachLogInFile: true
+        recipients: alprs.devops@maiveric.com
+        subject: '[Rundeck:PROD] Job ${execution.status}: ${job.name}'
+  notifyAvgDurationThreshold: null
   options:
   - description: API read chunk size in minutes
     name: fetch_size

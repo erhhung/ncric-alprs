@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<!-- RUNDECK JOB ON SUCCESS EMAIL TEMPLATE -->
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+  <title>Rundeck job ${execution.status} — ${job.name}</title>
+  <style>
+    /* https://fonts.googleapis.com/css?family=Raleway:400 */
+    @font-face {
+      font-family: Raleway;
+      font-style: normal;
+      font-weight: 400;
+      src: url(https://fonts.gstatic.com/s/raleway/v28/1Ptxg8zYS_SKggPN4iEgvnHyvveLxVvaorCIPrcVIT9d0c8.woff) format('woff');
+      unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+    }
+    /* https://fonts.googleapis.com/css?family=Raleway:700 */
+    @font-face {
+      font-family: Raleway;
+      font-style: normal;
+      font-weight: 700;
+      src: url(https://fonts.gstatic.com/s/raleway/v28/1Ptxg8zYS_SKggPN4iEgvnHyvveLxVs9pbCIPrcVIT9d0c8.woff) format('woff');
+      unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+    }
+    html, body {
+      width: 100%;
+    }
+    body {
+      font: 12pt Raleway;
+    }
+    div {
+      margin: auto;
+      margin-top: 10%;
+    }
+    th {
+      font-weight: bold;
+      text-align: right;
+    }
+  </style>
+</head>
+<body>
+  <!-- https://docs.rundeck.com/docs/developer/05-notification-plugins.html#execution-data -->
+  <table>
+    <tr>
+      <th>Job name:</th>
+      <td>${job.name}</td>
+    </tr>
+    <tr>
+      <th>Started at:</th>
+      <td>${execution.dateStartedW3c}</td>
+    </tr>
+    <tr>
+      <th>Ended at:</th>
+      <td>${execution.dateEndedW3c}</td>
+    </tr>
+    <tr>
+      <th>Job output:</th>
+      <td style="font-style: italic;">See attachment</td>
+    </tr>
+  </table>
+</body>
+</html>

@@ -54,6 +54,7 @@ config_rundeck() (
       sed -Ei "s|^(.+runuser.+-c).+$|\1 '$cmd' \&> /dev/null \&\n\0|" rundeckd
       ;;
     rundeck)
+      aws s3 sync $S3_URL/rundeck/email email --no-progress
       # https://docs.rundeck.digitalstacks.net/l/en/document-formats/resource-xml
       mkdir -p projects/AstroMetrics/etc
       cd projects/AstroMetrics/etc
@@ -92,7 +93,7 @@ EOT
       # install "rundeck-config.properties" and "framework.properties",
       # customized to use PostgreSQL instead of H2 as primary database,
       # and S3 bucket instead of local disk to store job execution logs
-      aws s3 sync s3://$CONFIG_BUCKET/rundeck/ .
+      aws s3 sync s3://$CONFIG_BUCKET/rundeck/ . --no-progress
       find . -type f -exec chmod 640 {} \;
       ;;
     $USER)

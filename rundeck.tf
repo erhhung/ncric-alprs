@@ -1,14 +1,23 @@
 # https://registry.terraform.io/providers/hashicorp/external/latest/docs/data-sources/data_source
 data "external" "rdproject_jar" {
-  program = ["${path.module}/rundeck/mkjar.sh"]
+  program = [
+    "${path.module}/rundeck/mkjar.sh",
+    var.env
+  ]
 }
 
 locals {
-  rundeck_user_data = [{
+  rundeck_email_path = "${path.module}/rundeck/email"
+  rundeck_user_data = flatten([[
+    for path in fileset(local.rundeck_email_path, "**") : {
+      path = "rundeck/email/${path}"
+      file = "${local.rundeck_email_path}/${path}"
+      type = "text/html"
+    }], {
     path = "rundeck/astrometrics.rdproject.jar"
     file = "${path.module}/rundeck/astrometrics.rdproject.jar"
     type = "application/java-archive"
-  }]
+  }])
   rundeck_bootstrap = <<-EOT
 ${templatefile("${path.module}/rundeck/install.tftpl", {
   PG_HOST   = module.postgresql_server.private_domain

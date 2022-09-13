@@ -14,6 +14,14 @@
       threadcount: '1'
     filter: 'name: Worker'
   nodesSelectedByDefault: true
+  notification:
+    onsuccess:
+      email:
+        attachLog: true
+        attachLogInFile: true
+        recipients: eyuan@maiveric.com
+        subject: '[Rundeck:DEV] Job ${execution.status}: ${job.name}'
+  notifyAvgDurationThreshold: null
   options:
   - hidden: true
     name: apiurl
@@ -42,7 +50,6 @@
         echo "\$RD_OPTION_APIURL:   $RD_OPTION_APIURL"
         echo "@@option.region@@:     @option.region@"
         echo "@@option.apiurl@@:     @option.apiurl@"
-        echo "@@option.dbname@@:     @option.dbname@"
         echo "\$PYNTEGRATIONS_PATH: $PYNTEGRATIONS_PATH"
         echo "\$SHUTTLE_PATH:       $SHUTTLE_PATH"
     keepgoing: false

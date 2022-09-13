@@ -68,6 +68,8 @@ locals {
   # .tf files from the deployment scope while keeping other hosts, causing
   # dependency errors
   config_values = {
+    ENV_LOWER               = lower(var.env)
+    ENV_UPPER               = upper(var.env)
     AWS_REGION              = local.region
     APP_DOMAIN              = local.app_domain
     ATLAS_PASSWORD          = local.atlas_pass

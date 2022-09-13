@@ -29,6 +29,12 @@
       <filter>name: Worker</filter>
     </nodefilters>
     <nodesSelectedByDefault>true</nodesSelectedByDefault>
+    <notification>
+      <onfailure>
+        <email attachLog='true' attachLogInFile='true' recipients='alprs.devops@maiveric.com' subject='[Rundeck:PROD] Job ${execution.status}: ${job.name}' />
+      </onfailure>
+    </notification>
+    <notifyAvgDurationThreshold />
     <plugins />
     <schedule>
       <month month='*' />
