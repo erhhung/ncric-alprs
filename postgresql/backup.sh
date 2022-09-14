@@ -40,5 +40,6 @@ s3_stats() {
   aws s3 ls --human-readable $dest | awk '{print "["$1" "$2"] "$5" | Size: "$3$4}'
 }
 
-nice tar cjf - -C $TEMP . | nice aws s3 cp - $dest --no-progress
+# https://www.peterdavehello.org/2015/02/use-multi-threads-to-compress-files-when-taring-something/
+nice tar cf - -C $TEMP -I pbzip2 . | nice aws s3 cp - $dest --no-progress
 echo -e "$(s3_stats)\n[`__ts`] ===== END pg_basebackup ====="

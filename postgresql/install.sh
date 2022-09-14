@@ -174,7 +174,7 @@ HOME=/var/lib/postgresql
 PATH=/bin:/usr/bin:/usr/sbin:/usr/local/bin:/snap/bin
 
 # min hr dom mon dow user command
-30 4,10,16,22 * * * postgres bash -c "\$HOME/backup.sh $BACKUP_BUCKET"
+20 10,22 * * * postgres bash -c "\$HOME/backup.sh $BACKUP_BUCKET"
 EOF
   chmod 644 pg_backup
 )

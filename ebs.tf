@@ -3,7 +3,7 @@
 
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/ebs_volume
 resource "aws_ebs_volume" "postgresql_data" {
-  type              = "gp2"
+  type              = "gp3"
   size              = var.data_volume_sizes["postgresql"]
   availability_zone = "${local.region}a" # private1 subnet
   encrypted         = true
@@ -14,7 +14,7 @@ resource "aws_ebs_volume" "postgresql_data" {
 }
 
 resource "aws_ebs_volume" "elasticsearch_data" {
-  type              = "gp2"
+  type              = "gp3"
   size              = var.data_volume_sizes["elasticsearch"]
   availability_zone = "${local.region}a" # private1 subnet
   encrypted         = true
