@@ -2,17 +2,35 @@
 # of the shared "boot.sh" script.
 
 create_xfs_volume() (
-  [ -d /opt/postgresql ] && exit
-  if ! file -sL /dev/nvme1n1 | grep -q filesystem; then
-    mkfs.xfs -f -L postgresql /dev/nvme1n1
+  device=/dev/nvme1n1
+  volume=/opt/postgresql
+   label=postgresql
+  [ -d $volume ] && exit
+  if ! file -sL $device | grep -q filesystem; then
+    mkfs.xfs -f -L $label $device
   fi
   printf -v tab "\t"
   cat <<EOF >> /etc/fstab
-LABEL=postgresql${tab}/opt/postgresql${tab}xfs${tab}defaults,nofail${tab}0 2
+LABEL=${label}${tab}${volume}${tab}xfs${tab}defaults,nofail${tab}0 2
 EOF
-  mkdir /opt/postgresql
+  mkdir $volume
   mount -a
-  df -h /opt/postgresql
+  df -h $volume
+  cat <<EOF >> /etc/environment
+PG_HOME="$volume"
+EOF
+)
+
+resize_xfs_volume() (
+  device=/dev/nvme1n1
+  volume=/opt/postgresql
+  # grow file system if size is
+  # less than block device size
+  printf -v fs_size "%.0f" $(stat -f $volume -c "%b * %s / 1024^3" | bc -l)
+  bd_size=$(( $(lsblk $device -nbo SIZE) / 1024**3 ))
+  [ $fs_size -ge $bd_size ] && exit
+  xfs_growfs -d $volume
+  df -h $volume
 )
 
 install_postgresql() (
@@ -180,6 +198,7 @@ EOF
 )
 
 run create_xfs_volume
+run resize_xfs_volume
 run install_postgresql
 run config_postgresql
 run start_postgresql

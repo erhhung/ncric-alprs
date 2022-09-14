@@ -11,6 +11,38 @@ EOF
 )
 
 create_xfs_volume() (
+  device=/dev/nvme1n1
+  volume=/opt/elasticsearch
+   label=elastic
+  [ -d $volume ] && exit
+  if ! file -sL $device | grep -q filesystem; then
+    mkfs.xfs -f -L $label $device
+  fi
+  printf -v tab "\t"
+  cat <<EOF >> /etc/fstab
+LABEL=${label}${tab}${volume}${tab}xfs${tab}defaults,nofail${tab}0 2
+EOF
+  mkdir $volume
+  mount -a
+  df -h $volume
+  cat <<EOF >> /etc/environment
+ES_HOME="$volume"
+EOF
+)
+
+resize_xfs_volume() (
+  device=/dev/nvme1n1
+  volume=/opt/elasticsearch
+  # grow file system if size is
+  # less than block device size
+  printf -v fs_size "%.0f" $(stat -f $volume -c "%b * %s / 1024^3" | bc -l)
+  bd_size=$(( $(lsblk $device -nbo SIZE) / 1024**3 ))
+  [ $fs_size -ge $bd_size ] && exit
+  xfs_growfs -d $volume
+  df -h $volume
+)
+
+create_xfs_volume() (
   [ -d /opt/elasticsearch ] && exit
   if ! file -sL /dev/nvme1n1 | grep -q filesystem; then
     mkfs.xfs -f -L elastic /dev/nvme1n1
@@ -22,9 +54,6 @@ EOF
   mkdir /opt/elasticsearch
   mount -a
   df -h /opt/elasticsearch
-  cat <<'EOF' >> /etc/environment
-ES_HOME="/opt/elasticsearch"
-EOF
 )
 
 install_elasticsearch() (
@@ -182,6 +211,7 @@ start_nginx() {
 
 run install_java
 run create_xfs_volume
+run resize_xfs_volume
 run install_elasticsearch
 run config_elasticsearch root before_start
 run start_elasticsearch
