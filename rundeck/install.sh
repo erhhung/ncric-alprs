@@ -96,7 +96,7 @@ EOT
       aws s3 sync s3://$CONFIG_BUCKET/rundeck/ . --no-progress
       find . -type f -exec chmod 640 {} \;
       ;;
-    $USER)
+    $DEFAULT_USER)
       mkdir -p .rd
       # config file for CLI
       cat <<EOF > .rd/rd.conf
@@ -276,8 +276,8 @@ run install_plugins rundeck
 run config_rundeck
 run config_rundeck rundeck
 run start_rundeck
-run config_rundeck $USER
-run import_project $USER
-run import_ssh_key $USER
-run config_worker  $USER
-run config_project $USER
+run config_rundeck $DEFAULT_USER
+run import_project $DEFAULT_USER
+run import_ssh_key $DEFAULT_USER
+run config_worker  $DEFAULT_USER
+run config_project $DEFAULT_USER

@@ -144,10 +144,10 @@ import_tables() {
 user_dotfiles() {
   case `whoami` in
     postgres)
-      (cd /home/$USER; cp .bashrc .bash_aliases .emacs ~/)
+      (cd /home/$DEFAULT_USER; cp .bashrc .bash_aliases .emacs ~/)
       aws s3 sync $S3_URL/postgresql . --exclude '*' --include '.*' --no-progress
       ;;
-    $USER)
+    $DEFAULT_USER)
       echo -e \\n >> .bash_aliases
       cat <<'EOF' >> .bash_aliases
 alias pg='\sudo -u postgres -i bash'
@@ -186,6 +186,6 @@ run start_postgresql
 run create_databases postgres
 run import_tables    postgres
 run user_dotfiles    postgres
-run user_dotfiles    $USER
+run user_dotfiles    $DEFAULT_USER
 run add_backup_sh    postgres
 run add_backup_cron

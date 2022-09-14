@@ -60,7 +60,7 @@ EOF
 
 init_destdir() {
   mkdir -p /opt/openlattice
-  chown -Rh $USER:$USER /opt/openlattice
+  chown -Rh $DEFAULT_USER:$DEFAULT_USER /opt/openlattice
 }
 
 config_sshd() (
@@ -204,19 +204,19 @@ export -f git_clone
 
 run etc_hosts
 run apt_install
-run upgrade_pip    $USER
+run upgrade_pip    $DEFAULT_USER
 run install_java
 run install_delta
-run install_pgcli  $USER
+run install_pgcli  $DEFAULT_USER
 run install_psql
 run init_destdir
 run config_sshd
-run auth_ssh_key   $USER
-run copy_scripts   $USER
-run clone_repos    $USER
-run install_pylibs $USER
-run user_dotfiles  $USER
-run extra_aliases  $USER
-run build_cli_app  $USER shuttle
-run build_cli_app  $USER flapper
-run config_flapper $USER
+run auth_ssh_key   $DEFAULT_USER
+run copy_scripts   $DEFAULT_USER
+run clone_repos    $DEFAULT_USER
+run install_pylibs $DEFAULT_USER
+run user_dotfiles  $DEFAULT_USER
+run extra_aliases  $DEFAULT_USER
+run build_cli_app  $DEFAULT_USER shuttle
+run build_cli_app  $DEFAULT_USER flapper
+run config_flapper $DEFAULT_USER

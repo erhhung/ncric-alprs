@@ -73,7 +73,7 @@ install_awscli() (
   ./aws/install --update
   aws --version
   rm -rf /tmp/aws*
-  cd /home/$USER
+  cd /home/$DEFAULT_USER
   cat <<'EOF' >> .bashrc
 
 complete -C "$(which aws_completer)" aws
@@ -100,7 +100,7 @@ EOF
 }
 
 root_dotfiles() (
-  cd /home/$USER
+  cd /home/$DEFAULT_USER
   /usr/bin/cp -f .bashrc .bash_aliases .lessfilter .screenrc .gitconfig .emacs /root
 )
 
@@ -185,8 +185,8 @@ run apt_install
 run motd_banner
 run custom_prompt
 run install_awscli
-run authorize_keys $USER
-run user_dotfiles  $USER
+run authorize_keys $DEFAULT_USER
+run user_dotfiles  $DEFAULT_USER
 run root_dotfiles
 run install_utils
 run install_cwagent

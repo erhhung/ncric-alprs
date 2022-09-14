@@ -16,7 +16,7 @@ EOF
 )
 
 create_user() (
-  cd /home/$USER
+  cd /home/$DEFAULT_USER
   egrep -q '^openlattice:' /etc/passwd && exit
   cat <<EOF >> .bashrc
 export CONFIG_BUCKET="$CONFIG_BUCKET"

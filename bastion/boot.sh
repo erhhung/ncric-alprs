@@ -112,7 +112,7 @@ user_dotfiles() {
 }
 
 root_dotfiles() (
-  cd /home/$USER
+  cd /home/$DEFAULT_USER
   cat <<EOF >> .bashrc
 
 $(for bucket in "${ALL_BUCKETS[@]}"; do echo -en "\nexport $bucket"; done)
@@ -191,8 +191,8 @@ run yum_install
 run motd_banner
 run custom_prompt
 run upgrade_awscli
-run authorize_keys $USER
-run user_dotfiles  $USER
+run authorize_keys $DEFAULT_USER
+run user_dotfiles  $DEFAULT_USER
 run root_dotfiles
 run install_utils
 run upgrade_utils

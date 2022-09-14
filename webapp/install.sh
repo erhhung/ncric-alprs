@@ -218,10 +218,10 @@ export -f change_logo
 
 run install_node
 run install_delta
-run clone_repos   $USER
-run config_webapp $USER
-run config_orgapp $USER
-run start_orgapp  $USER
-run build_webapp  $USER
-run deploy_webapp $USER
-run archive_build $USER
+run clone_repos   $DEFAULT_USER
+run config_webapp $DEFAULT_USER
+run config_orgapp $DEFAULT_USER
+run start_orgapp  $DEFAULT_USER
+run build_webapp  $DEFAULT_USER
+run deploy_webapp $DEFAULT_USER
+run archive_build $DEFAULT_USER
