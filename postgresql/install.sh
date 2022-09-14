@@ -23,14 +23,6 @@ deb https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main
 EOF
   apt_update
   eval_with_retry "wait_apt_get && apt-get install -y postgresql-14 postgresql-contrib"
-  cd /home/$USER
-  echo -e \\n >> .bash_aliases
-  cat <<'EOF' >> .bash_aliases
-psql() {
-  [ "$USER" == 'postgres' ] && $(which psql) "$@" || \
-    \sudo -E su postgres -c   "$(which psql)  $@"
-}
-EOF
 )
 
 config_postgresql() (
@@ -150,7 +142,23 @@ import_tables() {
 }
 
 user_dotfiles() {
-  aws s3 sync $S3_URL/postgresql . --exclude '*' --include '.*' --no-progress
+  case `whoami` in
+    postgres)
+      (cd /home/$USER; cp .bashrc .bash_aliases .emacs ~/)
+      aws s3 sync $S3_URL/postgresql . --exclude '*' --include '.*' --no-progress
+      ;;
+    $USER)
+      echo -e \\n >> .bash_aliases
+      cat <<'EOF' >> .bash_aliases
+alias pg='\sudo -u postgres -i bash'
+
+psql() {
+  [ "$USER" == 'postgres' ] && $(which psql) "$@" || \
+    \sudo -E su postgres -c   "$(which psql)  $@"
+}
+EOF
+      ;;
+  esac
 }
 
 add_backup_sh() {
@@ -178,5 +186,6 @@ run start_postgresql
 run create_databases postgres
 run import_tables    postgres
 run user_dotfiles    postgres
+run user_dotfiles    $USER
 run add_backup_sh    postgres
 run add_backup_cron
