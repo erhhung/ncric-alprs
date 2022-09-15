@@ -320,8 +320,7 @@ class Integration(object):
 
         environment = {
             "http://localhost:8080": "LOCAL",
-            "http://datastore:8080": "PROD_INTEGRATION",
-            "http://datastore:8080": "STAGING_INTEGRATION"
+            "http://datastore:8080": "PROD_INTEGRATION"
         }
 
         # for ncric, make sure there's an __init__.py file if the yaml file is in a different place!
