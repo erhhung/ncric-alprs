@@ -35,6 +35,12 @@
       font-weight: bold;
       text-align: right;
     }
+    .date {
+      font-family: monospace;
+    }
+    .note {
+      font-style: italic;
+    }
   </style>
 </head>
 <body>
@@ -46,15 +52,15 @@
     </tr>
     <tr>
       <th>Started at:</th>
-      <td>${execution.dateStarted}</td>
+      <td class="date">${execution.dateStarted}</td>
     </tr>
     <tr>
       <th>Ended at:</th>
-      <td>${execution.dateEnded}</td>
+      <td class="date">${execution.dateEnded}</td>
     </tr>
     <tr>
       <th>Job output:</th>
-      <td style="font-style: italic;">See attachment</td>
+      <td class="note">See attachment</td>
     </tr>
   </table>
 </body>
