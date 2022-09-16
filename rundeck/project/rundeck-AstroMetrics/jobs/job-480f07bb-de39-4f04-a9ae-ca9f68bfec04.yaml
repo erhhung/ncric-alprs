@@ -27,7 +27,7 @@
   options:
   - description: API read chunk size in minutes
     name: fetch_size
-    value: '60'
+    value: '1'
   - description: Batch size for writes to Atlas
     name: batch_size
     value: '1000'
@@ -61,5 +61,5 @@
     keepgoing: false
     strategy: node-first
   timeZone: America/Los_Angeles
-  timeout: 6h
+  timeout: 20h
   uuid: 480f07bb-de39-4f04-a9ae-ca9f68bfec04
