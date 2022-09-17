@@ -100,13 +100,13 @@ sftp_users = {
 
 # headless user for Rundeck jobs
 auth0_user = {
-  email = "ol@astrometrics.us"
+  email    = "ol@astrometrics.us"
   password = ""
 }
 
 # access to api.flocksafety.com
 flock_user = {
-  email = "eyuan@maiveric.com"
+  email    = "eyuan@maiveric.com"
   password = ""
 }
 
