@@ -1,0 +1,17 @@
+# this file will be merged with "cwagent-main.yaml"
+
+metrics:
+  metrics_collected:
+    disk:
+      resources:
+        - /
+        - /opt/postgresql
+
+logs:
+  logs_collected:
+    files:
+      collect_list:
+        - file_path: /var/log/postgresql/*.log
+          log_group_name: astrometrics
+          log_stream_name: postgresql
+          retention_in_days: 90

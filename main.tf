@@ -26,4 +26,14 @@ data "aws_region" "current" {}
 locals {
   account = data.aws_caller_identity.current.account_id
   region  = data.aws_region.current.name
+
+  hosts = {
+    postgresql    = "PostgreSQL"
+    elasticsearch = "Elasticsearch"
+    conductor     = "Conductor"
+    datastore     = "Datastore"
+    indexer       = "Indexer"
+    bastion       = "Bastion Host"
+    worker        = "Worker"
+  }
 }

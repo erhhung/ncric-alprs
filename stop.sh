@@ -39,10 +39,10 @@ ask() {
   done
 }
 
-# defaults
+# defaults (in optimal order)
 HOSTS=(
-  bastion
   worker
+  bastion
   indexer
   datastore
   conductor
@@ -53,13 +53,13 @@ HOSTS=(
 
 host_abbrev() {
   case $1 in
+    postgresql)    echo pg   ;;
+    elasticsearch) echo es   ;;
+    conductor)     echo cond ;;
+    datastore)     echo data ;;
+    indexer)       echo idx  ;;
     bastion)       echo bast ;;
     worker)        echo work ;;
-    indexer)       echo idx  ;;
-    datastore)     echo data ;;
-    conductor)     echo cond ;;
-    elasticsearch) echo es   ;;
-    postgresql)    echo pg   ;;
     *)             return 1
   esac
 }

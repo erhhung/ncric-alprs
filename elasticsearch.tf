@@ -24,7 +24,7 @@ module "elasticsearch_sg" {
 # https://registry.terraform.io/providers/hashicorp/external/latest/docs/data-sources/data_source
 data "external" "elasticsearch_cwagent_json" {
   program = [
-    "${path.module}/shared/cwagent.sh",
+    "${path.module}/monitoring/cwagent.sh",
     "elasticsearch",
   ]
 }
@@ -111,7 +111,7 @@ module "elasticsearch_server" {
   ]
   ami_id           = local.applied_amis["ubuntu_20arm"].id
   instance_type    = var.instance_types["elasticsearch"]
-  instance_name    = "Elasticsearch"
+  instance_name    = local.hosts["elasticsearch"]
   root_volume_size = 32
   subnet_id        = module.main_vpc.subnet_ids["private1"]
   private_ip       = local.private_ips["elasticsearch"]

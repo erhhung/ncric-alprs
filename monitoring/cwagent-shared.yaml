@@ -1,0 +1,11 @@
+# this file will be merged with "cwagent-main.yaml"
+# it's included on Conductor/Datastore/Indexer only
+
+logs:
+  logs_collected:
+    files:
+      collect_list:
+        - file_path: /opt/openlattice/logging/*[!0-9].log
+          log_group_name: astrometrics
+          log_stream_name: '${HOST}'
+          retention_in_days: 90

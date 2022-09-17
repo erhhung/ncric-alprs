@@ -16,7 +16,7 @@ module "postgresql_sg" {
 # https://registry.terraform.io/providers/hashicorp/external/latest/docs/data-sources/data_source
 data "external" "postgresql_cwagent_json" {
   program = [
-    "${path.module}/shared/cwagent.sh",
+    "${path.module}/monitoring/cwagent.sh",
     "postgresql",
   ]
 }
@@ -113,7 +113,7 @@ module "postgresql_server" {
   ]
   ami_id           = local.applied_amis["ubuntu_20arm"].id
   instance_type    = var.instance_types["postgresql"]
-  instance_name    = "PostgreSQL"
+  instance_name    = local.hosts["postgresql"]
   root_volume_size = 32
   subnet_id        = module.main_vpc.subnet_ids["private1"]
   private_ip       = local.private_ips["postgresql"]

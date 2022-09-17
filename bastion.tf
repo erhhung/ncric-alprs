@@ -5,7 +5,7 @@
 # https://registry.terraform.io/providers/hashicorp/external/latest/docs/data-sources/data_source
 data "external" "bastion_cwagent_json" {
   program = [
-    "${path.module}/shared/cwagent.sh",
+    "${path.module}/monitoring/cwagent.sh",
     "bastion",
   ]
 }
@@ -73,7 +73,7 @@ module "bastion_host" {
   ]
   ami_id           = local.applied_amis["amazon_linux2"].id
   instance_type    = var.instance_types["bastion"]
-  instance_name    = "Bastion Host"
+  instance_name    = local.hosts["bastion"]
   root_volume_size = 32
   subnet_id        = module.main_vpc.subnet_ids["private1"]
   private_ip       = local.private_ips["bastion"]

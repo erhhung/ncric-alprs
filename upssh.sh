@@ -66,12 +66,12 @@ get_outputs() {
 
 host_abbrev() {
   case $1 in
-    bastion)       echo bast ;;
     postgresql)    echo pg   ;;
     elasticsearch) echo es   ;;
     conductor)     echo cond ;;
     datastore)     echo data ;;
     indexer)       echo idx  ;;
+    bastion)       echo bast ;;
     worker)        echo work ;;
     *)             return 1
   esac

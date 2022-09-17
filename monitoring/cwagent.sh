@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 
-# optionally combine "cwagent_main.yaml" with host-specific "cwagent_logs.yaml"
+# optionally combine "cwagent-main.yaml" with host-specific "cwagent-name.yaml"
 # outputs JSON containing "cwagent.json" for Terraform's "external" data source
 #
-# usage: cwagent.sh [folder] [VAR1=value1] [VAR2=value2] ...
+# usage: cwagent.sh [name] [VAR1=value1] [VAR2=value2] ...
 
 cd "$(dirname "$0")"
 
@@ -32,17 +32,20 @@ _altcmd() {
 yq=$(_altcmd yq4 yq)
 
 if [[ "$1" != *=* ]]; then
-  folder="$1"; shift
+  name="$1"; shift
 fi
 while [ $# -gt 0 ]; do
   eval "export $1"; shift
 done
 
-"$yq" -o json <( (
-  cat cwagent_main.yaml
-  if [ "$folder" ]; then
-    logs="../$folder/cwagent_logs.yaml"
-    [ -f "$logs" ] && cat "$logs"
-  fi
-# run envsubst on concatenated YAML
-) | envsubst) | jq -sR '{"json":.}'
+if [ "$name" ]; then
+  "$yq" -o json eval-all \
+    'select(fileIndex == 0) *
+     select(fileIndex == 1)' \
+    cwagent-main.yaml \
+    cwagent-$name.yaml
+else
+  "$yq" -o json cwagent-main.yaml
+fi | \
+  # envsubst concatenated YAML
+  envsubst | jq -sR '{"json":.}'

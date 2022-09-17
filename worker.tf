@@ -14,7 +14,7 @@ locals {
 
 # https://registry.terraform.io/providers/hashicorp/external/latest/docs/data-sources/data_source
 data "external" "worker_cwagent_json" {
-  program = ["${path.module}/shared/cwagent.sh"]
+  program = ["${path.module}/monitoring/cwagent.sh"]
 }
 data "external" "python_wheels" {
   for_each = toset(local.wheels)
@@ -94,7 +94,7 @@ module "worker_node" {
   ]
   ami_id           = local.applied_amis["ubuntu_20arm"].id
   instance_type    = var.instance_types["worker"]
-  instance_name    = "Worker"
+  instance_name    = local.hosts["worker"]
   root_volume_size = 32
   subnet_id        = module.main_vpc.subnet_ids["private1"]
   private_ip       = local.private_ips["worker"]

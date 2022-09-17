@@ -1,7 +1,7 @@
 # https://registry.terraform.io/providers/hashicorp/external/latest/docs/data-sources/data_source
 data "external" "datastore_cwagent_json" {
   program = [
-    "${path.module}/shared/cwagent.sh",
+    "${path.module}/monitoring/cwagent.sh",
     "shared", "HOST=datastore"
   ]
 }
@@ -62,7 +62,7 @@ module "datastore_server" {
   ]
   ami_id           = local.applied_amis["ubuntu_20arm"].id
   instance_type    = var.instance_types["datastore"]
-  instance_name    = "Datastore"
+  instance_name    = local.hosts["datastore"]
   root_volume_size = 32
   subnet_id        = module.main_vpc.subnet_ids["private1"]
   private_ip       = local.private_ips["datastore"]

@@ -12,12 +12,12 @@ mkdir -p .disabled
 
 # defaults
 TF_FILES=(
-  bastion
   postgresql
   elasticsearch
   conductor
   datastore
   indexer
+  bastion
   rundeck
   worker
   webapp
