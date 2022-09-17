@@ -87,6 +87,8 @@
         <description>Get hotlist from SFTP</description>
         <script><![CDATA[#!/usr/bin/env python3
 
+# JOB: Recurring Integration & Staging: Hotlist - daily
+
 from sqlalchemy import create_engine
 from datetime import datetime
 from io import StringIO

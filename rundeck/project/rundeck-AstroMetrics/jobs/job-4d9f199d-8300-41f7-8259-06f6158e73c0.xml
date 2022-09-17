@@ -94,6 +94,8 @@
         <description>2 days ago</description>
         <script><![CDATA[#!/usr/bin/env python3
 
+# JOB: Recurring SCSO: asynchronous - goes back two days
+
 from datetime import datetime, timedelta
 from pyntegrationsncric.pyntegrations.ca_ncric.scso.integration_definitions \
   import SCSOIntegration, SCSOImagesIntegration, SCSOAgenciesIntegration, \

@@ -88,6 +88,8 @@ Runs every 3 hours on 3-hour chunks of data:
         <description>3 hours a day ago</description>
         <script><![CDATA[#!/usr/bin/env python3
 
+# JOB: Recurring Flock - Images: realtime - 3-hour
+
 from datetime import datetime, timedelta
 from sqlalchemy import create_engine
 from pyntegrationsncric.pyntegrations.ca_ncric.flock.integration_definitions \

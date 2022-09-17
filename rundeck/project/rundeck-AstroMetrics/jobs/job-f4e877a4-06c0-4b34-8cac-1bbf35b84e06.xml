@@ -86,6 +86,8 @@
         <description>2 am catchup</description>
         <script><![CDATA[#!/usr/bin/env python3
 
+# JOB: Recurring Flock: realtime - catchup
+
 from datetime import datetime, timedelta
 from sqlalchemy import create_engine
 from pyntegrationsncric.pyntegrations.ca_ncric.flock.integration_definitions import \

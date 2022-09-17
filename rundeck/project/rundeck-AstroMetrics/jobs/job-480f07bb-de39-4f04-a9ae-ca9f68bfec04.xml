@@ -48,6 +48,8 @@
         <description>entire previous day</description>
         <script><![CDATA[#!/usr/bin/env bash
 
+# JOB: Recurring Flock: Pull RAW data daily by API
+
 # start at midnight PST of previous day
 start=$(date -d "-1 day" "+%Y-%m-%dT00:00:00%:z")
 

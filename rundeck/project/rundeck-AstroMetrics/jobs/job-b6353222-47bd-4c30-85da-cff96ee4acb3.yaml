@@ -119,6 +119,8 @@
       script: |-
         #!/usr/bin/env python3
 
+        # JOB: Recurring BOSS4: realtime - hourly
+
         from datetime import datetime, timedelta
         from pyntegrationsncric.pyntegrations.ca_ncric.boss4.integration_definitions \
           import BOSS4Integration, BOSS4ImagesIntegration, BOSS4AgenciesIntegration, \

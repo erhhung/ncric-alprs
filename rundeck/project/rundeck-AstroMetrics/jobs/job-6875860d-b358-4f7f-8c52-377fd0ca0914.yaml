@@ -119,6 +119,8 @@
       script: |-
         #!/usr/bin/env python3
 
+        # JOB: Recurring SCSO: realtime - hourly
+
         from datetime import datetime, timedelta
         from pyntegrationsncric.pyntegrations.ca_ncric.scso.integration_definitions \
           import SCSOIntegration, SCSOImagesIntegration, SCSOAgenciesIntegration, \
