@@ -54,5 +54,6 @@ module "rundeck_config" {
 
   values = merge(local.config_values, {
     POSTGRESQL_HOST = module.postgresql_server.private_domain
+    DEVOPS_EMAIL    = var.ALPRS_DEVOPS_EMAIL
   })
 }
