@@ -75,7 +75,7 @@ if [ ${#hosts} -eq 0 ]; then
   echo >&2 "No valid host provided!"
   exit 1
 fi
-ask >&2 "Proceed?" N || exit
+ask >&2 "Proceed?" N || exit 0
 
 printf '\nRetrieving Terraform output variables...'
 env=$(./tf.sh output -raw env)

@@ -69,11 +69,12 @@ config_rundeck() (
         osFamily="unix"
         osName="Linux"
         osVersion="$WORKER_OS"
+        always-set-pty="true"
+        ssh-send-env="true"
         ssh-authentication="privateKey"
         ssh-key-storage-path="keys/worker"
-        ssh-send-env="true"
-        sudo-command-enabled="true"
         sudo-password-storage-path="keys/worker"
+        sudo-command-enabled="true"
         file-copier="ssh-copier"
   />
 </project>
@@ -169,6 +170,20 @@ import_ssh_key() {
   rm $file
 }
 
+extra_aliases() {
+  echo -e \\n >> .bash_aliases
+  cat <<'EOF' >> .bash_aliases
+disable_rundeck_jobs() {
+  rd jobs list -f - -F yaml | \
+    yq '.[] | ["job=", .id, " scheduled=", .scheduleEnabled]
+            | join("")'
+  ask >&2 "\nProceed?" N || return 0
+  local jobs=($(rd jobs list -% %id))
+  rd jobs unschedulebulk -i $(IFS=,; echo "${jobs[*]}") -y
+}
+EOF
+}
+
 curl_rundeck() {
   local cookies=/tmp/cookies
   [ -f $cookies ] || echo "#EMPTY" > $cookies
@@ -224,9 +239,12 @@ config_project() {
   # use sed to trim leading/trailing newlines
   rd projects configure get -p $proj | \
     sed -e :a -e '/./,$!d;/^\n*$/{$d;N;};/\n$/ba' > $config
+  # ensure process tree gets terminated if job times out
+  set_property $config project.always-set-pty       true
+  # ensure RD_* environment variables are sent to Worker
+  set_property $config project.ssh-send-env         true
   set_property $config project.ssh-authentication   privateKey
   set_property $config project.ssh-key-storage-path keys/worker
-  set_property $config project.ssh-send-env         true
   set_property $config project.ssh-keypath
   rd projects configure set -p $proj -f $config
   cat $config
@@ -277,5 +295,6 @@ run start_rundeck
 run config_rundeck $DEFAULT_USER
 run import_project $DEFAULT_USER
 run import_ssh_key $DEFAULT_USER
+run extra_aliases  $DEFAULT_USER
 run config_worker  $DEFAULT_USER
 run config_project $DEFAULT_USER
