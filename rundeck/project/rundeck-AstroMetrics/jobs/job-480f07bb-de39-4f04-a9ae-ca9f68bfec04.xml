@@ -2,7 +2,7 @@
   <job>
     <context>
       <options preserveOrder='true'>
-        <option name='fetch_size' value='1'>
+        <option name='fetch_size' value='10'>
           <description>API read chunk size in minutes</description>
         </option>
         <option name='batch_size' value='1000'>
