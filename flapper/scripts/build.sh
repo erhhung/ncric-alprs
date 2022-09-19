@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # usage: build.sh [branch]
-# optional branch override (default is main)
+# optional branch override (default is develop)
 
 PROJECT=flapper
 
@@ -20,17 +20,23 @@ fi
 
 cd $PROJECT
 git stash > /dev/null
-git checkout ${1:-main}
+git checkout ${1:-develop}
 git pull --rebase --prune
 git stash pop 2> /dev/null || true
 
 # don't build from the super-repo
 ./gradlew clean :distTar -x test
 
-if [ -d /opt/openlattice/$PROJECT ]; then
-  mv /opt/openlattice/$PROJECT /opt/openlattice/${PROJECT}_$(date +"%Y-%m-%d_%H-%M-%S")
+dest=/opt/openlattice/$PROJECT
+if [ -d "$dest" ]; then
+  # preserve project config dir if it exists
+  [ -d "$dest/conf" ] && rm -rf /tmp/conf && mv $dest/conf /tmp
+  mv $dest ${dest}_$(date +"%Y-%m-%d_%H-%M-%S")
 fi
 mv -f build/distributions/$PROJECT.tgz /opt/openlattice/
 
 cd /opt/openlattice
 tar xzvf $PROJECT.tgz
+
+# restore preserved project config dir
+[ -d /tmp/conf ] && mv /tmp/conf $dest

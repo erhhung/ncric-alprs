@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # usage: build.sh [branch]
-# optional branch override (default is main)
+# optional branch override (default is develop)
 
 PROJECT=shuttle
 
@@ -19,7 +19,7 @@ if [ ! -d $PROJECT ]; then
 fi
 
 git stash > /dev/null
-git checkout ${1:-main}
+git checkout ${1:-develop}
 git pull --rebase --prune
 git submodule update --recursive
 git stash pop 2> /dev/null || true
@@ -31,7 +31,7 @@ git pull origin develop
 cd ..
 
 cd shuttle
-git checkout ${1:-master}
+git checkout ${1:-develop}
 git pull --rebase --prune
 cd ..
 
@@ -41,8 +41,9 @@ sed -Ei "s#https://(api|integration)(\.\w+)?\.openlattice\.com/?#$API_URL/#" \
 
 ./gradlew clean :$PROJECT:distTar -x test
 
-if [ -d /opt/openlattice/$PROJECT ]; then
-  mv /opt/openlattice/$PROJECT /opt/openlattice/${PROJECT}_$(date +"%Y-%m-%d_%H-%M-%S")
+dest=/opt/openlattice/$PROJECT
+if [ -d "$dest" ]; then
+  mv $dest ${dest}_$(date +"%Y-%m-%d_%H-%M-%S")
 fi
 mv -f $PROJECT/build/distributions/$PROJECT.tgz /opt/openlattice/
 

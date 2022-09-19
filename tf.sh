@@ -24,6 +24,7 @@ _reqcmds() {
     fi
   done
 }
+# pee from "moreutils" package
 _reqcmds pee docker || exit $?
 
 _log() {
