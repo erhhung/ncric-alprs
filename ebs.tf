@@ -6,6 +6,7 @@ resource "aws_ebs_volume" "postgresql_data" {
   type              = "gp3"
   size              = var.data_volume_sizes["postgresql"]
   availability_zone = "${local.region}a" # private1 subnet
+  throughput        = 500
   encrypted         = true
 
   tags = {
