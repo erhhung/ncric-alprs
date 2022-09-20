@@ -32,8 +32,9 @@ cd ..
 
 ./gradlew clean :$PROJECT:distTar -x test
 
-if [ -d /opt/openlattice/$PROJECT ]; then
-  mv /opt/openlattice/$PROJECT /opt/openlattice/${PROJECT}_$(date +"%Y-%m-%d_%H-%M-%S")
+dest=/opt/openlattice/$PROJECT
+if [ -d "$dest" ]; then
+  mv $dest ${dest}_$(date +"%Y-%m-%d_%H-%M-%S")
 fi
 mv -f $PROJECT/build/distributions/$PROJECT.tgz /opt/openlattice/
 

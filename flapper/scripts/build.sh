@@ -39,4 +39,4 @@ cd /opt/openlattice
 tar xzvf $PROJECT.tgz
 
 # restore preserved project config dir
-[ -d /tmp/conf ] && mv /tmp/conf $dest
+[ -d /tmp/conf ] && mv /tmp/conf $dest || true
