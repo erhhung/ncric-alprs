@@ -68,7 +68,7 @@ volume_state() {
   local state=$(aws ec2 describe-volumes \
                   --volume-ids $1 \
                   --query 'Volumes[].State' \
-                  --output text)
+                  --output text 2> /dev/null)
   echo ${state:-deleted}
 }
 
@@ -77,7 +77,7 @@ attach_state() {
   local state=$(aws ec2 describe-volumes \
                   --volume-ids $1 \
                   --query 'Volumes[].Attachments[].State' \
-                  --output text)
+                  --output text 2> /dev/null)
   echo ${state:-detached}
 }
 
@@ -175,8 +175,13 @@ dest="s3://$BACKUP_BUCKET/postgresql/pg_backup_$(date "+%Y-%m-%d").tar.bz"
 echo "[`ts`] Compressing and writing: $dest"
 (
 # use original instance role to access S3
-unset AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_SESSION_TOKEN
+unset AWS_ACCESS_KEY_ID \
+      AWS_SECRET_ACCESS_KEY \
+      AWS_SESSION_TOKEN
+
 # https://www.peterdavehello.org/2015/02/use-multi-threads-to-compress-files-when-taring-something/
-nice tar cf - -C $TEMP_DIR -I pbzip2 . | nice aws s3 cp - $dest --no-progress || exit $?
-aws s3 ls --human-readable $dest | awk '{print "["$1" "$2"] "$5" | Size: "$3$4}'
+nice tar cf - -C $TEMP_DIR -I pbzip2 . | \
+  nice aws s3 cp - $dest --no-progress || exit $?
+aws s3 ls --human-readable $dest | \
+  awk '{print "["$1" "$2"] Backup file:  "$5" | Size: "$3$4}'
 )
