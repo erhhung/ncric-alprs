@@ -1,9 +1,9 @@
 locals {
   base_policy_arns = [
-    "arn:${var.accounts[var.env].partition}:iam::aws:policy/AmazonSSMManagedInstanceCore",
-    "arn:${var.accounts[var.env].partition}:iam::aws:policy/CloudWatchAgentServerPolicy",
-    "arn:${var.accounts[var.env].partition}:iam::aws:policy/CloudWatchReadOnlyAccess",
-    "arn:${var.accounts[var.env].partition}:iam::aws:policy/AmazonEC2ReadOnlyAccess",
+    "arn:${local.partition}:iam::aws:policy/AmazonSSMManagedInstanceCore",
+    "arn:${local.partition}:iam::aws:policy/CloudWatchAgentServerPolicy",
+    "arn:${local.partition}:iam::aws:policy/CloudWatchReadOnlyAccess",
+    "arn:${local.partition}:iam::aws:policy/AmazonEC2ReadOnlyAccess",
   ]
 }
 
@@ -169,6 +169,52 @@ resource "aws_iam_instance_profile" "alprs_service" {
   role = aws_iam_role.alprs_service.name
 }
 
+#################### EBS ####################
+
+data "aws_iam_policy_document" "service_trust" {
+  statement {
+    effect  = "Allow"
+    actions = ["sts:AssumeRole"]
+
+    principals {
+      type        = "AWS"
+      identifiers = [aws_iam_role.alprs_service.arn]
+    }
+  }
+}
+
+resource "aws_iam_role" "ebs_manager" {
+  name                 = "ALPRSEBSManagerRole"
+  description          = "Allow services to CRUD temporary EBS volumes."
+  assume_role_policy   = data.aws_iam_policy_document.service_trust.json
+  max_session_duration = 60 * 60 * 12
+}
+
+data "aws_iam_policy_document" "crud_volumes" {
+  statement {
+    effect    = "Allow"
+    actions   = ["ec2:DescribeVolumes"]
+    resources = ["*"]
+  }
+  statement {
+    effect = "Allow"
+    actions = [
+      "ec2:CreateVolume",
+      "ec2:DeleteVolume",
+      "ec2:AttachVolume",
+      "ec2:DetachVolume",
+      "ec2:CreateTags"
+    ]
+    resources = ["arn:${local.partition}:ec2:${local.region}:${local.account}:*"]
+  }
+}
+
+resource "aws_iam_role_policy" "ebs_manager_crud_volumes" {
+  name   = "crud-ebs-volumes-policy"
+  role   = aws_iam_role.ebs_manager.id
+  policy = data.aws_iam_policy_document.crud_volumes.json
+}
+
 #################### SFTP ####################
 
 data "aws_iam_policy_document" "sftp_transfer" {
@@ -213,7 +259,7 @@ data "aws_iam_policy_document" "sftp_user" {
   statement {
     effect    = "Allow"
     actions   = ["s3:ListBucket"]
-    resources = ["arn:${var.accounts[var.env].partition}:s3:::$${transfer:HomeBucket}"]
+    resources = ["arn:${local.partition}:s3:::$${transfer:HomeBucket}"]
 
     condition {
       test     = "StringLike"
@@ -224,7 +270,7 @@ data "aws_iam_policy_document" "sftp_user" {
   statement {
     effect    = "Allow"
     actions   = ["s3:GetObject", "s3:PutObject"]
-    resources = ["arn:${var.accounts[var.env].partition}:s3:::$${transfer:HomeDirectory}/*"]
+    resources = ["arn:${local.partition}:s3:::$${transfer:HomeDirectory}/*"]
   }
 }
 

@@ -187,12 +187,12 @@ add_backup_sh() {
 add_backup_cron() (
   cd /etc/cron.d
   cat <<EOF > pg_backup
-USER=postgres
+USER=root
 HOME=/var/lib/postgresql
 PATH=/bin:/usr/bin:/usr/sbin:/usr/local/bin:/snap/bin
 
 # min hr dom mon dow user command
-20 10,22 * * * postgres bash -c "\$HOME/backup.sh $BACKUP_BUCKET"
+20 10,22 * * * root bash -c "\$HOME/backup.sh $BACKUP_BUCKET"
 EOF
   chmod 644 pg_backup
 )

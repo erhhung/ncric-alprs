@@ -12,8 +12,8 @@ data "aws_iam_policy_document" "https_only" {
       "${aws_s3_bucket.buckets[each.key].arn}/*",
     ]
     principals {
-      identifiers = ["*"]
       type        = "*"
+      identifiers = ["*"]
     }
     condition {
       test     = "Bool"
@@ -35,8 +35,8 @@ data "aws_iam_policy_document" "sftp_bucket2" {
     resources = ["${aws_s3_bucket.buckets["sftp"].arn}/*"]
 
     principals {
-      identifiers = [local.sftp_lambda_role_arn]
       type        = "AWS"
+      identifiers = [local.sftp_lambda_role_arn]
     }
   }
 }
@@ -52,10 +52,8 @@ data "aws_iam_policy_document" "elb_logs" {
     resources = ["${aws_s3_bucket.buckets["audit"].arn}/AWSLogs/${local.account}/*"]
 
     principals {
-      identifiers = [
-        "arn:${var.accounts[var.env].partition}:iam::${var.elb_account_id}:root"
-      ]
-      type = "AWS"
+      type        = "AWS"
+      identifiers = ["arn:${local.partition}:iam::${var.elb_account_id}:root"]
     }
   }
   statement {
@@ -65,8 +63,8 @@ data "aws_iam_policy_document" "elb_logs" {
     resources = ["${aws_s3_bucket.buckets["audit"].arn}/AWSLogs/${local.account}/*"]
 
     principals {
-      identifiers = ["delivery.logs.amazonaws.com"]
       type        = "Service"
+      identifiers = ["delivery.logs.amazonaws.com"]
     }
     condition {
       test     = "StringEquals"
@@ -81,8 +79,8 @@ data "aws_iam_policy_document" "elb_logs" {
     resources = [aws_s3_bucket.buckets["audit"].arn]
 
     principals {
-      identifiers = ["delivery.logs.amazonaws.com"]
       type        = "Service"
+      identifiers = ["delivery.logs.amazonaws.com"]
     }
   }
 }
@@ -100,16 +98,16 @@ data "aws_iam_policy_document" "cf_origin" {
       for_each = toset(var.env == "dev" ? [""] : [])
 
       content {
-        identifiers = aws_cloudfront_origin_access_identity.app[*].iam_arn
         type        = "AWS"
+        identifiers = aws_cloudfront_origin_access_identity.app[*].iam_arn
       }
     }
     dynamic "principals" {
       for_each = toset(var.env == "prod" ? [""] : [])
 
       content {
-        identifiers = ["*"]
         type        = "*"
+        identifiers = ["*"]
       }
     }
 

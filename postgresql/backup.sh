@@ -1,45 +1,182 @@
-#!/bin/bash
+#!/usr/bin/bash
 
-[ "$1" ] || exit $?
+[ `whoami` == root ] || exit $?
+[ "$1" ]             || exit $?
 BACKUP_BUCKET=$1
+
+DATA_DEV="/dev/nvme1n1"
+DATA_DIR="/opt/postgresql/data"
+TEMP_DEV="/dev/nvme2n1"
+TEMP_DIR="/opt/postgresql/temp"
+
+ASSUME_ROLE="ALPRSEBSManagerRole"
+VOLUME_NAME="PostgreSQL Temp"
+
+ LOG_FILE="/opt/postgresql/backups.log"
+LOCK_FILE="/var/lock/pg_backup"
 
 # don't start another backup if
 # previous one hasn't completed
-[ -e  /var/lock/pg_basebackup ] && exit
-touch /var/lock/pg_basebackup
+[ -e  $LOCK_FILE ] && exit
+touch $LOCK_FILE
 
-TEMP="/opt/postgresql/temp"
- LOG="/opt/postgresql/backups.log"
-
-__ts() {
+ts() {
   date "+%Y-%m-%d %T"
 }
 
-exec >> $LOG 2>&1
-echo -e "\n[`__ts`] ===== BEGIN pg_basebackup ====="
+exec >> $LOG_FILE 2>&1
+echo -e "\n[`ts`] ===== BEGIN pg_backup ====="
 
-clean() {
-  [ "$1" ] || rm -f /var/lock/pg_basebackup
-  rm -rf $TEMP/*
+exiting() {
+  [ "$(type -t delete_temp)" == function ] && delete_temp
+  echo "[`ts`] ===== END pg_backup ====="
+  rm -f $LOCK_FILE
 }
-clean NO_UNLOCK
-trap clean EXIT
+trap exiting EXIT
 
+metadata() {
+  local value=$(curl -s "http://169.254.169.254/latest/meta-data/$1");
+  [[ "$value" =~ "404 - Not Found" ]] && return 1 || echo "$value"
+}
+
+identity() {
+  aws sts get-caller-identity \
+    --query Arn --output text
+}
+
+role_arn=$(identity) && echo "[`ts`] Current role: $role_arn"
+role_arn="$(sed -En 's|^arn:(aws[^:]*):sts::([0-9]+).+$|arn:\1:iam::\2|p' \
+  <<< "$role_arn"):role/$ASSUME_ROLE"
+
+eval export $(aws sts assume-role \
+                --role-arn $role_arn \
+                --role-session-name postgresql-backup | \
+  jq -r '.Credentials |
+         "AWS_ACCESS_KEY_ID=\"\(.AccessKeyId)\"
+          AWS_SECRET_ACCESS_KEY=\"\(.SecretAccessKey)\"
+          AWS_SESSION_TOKEN=\"\(.SessionToken)\""')
+role_arn=$(identity) && echo "[`ts`] Assumed role: $role_arn"
+
+volume_id() {
+  aws ec2 describe-volumes \
+    --query 'Volumes[?Tags[?Value==`'"$VOLUME_NAME"'`]].VolumeId' \
+    --output text
+}
+
+# <volume_id>
+volume_state() {
+  local state=$(aws ec2 describe-volumes \
+                  --volume-ids $1 \
+                  --query 'Volumes[].State' \
+                  --output text)
+  echo ${state:-deleted}
+}
+
+# <volume_id>
+attach_state() {
+  local state=$(aws ec2 describe-volumes \
+                  --volume-ids $1 \
+                  --query 'Volumes[].Attachments[].State' \
+                  --output text)
+  echo ${state:-detached}
+}
+
+# <volume_id> <state_func> <operator> <value> <sleep>'
+wait_state() {
+  local vol=$1 func=$2 oper=$3 val=$4 delay=${5:-5}
+  local state expr elapsed=0
+
+  while true; do
+    state=$($func $vol)
+    echo  "[`ts`] $vol: $state"
+    expr=("$state" "$oper" "$val")
+    test  "${expr[@]}" && break
+    [ $elapsed -lt 60 ] || return $?
+    ((elapsed += delay))
+    sleep $delay
+  done
+}
+
+create_temp() {
+  local vol=$(volume_id)
+  if [ ! "$vol" ]; then
+    local zone size tags
+    zone=$(metadata placement/availability-zone)
+    size=$(( $(lsblk $DATA_DEV -nbo SIZE) / 1024**3 ))
+    tags="ResourceType=volume,Tags=[{Key=Name,Value=$VOLUME_NAME}]"
+
+    vol=$(aws ec2 create-volume \
+            --availability-zone $zone \
+            --size              $size \
+            --volume-type       gp3 \
+            --throughput        500 \
+            --encrypted \
+            --tag-specifications "$tags" \
+            --query VolumeId \
+            --output text) || return $?
+  fi
+  wait_state $vol volume_state != creating 5 || return $?
+
+  local state=$(volume_state $vol)
+  if [ "$state" == available ]; then
+    local inst=$(metadata instance-id)
+    aws ec2 attach-volume \
+      --volume-id   $vol  \
+      --instance-id $inst \
+      --device  /dev/xvdc > /dev/null || return $?
+  fi
+  wait_state $vol attach_state == attached 3 || return $?
+
+  local device=$TEMP_DEV mount=$TEMP_DIR label=temporary
+  [ -d $mount ] && df | grep -q $mount && return
+
+  if ! file -sL $device | grep -q filesystem; then
+    mkfs.xfs -f -L $label $device > /dev/null || return $?
+  fi
+  mkdir -p $mount
+  mount -t xfs -o defaults,nofail LABEL=$label $mount || return $?
+  chown postgres:postgres $mount
+  rm -rf $mount/*
+}
+
+delete_temp() {
+  local mount=$TEMP_DIR vol=$(volume_id)
+  df | grep -q $mount && umount $mount
+  [ -d $mount ]       && rm -rf $mount
+  [ "$vol" ] || return 0
+
+  local state=$(attach_state $vol)
+  if [ "$state" == attached ]; then
+    aws ec2 detach-volume \
+      --volume-id $vol \
+      --force > /dev/null || return $?
+  fi
+  wait_state $vol attach_state != detaching 5 || return $?
+
+  aws ec2 delete-volume --volume-id $vol
+  wait_state $vol volume_state == deleted 3
+}
+
+# <mount_point>
 fs_stats() {
-  df -h $TEMP | tail -1 | awk '{print $1" | Total: "$2"iB | Used: "$3"iB ("$5") | Avail: "$4"iB"}'
+  df -h $1 | tail -1 | awk '{print $1" | Total: "$2"iB | Used: "$3"iB ("$5") | Avail: "$4"iB"}'
 }
-echo "[`__ts`] INIT $(fs_stats)"
 
-# destination file will be overwritten multiple times per day by cron job
+echo "[`ts`] Data volume: $(fs_stats $DATA_DIR)"
+create_temp || exit $?
+echo "[`ts`] Temp volume: $(fs_stats $TEMP_DIR)"
+
+echo "[`ts`] Running pg_basebackup as user \"postgres\"..."
+su -l postgres -c "nice pg_basebackup -D $TEMP_DIR -X stream" || exit $?
+echo "[`ts`] Temp volume: $(fs_stats $TEMP_DIR)"
+
+# destination file may be overwritten multiple times per day via cron job
 dest="s3://$BACKUP_BUCKET/postgresql/pg_backup_$(date "+%Y-%m-%d").tar.bz"
-
-nice pg_basebackup -D $TEMP -X stream
-echo "[`__ts`] TEMP $(fs_stats)"
-
-s3_stats() {
-  aws s3 ls --human-readable $dest | awk '{print "["$1" "$2"] "$5" | Size: "$3$4}'
-}
-
+echo "[`ts`] Compressing and writing: $dest"
+(
+# use original instance role to access S3
+unset AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_SESSION_TOKEN
 # https://www.peterdavehello.org/2015/02/use-multi-threads-to-compress-files-when-taring-something/
-nice tar cf - -C $TEMP -I pbzip2 . | nice aws s3 cp - $dest --no-progress
-echo -e "$(s3_stats)\n[`__ts`] ===== END pg_basebackup ====="
+nice tar cf - -C $TEMP_DIR -I pbzip2 . | nice aws s3 cp - $dest --no-progress || exit $?
+aws s3 ls --human-readable $dest | awk '{print "["$1" "$2"] "$5" | Size: "$3$4}'
+)
