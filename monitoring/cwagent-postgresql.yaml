@@ -6,6 +6,7 @@ metrics:
       resources:
         - /
         - /opt/postgresql
+        - /opt/postgresql/temp
 
 logs:
   logs_collected:

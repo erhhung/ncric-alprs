@@ -80,22 +80,26 @@ add_widget() {
       metrics:
 EOT
   while [ "$1" ]; do
-    cat <<'EOT'
-        - - CWAgent
-EOT
-    case "$1" in
+    case  "$1" in
       user_cpu)
         cat <<EOT
-          - cpu_usage_user
-          - host
-          - alprs$ENV-$host
-          - cpu
-          - cpu-total
-          - label: CPU Usage
+        - - expression: >-
+              SUM(SEARCH('
+              Namespace=CWAgent
+              MetricName=(
+              cpu_usage_system OR
+              cpu_usage_user OR
+              cpu_usage_nice
+              )
+              host=alprs$ENV-$host
+              cpu=cpu-total
+              ', 'Average', 300))
+            label: CPU Usage
 EOT
         ;;
       memory)
         cat <<EOT
+        - - CWAgent
           - mem_used_percent
           - host
           - alprs$ENV-$host
@@ -106,6 +110,7 @@ EOT
         [ "$host" == bastion ] && fstype=xfs \
                                || fstype=ext4
         cat <<EOT
+        - - CWAgent
           - disk_used_percent
           - host
           - alprs$ENV-$host
@@ -120,6 +125,7 @@ EOT
         ;;
       data_disk)
         cat <<EOT
+        - - CWAgent
           - disk_used_percent
           - host
           - alprs$ENV-$host
