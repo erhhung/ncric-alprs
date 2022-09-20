@@ -78,7 +78,7 @@ EOF
 
   cd /opt/postgresql
   if [ ! -d data ]; then
-    mkdir data temp
+    mkdir data
     ln -s /etc/postgresql/14/main conf
     ln -s /usr/lib/postgresql/14/bin
     ln -s /var/log/postgresql logs
