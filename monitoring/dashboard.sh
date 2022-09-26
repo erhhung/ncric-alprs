@@ -83,6 +83,7 @@ EOT
     case  "$1" in
       user_cpu)
         cat <<EOT
+        # https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/search-expression-syntax.html
         - - expression: >-
               SUM(SEARCH('
               Namespace=CWAgent
