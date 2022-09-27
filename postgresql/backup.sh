@@ -9,6 +9,7 @@ DATA_DIR="/opt/postgresql/data"
 TEMP_DEV="/dev/nvme2n1"
 TEMP_DIR="/opt/postgresql/temp"
 
+# role defined in "iam-roles.tf"
 ASSUME_ROLE="ALPRSEBSManagerRole"
 VOLUME_NAME="PostgreSQL Temp"
 
@@ -23,12 +24,19 @@ touch $LOCK_FILE
 ts() {
   date "+%Y-%m-%d %T"
 }
+started=$(date "+%s")
 
 exec >> $LOG_FILE 2>&1
 echo -e "\n[`ts`] ===== BEGIN pg_backup ====="
 
 exiting() {
-  [ "$(type -t delete_temp)" == function ] && delete_temp
+  if [ "$(type -t delete_temp)" == function ]; then
+    local elapsed=$((`date "+%s"` - started))
+    # refresh assumed role credentials
+    # in case backup took over 10 hours
+    [ 0$elapsed -gt 36000 ] && get_creds
+    delete_temp
+  fi
   echo "[`ts`] ===== END pg_backup ====="
   rm -f $LOCK_FILE
 }
@@ -48,14 +56,16 @@ role_arn=$(identity) && echo "[`ts`] Current role: $role_arn"
 role_arn="$(sed -En 's|^arn:(aws[^:]*):sts::([0-9]+).+$|arn:\1:iam::\2|p' \
   <<< "$role_arn"):role/$ASSUME_ROLE"
 
-eval export $(aws sts assume-role \
-                --role-arn $role_arn \
-                --role-session-name postgresql-backup | \
-  jq -r '.Credentials |
-         "AWS_ACCESS_KEY_ID=\"\(.AccessKeyId)\"
-          AWS_SECRET_ACCESS_KEY=\"\(.SecretAccessKey)\"
-          AWS_SESSION_TOKEN=\"\(.SessionToken)\""')
-role_arn=$(identity) && echo "[`ts`] Assumed role: $role_arn"
+get_creds() {
+  eval export $(aws sts assume-role \
+                  --role-arn $role_arn \
+                  --role-session-name postgresql-backup | \
+    jq -r '.Credentials |
+           "AWS_ACCESS_KEY_ID=\"\(.AccessKeyId)\"
+            AWS_SECRET_ACCESS_KEY=\"\(.SecretAccessKey)\"
+            AWS_SESSION_TOKEN=\"\(.SessionToken)\""')
+}
+get_creds && echo "[`ts`] Assumed role: $(identity)"
 
 volume_id() {
   aws ec2 describe-volumes \
@@ -178,6 +188,11 @@ echo "[`ts`] Compressing and writing: $dest"
 unset AWS_ACCESS_KEY_ID \
       AWS_SECRET_ACCESS_KEY \
       AWS_SESSION_TOKEN
+
+# increase multipart_chunksize from 8MB
+# to avoid exceeding the 10K part limit:
+# https://docs.aws.amazon.com/cli/latest/topic/s3-config.html
+aws configure set s3.multipart_chunksize 64MB
 
 # https://www.peterdavehello.org/2015/02/use-multi-threads-to-compress-files-when-taring-something/
 nice tar cf - -C $TEMP_DIR -I pbzip2 . | \
