@@ -1,5 +1,8 @@
 .DS_Store
+.disabled/
 .terraform/
 *.tfstate
 *.tfvars
+*.tfvars.backup
+*.tfvars.remote
 *.log

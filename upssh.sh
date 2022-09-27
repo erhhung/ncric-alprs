@@ -6,6 +6,8 @@
 #
 # usage: upssh.sh
 
+cd $(dirname "$0")
+
 _reqcmds() {
   local cmd
   for cmd in "$@"; do
@@ -30,7 +32,7 @@ _altcmd() {
 printf 'Retrieving Terraform output variables...'
 env=$(./tf.sh output -raw env 2>&1)
 if [ $? -ne 0 ]; then
-  echo >&2 "$env"
+  echo >&2 -e "\n$env"
   exit 1
 fi
 
