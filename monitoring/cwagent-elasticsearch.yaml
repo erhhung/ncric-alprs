@@ -6,6 +6,10 @@ metrics:
       resources:
         - /
         - /opt/elasticsearch
+    diskio:
+      resources:
+        - nvme0n1p1
+        - nvme1n1
 
 logs:
   logs_collected:
@@ -14,4 +18,4 @@ logs:
         - file_path: /opt/elasticsearch/logs/*.log
           log_group_name: astrometrics
           log_stream_name: elasticsearch
-          retention_in_days: 90
+          retention_in_days: 30

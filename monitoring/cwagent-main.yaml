@@ -50,14 +50,14 @@ metrics:
         - iops_in_progress
       metrics_collection_interval: 60
       resources:
-        - '*'
+        - nvme0n1p1
     net:
       measurement:
         - bytes_recv
         - bytes_sent
       metrics_collection_interval: 60
       resources:
-        - '*'
+        - ens5
     statsd:
       metrics_aggregation_interval: 60
       metrics_collection_interval: 10
