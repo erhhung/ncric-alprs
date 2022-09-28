@@ -52,8 +52,8 @@ templates:
     sparkline: true
     region: $REGION
 
-# show metrics from the past week by default
-start: -P1W
+# show metrics from the past 3 hours by default
+start: PT3H
 periodOverride: auto
 widgets:
 EOT
