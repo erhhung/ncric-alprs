@@ -43,6 +43,7 @@ set -o pipefail
 
 # <sql> [opts]...
 psql() {
+  # (set -o noglob; echo >&2 -E [psql]: $1)
   `which psql` -d $NCRIC_DB -c "$1" -tA "${@:2}"
 }
 
@@ -79,7 +80,7 @@ cols=${cols/' image,'/' NULL::bytea AS image,'}
 
 while read date; do
   dest="s3://$BACKUP_BUCKET/flock/flock_reads_${date}_without_images.csv.bz"
-  backup $date $dest $cols || exit $?
+  backup $date $dest "$cols" || exit $?
 
   dest="s3://$BACKUP_BUCKET/flock/flock_reads_${date}_with_images.csv.bz"
   backup $date $dest || exit $?
