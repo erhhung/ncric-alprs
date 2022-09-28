@@ -88,7 +88,7 @@ while read date; do
   echo "[`ts`] Deleting raw data from $date..."
   psql "DELETE FROM integrations.flock_reads
          WHERE timestamp >= '$date'
-           AND timestamp <  '$date'::date + 1)"
+           AND timestamp <  '$date'::date + 1"
   deleted=true
 done < <(
   psql "SELECT DISTINCT(timestamp::date)
