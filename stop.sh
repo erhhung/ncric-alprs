@@ -6,7 +6,7 @@
 #
 # usage: stop.sh [name_no_tf_ext] ...
 
-cd $(dirname "$0")
+cd "`dirname "$0"`"
 
 # prompt user for Y/N
 # single-key response

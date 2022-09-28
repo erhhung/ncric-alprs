@@ -6,7 +6,7 @@
 #
 # usage: upssh.sh
 
-cd $(dirname "$0")
+cd "`dirname "$0"`"
 
 _reqcmds() {
   local cmd

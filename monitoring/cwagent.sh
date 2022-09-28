@@ -5,7 +5,7 @@
 #
 # usage: cwagent.sh [name] [VAR1=value1] [VAR2=value2] ...
 
-cd "$(dirname "$0")"
+cd "`dirname "$0"`"
 
 _reqcmds() {
   local cmd

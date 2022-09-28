@@ -15,7 +15,7 @@
   bastion \
   worker
 
-cd $(dirname "$0")
+cd "`dirname "$0"`"
 
 _altcmd() {
   local cmd

@@ -7,7 +7,7 @@
 #   usage: upcert.sh <domain>
 # example: upcert.sh dev.astrometrics.us
 
-cd $(dirname "$0")
+cd "`dirname "$0"`"
 
 if [ -z "$1" ]; then
   echo >&2 "Usage: upcert.sh <domain>"

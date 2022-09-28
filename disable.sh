@@ -7,7 +7,7 @@
 #   usage: disable.sh [name_no_tf_ext] ...
 # example: disable.sh ebs
 
-cd $(dirname "$0")
+cd "`dirname "$0"`"
 mkdir -p .disabled
 
 # defaults
