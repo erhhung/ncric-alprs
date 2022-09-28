@@ -47,6 +47,8 @@ In order to expand storage to accommodate ongoing growth, perform the following 
     Filesystem      Size  Used Avail Use% Mounted on
     /dev/nvme1n1    150G  1.3G  149G   1% /opt/postgresql
     ```
+    _If the PostgreSQL host is redeployed at the same time, then file
+    system expansion will occur automatically via "`/bootstrap.sh`"._
 
 ## "`alprs.sql`"
 
