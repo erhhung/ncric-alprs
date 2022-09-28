@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-cd "$(dirname "$0")"
+cd "`dirname "$0"`"
 
 if [ ! "$1" ]; then
   script=$(basename "$0")
@@ -27,15 +27,20 @@ _reqcmds() {
 # pee from "moreutils" package
 _reqcmds pee docker || exit $?
 
+if [[ "$1" =~ ^(show|plan|apply|refresh)$ ]]; then
+  LOG=$(basename "$0" .sh).log
+  rm -f "$LOG"
+else
+  LOG=/dev/null
+fi
+
 _log() {
   # show color output but strip color from log file
-  pee cat "sed 's/\x1b\[[0-9;]*[mGKHF]//g' >> $log"
+  pee cat "sed 's/\x1b\[[0-9;]*[mGKHF]//g' >> $LOG"
 }
-log=$(basename "$0" .sh).log
-rm -f "$log"
 
 docker_build() {
-  _log >&2 <<< "Building Docker image \"$tag:latest\"..."
+  _log >&2 <<< 'Building Docker image "'$tag':latest"...'
   docker build \
     --no-cache \
     -t $tag  . \
