@@ -6,14 +6,14 @@ resource "aws_backup_vault" "alprs" {
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/backup_plan
 # https://docs.aws.amazon.com/aws-backup/latest/devguide/creating-a-backup-plan.html
 # https://docs.aws.amazon.com/AmazonCloudWatch/latest/events/ScheduledEvents.html
-# cron fields: min hr dom mon dow yr
+# cron fields: min hr dom mon dow yr (IMPORTANT! the time is in UTC, not PST)
 resource "aws_backup_plan" "alprs" {
   name = "alprs-backups"
 
   rule {
     rule_name         = "daily-7day-retention"
     target_vault_name = aws_backup_vault.alprs.name
-    schedule          = "cron(20 20 ? * * *)"
+    schedule          = "cron(20 4 ? * * *)"
 
     lifecycle {
       delete_after = 7
