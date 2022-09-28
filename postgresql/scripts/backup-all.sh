@@ -1,7 +1,16 @@
 #!/usr/bin/bash
 
-[ `whoami` == root ] || exit $?
-[ "$1" ]             || exit $?
+# cron job run by /etc/cron.d/backup_all
+#
+# NOTE: the cron job has been disabled and replaced
+#       by daily EBS snapshots taken by AWS Backup
+#
+# archives all databases in this PostgreSQL server to S3 using "pg_basebackup"
+# (a temporary EBS volume will be created and mounted at /opt/postgresql/temp)
+
+[ "$1" ]             || exit 1
+[ `whoami` == root ] || exit 2
+BACKUP_NAME=$(basename "$0" .sh)
 BACKUP_BUCKET=$1
 
 DATA_DEV="/dev/nvme1n1"
@@ -13,12 +22,12 @@ TEMP_DIR="/opt/postgresql/temp"
 ASSUME_ROLE="ALPRSEBSManagerRole"
 VOLUME_NAME="PostgreSQL Temp"
 
- LOG_FILE="/opt/postgresql/backups.log"
-LOCK_FILE="/var/lock/pg_backup"
+ LOG_FILE="/opt/postgresql/$BACKUP_NAME.log"
+LOCK_FILE="/var/lock/$BACKUP_NAME"
 
 # don't start another backup if
 # previous one hasn't completed
-[ -e  $LOCK_FILE ] && exit
+[ -e  $LOCK_FILE ] && exit 3
 touch $LOCK_FILE
 
 ts() {
@@ -27,7 +36,7 @@ ts() {
 started=$(date "+%s")
 
 exec >> $LOG_FILE 2>&1
-echo -e "\n[`ts`] ===== BEGIN pg_backup ====="
+echo -e "\n[`ts`] ===== BEGIN $BACKUP_NAME ====="
 
 exiting() {
   if [ "$(type -t delete_temp)" == function ]; then
@@ -37,7 +46,7 @@ exiting() {
     [ 0$elapsed -gt 36000 ] && get_creds
     delete_temp
   fi
-  echo "[`ts`] ===== END pg_backup ====="
+  echo "[`ts`] ===== END $BACKUP_NAME ====="
   rm -f $LOCK_FILE
 }
 trap exiting EXIT
@@ -193,10 +202,12 @@ unset AWS_ACCESS_KEY_ID \
 # to avoid exceeding the 10K part limit:
 # https://docs.aws.amazon.com/cli/latest/topic/s3-config.html
 aws configure set s3.multipart_chunksize 64MB
+set -o pipefail
 
 # https://www.peterdavehello.org/2015/02/use-multi-threads-to-compress-files-when-taring-something/
-nice tar cf - -C $TEMP_DIR -I pbzip2 . | \
+nice tar cf - -C $TEMP_DIR -I "pbzip2 -m1024" . | \
   nice aws s3 cp - $dest --no-progress || exit $?
+
 aws s3 ls --human-readable $dest | \
   awk '{print "["$1" "$2"] Backup file:  "$5" | Size: "$3$4}'
 )

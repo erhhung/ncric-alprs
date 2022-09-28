@@ -215,6 +215,31 @@ resource "aws_iam_role_policy" "ebs_manager_crud_volumes" {
   policy = data.aws_iam_policy_document.crud_volumes.json
 }
 
+#################### Backup ####################
+
+data "aws_iam_policy_document" "backup_trust" {
+  statement {
+    effect  = "Allow"
+    actions = ["sts:AssumeRole"]
+
+    principals {
+      type        = "Service"
+      identifiers = ["backup.amazonaws.com"]
+    }
+  }
+}
+
+resource "aws_iam_role" "aws_backup" {
+  name               = "AmazonBackupServiceRole"
+  assume_role_policy = data.aws_iam_policy_document.backup_trust.json
+}
+
+# https://docs.aws.amazon.com/aws-backup/latest/devguide/security-iam-awsmanpol.html
+resource "aws_iam_role_policy_attachment" "aws_backup" {
+  role       = aws_iam_role.aws_backup.name
+  policy_arn = "arn:${local.partition}:iam::aws:policy/service-role/AWSBackupServiceRolePolicyForBackup"
+}
+
 #################### SFTP ####################
 
 data "aws_iam_policy_document" "sftp_transfer" {

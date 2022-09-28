@@ -10,7 +10,8 @@ resource "aws_ebs_volume" "postgresql_data" {
   encrypted         = true
 
   tags = {
-    Name = "PostgreSQL Data"
+    Name   = "PostgreSQL Data"
+    Backup = "true"
   }
 }
 
@@ -21,6 +22,7 @@ resource "aws_ebs_volume" "elasticsearch_data" {
   encrypted         = true
 
   tags = {
-    Name = "Elasticsearch Data"
+    Name   = "Elasticsearch Data"
+    Backup = "true"
   }
 }

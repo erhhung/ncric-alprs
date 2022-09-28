@@ -34,7 +34,8 @@ data "external" "pg_hba_conf" {
 }
 
 locals {
-  postgresql_user_data = [{
+  postgresql_scripts_path = "${path.module}/postgresql/scripts"
+  postgresql_user_data = flatten([{
     path = "postgresql/cwagent.json"
     data = data.external.postgresql_cwagent_json.result.json
     type = "application/json"
@@ -63,10 +64,11 @@ locals {
     path = "postgresql/ncric.sql.gz"
     file = "${path.module}/postgresql/ncric.sql.gz"
     type = "application/gzip"
-    }, {
-    path = "postgresql/backup.sh"
-    file = "${path.module}/postgresql/backup.sh"
-    }, {
+    }, [
+    for path in fileset(local.postgresql_scripts_path, "**") : {
+      path = "postgresql/scripts/${path}"
+      file = "${local.postgresql_scripts_path}/${path}"
+    }], {
     path = "postgresql/bootstrap.sh"
     data = <<-EOF
 ${file("${path.module}/shared/prolog.sh")}
@@ -79,12 +81,12 @@ ${templatefile("${path.module}/postgresql/boot.tftpl", {
     atlas_pass    = local.atlas_pass
     rundeck_pass  = local.rundeck_pass
     BACKUP_BUCKET = var.buckets["backup"]
-})}
+  })}
 ${file("${path.module}/shared/boot.sh")}
 ${file("${path.module}/postgresql/install.sh")}
 ${file("${path.module}/shared/epilog.sh")}
 EOF
-}]
+}])
 }
 
 module "postgresql_user_data" {

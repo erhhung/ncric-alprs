@@ -179,22 +179,31 @@ EOF
   esac
 }
 
-add_backup_sh() {
-  aws s3 cp $S3_URL/postgresql/backup.sh . --no-progress
-  chmod +x backup.sh
+install_scripts() {
+  aws s3 sync $S3_URL/postgresql/scripts . --no-progress
+  chmod +x *.sh
 }
 
-add_backup_cron() (
+config_cronjobs() (
   cd /etc/cron.d
-  cat <<EOF > pg_backup
+  cat <<EOF > backup_flock
+USER=postgres
+HOME=/var/lib/postgresql
+PATH=/bin:/usr/bin:/usr/sbin:/usr/local/bin:/snap/bin
+
+# min hr dom mon dow user command
+20 2 ? * * postgres bash -c "\$HOME/backup-flock.sh $BACKUP_BUCKET"
+EOF
+  cat <<EOF > backup_all
 USER=root
 HOME=/var/lib/postgresql
 PATH=/bin:/usr/bin:/usr/sbin:/usr/local/bin:/snap/bin
 
 # min hr dom mon dow user command
-20 4 * * * root bash -c "\$HOME/backup.sh $BACKUP_BUCKET"
+20 6 ? * * root bash -c "\$HOME/backup-all.sh $BACKUP_BUCKET"
 EOF
-  chmod 644 pg_backup
+  chmod +x backup_flock # enable
+  chmod -x backup_all   # disable
 )
 
 run create_xfs_volume
@@ -206,5 +215,5 @@ run create_databases postgres
 run import_tables    postgres
 run user_dotfiles    postgres
 run user_dotfiles    $DEFAULT_USER
-run add_backup_sh    postgres
-run add_backup_cron
+run install_scripts  postgres
+run config_cronjobs
