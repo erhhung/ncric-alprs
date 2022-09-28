@@ -3,14 +3,16 @@
 # cron job run by /etc/cron.d/backup_flock
 #
 # archives raw data in the "flock_reads" table that are older than
-# the retention period to S3, and then deletes them from the table
+# the retention period to S3, and then deletes them from the table.
+# runs pg_repack on "flock_reads" afterwards to reclaim disk space
 
 [ "$1" ] || exit 1
 BACKUP_NAME=$(basename "$0" .sh)
 BACKUP_BUCKET=$1
 
+NCRIC_DB="org_1446ff84711242ec828df181f45e4d20"
 # days to keep data in "flock_reads" table
-RETENTION_DAYS=7
+RETENTION_DAYS=3
 
  LOG_FILE="/opt/postgresql/$BACKUP_NAME.log"
 LOCK_FILE="/var/lock/$BACKUP_NAME"
@@ -39,10 +41,9 @@ trap exiting EXIT
 aws configure set s3.multipart_chunksize 64MB
 set -o pipefail
 
+# <sql> [opts]...
 psql() {
-  `which psql` \
-    -d org_1446ff84711242ec828df181f45e4d20 \
-    -c "$1" -tAq
+  `which psql` -d $NCRIC_DB -c "$1" -tA "${@:2}"
 }
 
 # <date> <dest> [cols]
@@ -51,10 +52,10 @@ backup() {
   echo "[`ts`] Compressing and writing: $dest"
 
   psql "COPY (SELECT $cols
-              FROM   integrations.flock_reads
-              WHERE  timestamp >= '$date'
-                AND  timestamp <  '$date'::date + 1)
-        TO STDOUT" | \
+                FROM integrations.flock_reads
+               WHERE timestamp >= '$date'
+                 AND timestamp <  '$date'::date + 1)
+        TO STDOUT" -q | \
     nice pbzip2 -m1024 -c - | \
     nice aws s3 cp - $dest --no-progress || return $?
 
@@ -62,6 +63,7 @@ backup() {
     awk '{print "["$1" "$2"] Backup file: "$5" | Size: "$3$4}'
 }
 
+# <delim> [elts]...
 join() {
   local delim=$1 first=$2
   shift 2 && printf %s "$first" "${@/#/$delim}"
@@ -69,9 +71,9 @@ join() {
 
 # get column names and nullify image value
 cols=($(psql "SELECT column_name
-              FROM   information_schema.columns
-              WHERE  table_name = 'flock_reads'
-              ORDER  BY ordinal_position"))
+                FROM information_schema.columns
+               WHERE table_name = 'flock_reads'
+            ORDER BY ordinal_position" -q))
 cols=$(join ', ' "${cols[@]}")
 cols=${cols/' image,'/' NULL::bytea AS image,'}
 
@@ -86,9 +88,21 @@ while read date; do
   psql "DELETE FROM integrations.flock_reads
          WHERE timestamp >= '$date'
            AND timestamp <  '$date'::date + 1)"
+  deleted=true
 done < <(
   psql "SELECT DISTINCT(timestamp::date)
-        FROM   integrations.flock_reads
-        WHERE  timestamp < current_date - $RETENTION_DAYS - 1
-        ORDER  BY timestamp"
+          FROM integrations.flock_reads
+         WHERE timestamp < current_date - $RETENTION_DAYS - 1
+      ORDER BY timestamp::date" -q
 )
+
+[ "$deleted" ] || exit 0
+
+# https://reorg.github.io/pg_repack/
+# https://www.percona.com/blog/2021/06/24/understanding-pg_repack-what-can-go-wrong-and-how-to-avoid-it/
+echo "[`ts`] Running pg_repack on flock_reads..."
+pg_repack $NCRIC_DB \
+  -t integrations.flock_reads \
+  -o timestamp \
+  -j $(nproc) \
+  -DZ -T 300

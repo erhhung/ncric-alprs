@@ -1,6 +1,8 @@
 # This user data script is a continuation
 # of the shared "boot.sh" script.
 
+export NCRIC_DB="org_1446ff84711242ec828df181f45e4d20"
+
 create_xfs_volume() (
   device=/dev/nvme1n1
   volume=/opt/postgresql
@@ -40,7 +42,24 @@ install_postgresql() (
 deb https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main
 EOF
   apt_update
-  eval_with_retry "wait_apt_get && apt-get install -y postgresql-14 postgresql-contrib"
+  # "dev" packages are required to run "pgxn install"
+  eval_with_retry "wait_apt_get && apt-get install -y postgresql-14 postgresql-contrib \
+                     pgxnclient postgresql-server-dev-14 liblz4-dev libreadline-dev"
+)
+
+install_extensions() (
+  case `whoami` in
+    root)
+      [ "`find /usr/lib/postgresql -name pg_repack.so`" ] && exit
+      eval_with_retry "wait_apt_get && apt-get install -y postgresql-14-repack"
+      # pgxn install pg_repack
+      ;;
+    postgres)
+      psql -d $NCRIC_DB -tAc "SELECT extname FROM pg_extension" | \
+                     grep -q pg_repack && exit
+      pgxn load -d $NCRIC_DB pg_repack
+      ;;
+  esac
 )
 
 config_postgresql() (
@@ -118,7 +137,7 @@ start_postgresql() {
   systemctl status  postgresql --no-pager
 }
 
-create_databases() {
+create_databases() (
   cd /opt/postgresql
   [ -d users ] && exit
   mkdir users
@@ -143,9 +162,9 @@ EOT
   psql <<'EOT'
 ALTER USER atlas_user CREATEDB CREATEROLE;
 EOT
-}
+)
 
-import_tables() {
+config_databases() (
   cd /opt/postgresql
   [ -d init ] && exit
   mkdir init
@@ -157,7 +176,7 @@ import_tables() {
   aws s3 cp $S3_URL/postgresql/ncric.sql.gz . --no-progress
   gunzip -f ncric.sql.gz
   psql < ncric.sql
-}
+)
 
 user_dotfiles() {
   case `whoami` in
@@ -209,11 +228,13 @@ EOF
 run create_xfs_volume
 run resize_xfs_volume
 run install_postgresql
+run install_extensions
 run config_postgresql
 run start_postgresql
-run create_databases postgres
-run import_tables    postgres
-run user_dotfiles    postgres
-run user_dotfiles    $DEFAULT_USER
-run install_scripts  postgres
+run create_databases   postgres
+run config_databases   postgres
+run install_extensions postgres
+run user_dotfiles      postgres
+run user_dotfiles      $DEFAULT_USER
+run install_scripts    postgres
 run config_cronjobs
