@@ -55,7 +55,8 @@ backup() {
   psql "COPY (SELECT $cols
                 FROM integrations.flock_reads
                WHERE timestamp >= '$date'
-                 AND timestamp <  '$date'::date + 1)
+                 AND timestamp <  '$date'::date + 1
+            ORDER BY cameranetworkname, timestamp)
         TO STDOUT" -q | \
     nice pbzip2 -m1024 -c - | \
     nice aws s3 cp - $dest --no-progress || return $?
