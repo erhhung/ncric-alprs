@@ -28,9 +28,11 @@ resource "aws_backup_selection" "ebs" {
   plan_id      = aws_backup_plan.alprs.id
   iam_role_arn = aws_iam_role.aws_backup.arn
 
-  resources = [
-    "arn:${local.partition}:ec2:${local.region}:${local.account}:volume/*",
-  ]
+  # resources = [
+  #   "arn:${local.partition}:ec2:${local.region}:${local.account}:volume/*",
+  # ]
+  # since selection methods are
+  # OR'ed, just select by tags
   selection_tag {
     type  = "STRINGEQUALS"
     key   = "Backup"
