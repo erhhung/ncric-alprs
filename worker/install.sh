@@ -95,14 +95,14 @@ git_clone() {
 
 clone_repos() {
   rm -rf clients
-  git_clone https://github.com/openlattice/api-clients clients
+  git_clone https://github.com/maiveric/ol-api-clients.git clients
   rm -rf openlattice
-  git_clone https://github.com/openlattice/openlattice.git
+  git_clone https://github.com/maiveric/ol-openlattice.git openlattice
   cd openlattice
   rmdir neuron
   git sub init
   git sub deinit neuron
-  git_clone https://github.com/maiveric/flapper.git
+  git_clone https://github.com/maiveric/ol-flapper.git flapper
 }
 
 install_pylibs() (

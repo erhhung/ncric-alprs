@@ -88,7 +88,7 @@ git_clone() {
 
 clone_repos() {
   rm -rf openlattice
-  git_clone https://github.com/openlattice/openlattice.git
+  git_clone https://github.com/maiveric/ol-openlattice.git openlattice
   cd openlattice
   rmdir neuron
   git sub init

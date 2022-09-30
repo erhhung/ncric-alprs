@@ -31,13 +31,13 @@ git_clone() {
 
 clone_repos() {
   rm -rf astrometrics
-  git_clone https://github.com/openlattice/astrometrics.git
+  git_clone https://github.com/maiveric/ol-astrometrics.git astrometrics
   cd astrometrics
   git co develop
   git up
   cd $HOME
   rm -rf lattice-orgs
-  git_clone https://github.com/openlattice/lattice-orgs.git
+  git_clone https://github.com/maiveric/ol-lattice-orgs.git lattice-orgs
   cd lattice-orgs
   git co develop
   git up
