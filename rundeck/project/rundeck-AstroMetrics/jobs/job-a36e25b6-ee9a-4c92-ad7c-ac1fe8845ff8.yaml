@@ -101,7 +101,7 @@
     secure: true
     storagePath: keys/ol_pass
     valueExposed: true
-  - name: fetch_size
+  - name: upload_size
     value: '5000'
   plugins:
     ExecutionLifecycle: null
@@ -163,7 +163,7 @@
         agency_no_space = agency.replace(" ", "").replace("’", "")
 
         api_url = "@option.api_url@"
-        fsize = @option.fetch_size@
+        usize = @option.upload_size@
 
         pyntegrations_path = os.environ.get("PYNTEGRATIONS_PATH")
         pyntegrations_path += "/ca_ncric"
@@ -209,7 +209,7 @@
                     flight_path=pyntegrations_path+f"/ncric_flights/ncric_{agency_no_space}_flight.yaml",
                     memory_size=3,
                     shuttle_path=shuttle_path,
-                    shuttle_args=shuttle_args+f" --upload-size {fsize}")
+                    shuttle_args=shuttle_args+f" --upload-size {usize}")
                 print("Passed: integrate_table MAIN table")
 
                 print(f"Integrating IMAGES table for {agency}!")
@@ -219,7 +219,7 @@
                     flight_path=pyntegrations_path+f"/ncric_image_flights/ncric_{agency_no_space}_images_flight.yaml",
                     memory_size=5,
                     shuttle_path=shuttle_path,
-                    shuttle_args=shuttle_args+f" --s3 PRODUCTION --upload-size {fsize}")
+                    shuttle_args=shuttle_args+f" --s3 PRODUCTION --upload-size {usize}")
                 print("Passed: integrate_table IMAGES table")
 
                 print("Integrating AGENCIES table!")

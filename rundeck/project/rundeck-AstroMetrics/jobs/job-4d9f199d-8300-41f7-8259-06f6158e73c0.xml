@@ -50,7 +50,7 @@
           <description>Auth0 user password</description>
           <hidden>true</hidden>
         </option>
-        <option name='fetch_size' value='5000' />
+        <option name='upload_size' value='5000' />
       </options>
     </context>
     <defaultTab>nodes</defaultTab>
@@ -141,7 +141,7 @@ print(main_table_name, images_table_name)
 print("Got the raw data!")
 
 api_url = "@option.api_url@"
-fsize = @option.fetch_size@
+usize = @option.upload_size@
 
 images_integration = SCSOImagesIntegration(
     sql=f"select * from {images_table_name}",
@@ -166,7 +166,7 @@ try:
             flight_path=pyntegrations_path+f"/ncric_flights/ncric_{agency_no_space}_flight.yaml",
             memory_size=3,
             shuttle_path=shuttle_path,
-            shuttle_args=shuttle_args+f" --upload-size {fsize}")
+            shuttle_args=shuttle_args+f" --upload-size {usize}")
         print("Passed: integrate_table MAIN table")
 
         print(f"Integrating IMAGES table for {agency}!")
@@ -176,7 +176,7 @@ try:
             flight_path=pyntegrations_path+f"/ncric_image_flights/ncric_{agency_no_space}_images_flight.yaml",
             memory_size=5,
             shuttle_path=shuttle_path,
-            shuttle_args=shuttle_args+f" --s3 PRODUCTION --upload-size {fsize}")
+            shuttle_args=shuttle_args+f" --s3 PRODUCTION --upload-size {usize}")
         print("Passed: integrate_table IMAGES table")
 
     print("Integrating AGENCIES table!")

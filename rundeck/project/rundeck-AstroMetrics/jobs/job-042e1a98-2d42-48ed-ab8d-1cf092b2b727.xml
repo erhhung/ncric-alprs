@@ -50,7 +50,7 @@
           <description>Auth0 user password</description>
           <hidden>true</hidden>
         </option>
-        <option name='fetch_size' value='5000' />
+        <option name='upload_size' value='5000' />
       </options>
     </context>
     <defaultTab>nodes</defaultTab>
@@ -168,7 +168,7 @@ total_intervals = math.ceil(total_hours / hour_interval)
 print("total_intervals:", total_intervals)
 
 api_url = "@option.api_url@"
-fsize = @option.fetch_size@
+usize = @option.upload_size@
 
 pyntegrations_path = os.environ.get("PYNTEGRATIONS_PATH")
 pyntegrations_path += "/ca_ncric"
@@ -217,7 +217,7 @@ for i in range(total_intervals):
                 flight_path=pyntegrations_path+f"/ncric_flights/ncric_{agency_no_space}_flight.yaml",
                 memory_size=3,
                 shuttle_path=shuttle_path,
-                shuttle_args=shuttle_args+f" --upload-size {fsize}")
+                shuttle_args=shuttle_args+f" --upload-size {usize}")
             print("Passed: integrate_table MAIN table")
 
             print(f"Integrating IMAGES table for {agency}!")
@@ -227,7 +227,7 @@ for i in range(total_intervals):
                 flight_path=pyntegrations_path+f"/ncric_image_flights/ncric_{agency_no_space}_images_flight.yaml",
                 memory_size=5,
                 shuttle_path=shuttle_path,
-                shuttle_args=shuttle_args+f" --s3 PRODUCTION --upload-size {fsize}")
+                shuttle_args=shuttle_args+f" --s3 PRODUCTION --upload-size {usize}")
             print("Passed: integrate_table IMAGES table")
 
         print("Integrating AGENCIES table!")

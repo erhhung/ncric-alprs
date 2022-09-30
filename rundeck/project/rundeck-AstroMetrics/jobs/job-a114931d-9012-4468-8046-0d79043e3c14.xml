@@ -42,8 +42,9 @@
           <description>Auth0 user password</description>
           <hidden>true</hidden>
         </option>
-        <option name='fetch_size' value='5000' />
-        <option name='chunk_size' value='40000' />
+        <option name='fetch_size' value='500' />
+        <option name='upload_size' value='100' />
+        <option name='chunk_size' value='1000' />
       </options>
     </context>
     <defaultTab>nodes</defaultTab>
@@ -134,13 +135,14 @@ engine = create_engine(f"postgresql://{db_user}:{db_pass}@{db_host}:5432/{db_nam
 
 api_url = "@option.api_url@"
 fsize = @option.fetch_size@
+usize = @option.upload_size@
 limit = @option.chunk_size@
 
 pyntegrations_path = os.environ.get("PYNTEGRATIONS_PATH")
 pyntegrations_path += "/ca_ncric"
 shuttle_path = os.environ.get("SHUTTLE_PATH")
 shuttle_args = "@option.shuttle_args@"
-shuttle_args += f" --s3 PRODUCTION --fetchsize {fsize} --upload-size {fsize}"
+shuttle_args += f" --s3 PRODUCTION --fetchsize {fsize} --upload-size {usize}"
 
 try:
     for agency in agencies:
