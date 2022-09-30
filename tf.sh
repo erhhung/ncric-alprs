@@ -49,13 +49,14 @@ docker_build() {
 }
 
 docker_run() {
+  local name=$(n=10000; printf "maiveric-infra-%04d" $((RANDOM % n)));
   docker run \
     -it --rm \
     -h infra \
     -v $(pwd):/infra \
     -v $HOME/.aws:/root/.aws \
     -v $HOME/.ssh:/root/.ssh \
-    --name maiveric-infra \
+    --name $name \
     $tag "$@" 2>&1 | _log
   exit ${PIPESTATUS[0]}
 }
