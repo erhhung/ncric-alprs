@@ -68,7 +68,7 @@ EOF
 
 install_awscli() (
   cd /tmp
-  curl  -so awscliv2.zip https://awscli.amazonaws.com/awscli-exe-linux-$(uname -p).zip
+  curl  -so awscliv2.zip https://awscli.amazonaws.com/awscli-exe-linux-$(uname -m).zip
   unzip -oq awscliv2.zip
   ./aws/install --update
   aws --version
