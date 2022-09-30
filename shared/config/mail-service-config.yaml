@@ -1,5 +1,5 @@
 smtp-host: email-smtp.${AWS_REGION}.amazonaws.com
-smtp-port: 587
+smtp-port: 465
 # IAM user access key and secret for SES SMTP auth
 username: ${SES_ACCESS_KEY}
 password: ${SMTP_PASSWORD}
