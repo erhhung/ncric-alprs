@@ -79,7 +79,18 @@ cols=($(psql "SELECT column_name
 cols=$(join ', ' "${cols[@]}")
 cols=${cols/' image,'/' NULL::bytea AS image,'}
 
-while read date; do
+while true; do
+  # rerun query to select an eligible backup date
+  # per iteration because multiple iterations may
+  # take multiple days to complete
+  date=$(
+    psql "SELECT DISTINCT(timestamp::date)
+            FROM integrations.flock_reads
+           WHERE timestamp < current_date - $RETENTION_DAYS - 1
+        ORDER BY timestamp::date LIMIT 1" -q
+  )
+  [ "$date" ] && repack=true || break
+
   dest="s3://$BACKUP_BUCKET/flock/flock_reads_${date}_without_images.csv.bz"
   backup $date $dest "$cols" || exit $?
 
@@ -90,15 +101,9 @@ while read date; do
   psql "DELETE FROM integrations.flock_reads
          WHERE timestamp >= '$date'
            AND timestamp <  '$date'::date + 1"
-  deleted=true
-done < <(
-  psql "SELECT DISTINCT(timestamp::date)
-          FROM integrations.flock_reads
-         WHERE timestamp < current_date - $RETENTION_DAYS - 1
-      ORDER BY timestamp::date" -q
-)
+done
 
-[ "$deleted" ] || exit 0
+[ "$repack" ] || exit 0
 
 # https://reorg.github.io/pg_repack/
 # https://www.percona.com/blog/2021/06/24/understanding-pg_repack-what-can-go-wrong-and-how-to-avoid-it/
@@ -106,5 +111,6 @@ echo "[`ts`] Running pg_repack on flock_reads..."
 pg_repack $NCRIC_DB \
   -t integrations.flock_reads \
   -o timestamp \
-  -j $(nproc) \
-  -DZ -T 300
+  -j $(nproc)  \
+  -DZ -T 300 | \
+  `which ts` -s "[           %T]"
