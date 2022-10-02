@@ -97,10 +97,13 @@ while true; do
   dest="s3://$BACKUP_BUCKET/flock/flock_reads_${date}_with_images.csv.bz"
   backup $date $dest || exit $?
 
-  echo "[`ts`] Deleting raw data from $date..."
-  psql "DELETE FROM integrations.flock_reads
-         WHERE timestamp >= '$date'
-           AND timestamp <  '$date'::date + 1"
+  sql="FROM integrations.flock_reads
+      WHERE timestamp >= '$date'
+        AND timestamp <  '$date'::date + 1"
+  rows=$(psql "SELECT COUNT(*) $sql")
+
+  echo "[`ts`] Deleting ${rows:-???} rows from $date..."
+  psql "DELETE $sql" || exit $?
 done
 
 [ "$repack" ] || exit 0
