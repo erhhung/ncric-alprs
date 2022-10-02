@@ -116,20 +116,31 @@ resource "aws_s3_bucket_lifecycle_configuration" "backup" {
   bucket = aws_s3_bucket.buckets["backup"].id
 
   rule {
-    id     = "infrequent-30"
+    id     = "infrequent-7"
     status = "Enabled"
 
     transition {
-      days          = 30
+      days          = 7
       storage_class = "STANDARD_IA"
     }
   }
   rule {
-    id     = "postgresql-glacier-30-expire-365"
+    id     = "postgresql-expire-14"
     status = "Enabled"
 
     filter {
       prefix = "postgresql/"
+    }
+    expiration {
+      days = 14
+    }
+  }
+  rule {
+    id     = "flock-glacier-30-expire-365"
+    status = "Enabled"
+
+    filter {
+      prefix = "flock/"
     }
     transition {
       days          = 30
