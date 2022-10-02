@@ -116,11 +116,12 @@ resource "aws_s3_bucket_lifecycle_configuration" "backup" {
   bucket = aws_s3_bucket.buckets["backup"].id
 
   rule {
-    id     = "infrequent-7"
+    # can go to STANDARD_IA only after 30 days
+    id     = "infrequent-30"
     status = "Enabled"
 
     transition {
-      days          = 7
+      days          = 30
       storage_class = "STANDARD_IA"
     }
   }
@@ -136,7 +137,8 @@ resource "aws_s3_bucket_lifecycle_configuration" "backup" {
     }
   }
   rule {
-    id     = "flock-glacier-30-expire-365"
+    # apply the same rule as the SFTP bucket
+    id     = "flock-glacier-30-expire-180"
     status = "Enabled"
 
     filter {
@@ -147,7 +149,7 @@ resource "aws_s3_bucket_lifecycle_configuration" "backup" {
       storage_class = "GLACIER"
     }
     expiration {
-      days = 365
+      days = 180
     }
   }
 }
