@@ -1,0 +1,71 @@
+<joblist>
+  <job>
+    <context>
+      <options preserveOrder='true'>
+        <option name='fetch_size' value='10'>
+          <description>API read chunk size in minutes</description>
+        </option>
+        <option name='batch_size' value='1000'>
+          <description>Batch size for writes to Atlas</description>
+        </option>
+      </options>
+    </context>
+    <defaultTab>nodes</defaultTab>
+    <description><![CDATA[Pull data from Flock Safety API server daily at midnight for the entire previous day - chunk 1
+* Raw data is written by Flapper into the "flock_reads_{dow}" tables in the Atlas database]]></description>
+    <dispatch>
+      <excludePrecedence>true</excludePrecedence>
+      <keepgoing>false</keepgoing>
+      <rankOrder>ascending</rankOrder>
+      <successOnEmptyNodeFilter>false</successOnEmptyNodeFilter>
+      <threadcount>1</threadcount>
+    </dispatch>
+    <executionEnabled>true</executionEnabled>
+    <id>e788f9c2-e249-4fdc-95ec-9848515c380c</id>
+    <loglevel>INFO</loglevel>
+    <name>Recurring Flock: Pull RAW data daily by API - chunk 1</name>
+    <nodeFilterEditable>false</nodeFilterEditable>
+    <nodefilters>
+      <filter>name: Worker</filter>
+    </nodefilters>
+    <nodesSelectedByDefault>true</nodesSelectedByDefault>
+    <notification>
+      <onfailure>
+        <email attachLog='true' attachLogInFile='true' recipients='alprs.devops@maiveric.com' subject='[Rundeck:PROD] Job ${execution.status}: ${job.name}' />
+      </onfailure>
+    </notification>
+    <notifyAvgDurationThreshold />
+    <plugins />
+    <schedule>
+      <month month='*' />
+      <time hour='00' minute='10' seconds='0' />
+      <weekday day='*' />
+      <year year='*' />
+    </schedule>
+    <scheduleEnabled>true</scheduleEnabled>
+    <sequence keepgoing='false' strategy='node-first'>
+      <command>
+        <description>entire previous day</description>
+        <script><![CDATA[#!/usr/bin/env bash
+
+# JOB: Recurring Flock: Pull RAW data daily by API
+
+# start at midnight PST of previous day
+start=$(date -d "-1 day" "+%Y-%m-%dT00:00:00%:z")
+
+# FLAPPER variables are defined in /etc/environment
+$FLAPPER_PATH --file $FLAPPER_CONF \
+              --interval   @option.fetch_size@ \
+              --batch-size @option.batch_size@ \
+              --start $start \
+              --hours 24 \
+              --camera-chunk-size 100 \
+              --camera-chunk-pointer 1]]></script>
+        <scriptargs />
+      </command>
+    </sequence>
+    <timeZone>America/Los_Angeles</timeZone>
+    <timeout>23h</timeout>
+    <uuid>e788f9c2-e249-4fdc-95ec-9848515c380c</uuid>
+  </job>
+</joblist>

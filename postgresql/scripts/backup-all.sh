@@ -10,7 +10,7 @@
 
 [ "$1" ]             || exit 1
 [ `whoami` == root ] || exit 2
-BACKUP_NAME=$(basename "$0" .sh)
+CRONJOB_NAME=$(basename "$0" .sh)
 BACKUP_BUCKET=$1
 
 DATA_DEV="/dev/nvme1n1"
@@ -22,11 +22,11 @@ TEMP_DIR="/opt/postgresql/temp"
 ASSUME_ROLE="ALPRSEBSManagerRole"
 VOLUME_NAME="PostgreSQL Temp"
 
- LOG_FILE="/opt/postgresql/$BACKUP_NAME.log"
-LOCK_FILE="/var/lock/$BACKUP_NAME"
+ LOG_FILE="/opt/postgresql/$CRONJOB_NAME.log"
+LOCK_FILE="/var/lock/$CRONJOB_NAME.lock"
 
-# don't start another backup if
-# previous one hasn't completed
+# don't run another job if the
+# previous one hasn't finished
 [ -e  $LOCK_FILE ] && exit 3
 touch $LOCK_FILE
 
@@ -36,7 +36,7 @@ ts() {
 started=$(date "+%s")
 
 exec >> $LOG_FILE 2>&1
-echo -e "\n[`ts`] ===== BEGIN $BACKUP_NAME ====="
+echo -e "\n[`ts`] ===== BEGIN $CRONJOB_NAME ====="
 
 exiting() {
   if [ "$(type -t delete_temp)" == function ]; then
@@ -46,7 +46,7 @@ exiting() {
     [ 0$elapsed -gt 36000 ] && get_creds
     delete_temp
   fi
-  echo "[`ts`] ===== END $BACKUP_NAME ====="
+  echo "[`ts`] ===== END $CRONJOB_NAME ====="
   rm -f $LOCK_FILE
 }
 trap exiting EXIT

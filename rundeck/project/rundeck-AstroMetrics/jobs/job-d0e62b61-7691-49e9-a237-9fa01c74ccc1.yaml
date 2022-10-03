@@ -1,0 +1,70 @@
+- defaultTab: nodes
+  description: |-
+    Pull data from Flock Safety API server daily at midnight for the entire previous day in chunks
+    * Raw data is written by Flapper into the "flock_reads_{dow}" tables in the Atlas database
+  executionEnabled: true
+  id: d0e62b61-7691-49e9-a237-9fa01c74ccc1
+  loglevel: INFO
+  multipleExecutions: true
+  name: 'Flock: Pull RAW data daily by API - chunks'
+  nodeFilterEditable: false
+  nodefilters:
+    dispatch:
+      excludePrecedence: true
+      keepgoing: false
+      rankOrder: ascending
+      successOnEmptyNodeFilter: false
+      threadcount: '1'
+    filter: 'name: Worker'
+  nodesSelectedByDefault: true
+  notification:
+    onfailure:
+      email:
+        attachLog: true
+        attachLogInFile: true
+        recipients: alprs.devops@maiveric.com
+        subject: '[Rundeck:DEV] Job ${execution.status}: ${job.name}'
+  notifyAvgDurationThreshold: null
+  options:
+  - description: API read chunk size in minutes
+    name: fetch_size
+    value: '10'
+  - description: Batch size for writes to Atlas
+    name: batch_size
+    value: '1000'
+  - description: Process only chunk size cameras
+    name: camera_chunk_size
+    value: '100'
+  - description: Process chunk size of cameras (helps to identify which chunk needs
+      to be processed)
+    name: camera_chunk_pointer
+    value: '1'
+  - description: List of cameras to process and pull data
+    name: camera_list
+  plugins:
+    ExecutionLifecycle: null
+  scheduleEnabled: false
+  sequence:
+    commands:
+    - description: entire previous day
+      script: |-
+        #!/usr/bin/env bash
+
+        # JOB: Recurring Flock: Pull RAW data daily by API
+
+        # start at midnight PST of previous day
+        start=$(date -d "-1 day" "+%Y-%m-%dT00:00:00%:z")
+
+        # FLAPPER variables are defined in /etc/environment
+        $FLAPPER_PATH --file $FLAPPER_CONF \
+                      --interval   @option.fetch_size@ \
+                      --batch-size @option.batch_size@ \
+                      --start $start \
+                      --hours 24 \
+                      --camera-chunk-size    @option.camera_chunk_size@ \
+                      --camera-chunk-pointer @option.camera_chunk_pointer@ \
+                      --camera-list          @option.camera_list@
+    keepgoing: false
+    strategy: node-first
+  timeout: 23h
+  uuid: d0e62b61-7691-49e9-a237-9fa01c74ccc1

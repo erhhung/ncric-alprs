@@ -133,11 +133,11 @@
           "Manual Entries",
           "Morgan Hill PD",
           "Palo Alto PD",
-          "Santa Clara County Sheriff''s Office",
-          "Santa Clara Sheriff",
+          "Santa Clara County SO",
           "Santa Clara PD",
+          "Santa Clara Sheriff",
           "Sunnyvale DPS",
-          "Sunnyvale PD"
+          "Sunnyvale PD",
         ]
 
         s3_bucket = "@option.s3_bucket@"
@@ -180,7 +180,7 @@
 
         try:
             for agency in agencies:
-                agency_no_space = agency.replace(" ", "").replace("'", "")
+                agency_no_space = agency.replace(" ", "")
 
                 print(f"Integrating MAIN table for {agency}!")
                 # integrate all with new tables

@@ -1,0 +1,69 @@
+- defaultTab: nodes
+  description: |-
+    Pull data from Flock Safety API server daily at midnight for the entire previous day - chunk 5
+    * Raw data is written by Flapper into the "flock_reads_{dow}" tables in the Atlas database
+  executionEnabled: true
+  id: 5bcdb909-4b65-4901-983c-ff902d26c032
+  loglevel: INFO
+  name: 'Recurring Flock: Pull RAW data daily by API - chunk 5'
+  nodeFilterEditable: false
+  nodefilters:
+    dispatch:
+      excludePrecedence: true
+      keepgoing: false
+      rankOrder: ascending
+      successOnEmptyNodeFilter: false
+      threadcount: '1'
+    filter: 'name: Worker'
+  nodesSelectedByDefault: true
+  notification:
+    onfailure:
+      email:
+        attachLog: true
+        attachLogInFile: true
+        recipients: alprs.devops@maiveric.com
+        subject: '[Rundeck:DEV] Job ${execution.status}: ${job.name}'
+  notifyAvgDurationThreshold: null
+  options:
+  - description: API read chunk size in minutes
+    name: fetch_size
+    value: '10'
+  - description: Batch size for writes to Atlas
+    name: batch_size
+    value: '1000'
+  plugins:
+    ExecutionLifecycle: null
+  schedule:
+    month: '*'
+    time:
+      hour: '08'
+      minute: '10'
+      seconds: '0'
+    weekday:
+      day: '*'
+    year: '*'
+  scheduleEnabled: false
+  sequence:
+    commands:
+    - description: entire previous day
+      script: |-
+        #!/usr/bin/env bash
+
+        # JOB: Recurring Flock: Pull RAW data daily by API
+
+        # start at midnight PST of previous day
+        start=$(date -d "-1 day" "+%Y-%m-%dT00:00:00%:z")
+
+        # FLAPPER variables are defined in /etc/environment
+        $FLAPPER_PATH --file $FLAPPER_CONF \
+                      --interval   @option.fetch_size@ \
+                      --batch-size @option.batch_size@ \
+                      --start $start \
+                      --hours 24 \
+                      --camera-chunk-size 100 \
+                      --camera-chunk-pointer 5
+    keepgoing: false
+    strategy: node-first
+  timeZone: America/Los_Angeles
+  timeout: 23h
+  uuid: 5bcdb909-4b65-4901-983c-ff902d26c032

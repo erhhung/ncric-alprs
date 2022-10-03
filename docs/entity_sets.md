@@ -37,7 +37,7 @@ curl -s -H "Authorization: Bearer $jwt" \
 
 ## Permissions
 
-It is imperative that all entity sets (at current count there should be 88) are granted
+It is imperative that all entity sets (at current count there should be 108) are granted
 proper permissions using the **Lattice Orgs** webapp (http://localhost:9001/ after SSH
 tunneling into the **bastion host**):
 
@@ -54,14 +54,14 @@ tunneling into the **bastion host**):
     * All roles: "`NCRIC - ADMIN`", "`AstroMetrics - OWNER`", "`AstroMetrics - READ`", "`AstroMetrics - WRITE`"
 7. Repeat for **each admin user** (excluding owner users):
     1. Select the user to show user view
-    2. Under **Data Sets**, there are 10 entity sets listed "per page", and there are currently 88
+    2. Under **Data Sets**, there are 10 entity sets listed "per page", and there are currently 108
     3. If new entity sets have been added, click on the **Add data set** button and select those new entity sets (search might help)
     4. On the **Assign Permissions To Data Sets** page of the dialog, select all 6 permissions and click **Continue**
     5. Retry the process if, for some reason, the dialog shows that an error has occurred
 8. Go back to the NCRIC organization view and select **Roles** at the top
 9. Repeat for **each role**:
     1. Select the role to show role view
-    2. Under **Data Sets**, there are 10 entity sets listed "per page", and there are currently 88
+    2. Under **Data Sets**, there are 10 entity sets listed "per page", and there are currently 108
     3. If new entity sets have been added, click on the **Add data set** button and select those new entity sets (search might help)
     4. On the **Assign Permissions To Data Sets** page of the dialog, select the permissions relevant to the role and click **Continue**
         * "**`NCRIC - ADMIN`**": `owner`, `read`, `write`, `integrate`, `link`, `materialize`
@@ -69,7 +69,7 @@ tunneling into the **bastion host**):
         * "**`AstroMetrics - READ`**": `read`
         * "**`AstroMetrics - WRITE`**": `write`
     5. Retry the process if, for some reason, the dialog shows that an error has occurred
-10. Go back to the NCRIC organization view and verify that **all (currently 88) entity sets appear** on the **Data Sets** tab
+10. Go back to the NCRIC organization view and verify that **all (currently 108) entity sets appear** on the **Data Sets** tab
 
 ## Payload
 
@@ -129,8 +129,8 @@ _**NOTE**: These entity sets are already reflected in the PostgreSQL init script
   },
   {
     "entityTypeId": "3c6dad54-c4b4-4dfb-bd8b-d8dd56e342ec",
-    "name": "NCRICVehicleRecordsAlamedaCountySheriff",
-    "title": "Alameda County Sheriff",
+    "name": "NCRICVehicleRecordsAlamedaCountySO",
+    "title": "Alameda County SO",
     "organizationId": "1446ff84-7112-42ec-828d-f181f45e4d20",
     "contacts": [
       "devops@astrometrics.us"
@@ -179,6 +179,16 @@ _**NOTE**: These entity sets are already reflected in the PostgreSQL init script
   },
   {
     "entityTypeId": "3c6dad54-c4b4-4dfb-bd8b-d8dd56e342ec",
+    "name": "NCRICVehicleRecordsBeverlyHillsPD",
+    "title": "Beverly Hills PD",
+    "organizationId": "1446ff84-7112-42ec-828d-f181f45e4d20",
+    "contacts": [
+      "devops@astrometrics.us"
+    ],
+    "flags": []
+  },
+  {
+    "entityTypeId": "3c6dad54-c4b4-4dfb-bd8b-d8dd56e342ec",
     "name": "NCRICVehicleRecordsBrisbanePD",
     "title": "Brisbane PD",
     "organizationId": "1446ff84-7112-42ec-828d-f181f45e4d20",
@@ -209,8 +219,8 @@ _**NOTE**: These entity sets are already reflected in the PostgreSQL init script
   },
   {
     "entityTypeId": "3c6dad54-c4b4-4dfb-bd8b-d8dd56e342ec",
-    "name": "NCRICVehicleRecordsCentralMarinPoliceAuthority",
-    "title": "Central Marin Police Authority",
+    "name": "NCRICVehicleRecordsCentralMarinPA",
+    "title": "Central Marin PA",
     "organizationId": "1446ff84-7112-42ec-828d-f181f45e4d20",
     "contacts": [
       "devops@astrometrics.us"
@@ -231,6 +241,16 @@ _**NOTE**: These entity sets are already reflected in the PostgreSQL init script
     "entityTypeId": "3c6dad54-c4b4-4dfb-bd8b-d8dd56e342ec",
     "name": "NCRICVehicleRecordsChicoPD",
     "title": "Chico PD",
+    "organizationId": "1446ff84-7112-42ec-828d-f181f45e4d20",
+    "contacts": [
+      "devops@astrometrics.us"
+    ],
+    "flags": []
+  },
+  {
+    "entityTypeId": "3c6dad54-c4b4-4dfb-bd8b-d8dd56e342ec",
+    "name": "NCRICVehicleRecordsColmaPD",
+    "title": "Colma PD",
     "organizationId": "1446ff84-7112-42ec-828d-f181f45e4d20",
     "contacts": [
       "devops@astrometrics.us"
@@ -299,6 +319,16 @@ _**NOTE**: These entity sets are already reflected in the PostgreSQL init script
   },
   {
     "entityTypeId": "3c6dad54-c4b4-4dfb-bd8b-d8dd56e342ec",
+    "name": "NCRICVehicleRecordsGilroyPD",
+    "title": "Gilroy PD",
+    "organizationId": "1446ff84-7112-42ec-828d-f181f45e4d20",
+    "contacts": [
+      "devops@astrometrics.us"
+    ],
+    "flags": []
+  },
+  {
+    "entityTypeId": "3c6dad54-c4b4-4dfb-bd8b-d8dd56e342ec",
     "name": "NCRICVehicleRecordsHIDTA",
     "title": "HIDTA",
     "organizationId": "1446ff84-7112-42ec-828d-f181f45e4d20",
@@ -319,6 +349,26 @@ _**NOTE**: These entity sets are already reflected in the PostgreSQL init script
   },
   {
     "entityTypeId": "3c6dad54-c4b4-4dfb-bd8b-d8dd56e342ec",
+    "name": "NCRICVehicleRecordsHaywardPD",
+    "title": "Hayward PD",
+    "organizationId": "1446ff84-7112-42ec-828d-f181f45e4d20",
+    "contacts": [
+      "devops@astrometrics.us"
+    ],
+    "flags": []
+  },
+  {
+    "entityTypeId": "3c6dad54-c4b4-4dfb-bd8b-d8dd56e342ec",
+    "name": "NCRICVehicleRecordsHerculesPD",
+    "title": "Hercules PD",
+    "organizationId": "1446ff84-7112-42ec-828d-f181f45e4d20",
+    "contacts": [
+      "devops@astrometrics.us"
+    ],
+    "flags": []
+  },
+  {
+    "entityTypeId": "3c6dad54-c4b4-4dfb-bd8b-d8dd56e342ec",
     "name": "NCRICVehicleRecordsHillsboroughPD",
     "title": "Hillsborough PD",
     "organizationId": "1446ff84-7112-42ec-828d-f181f45e4d20",
@@ -331,6 +381,16 @@ _**NOTE**: These entity sets are already reflected in the PostgreSQL init script
     "entityTypeId": "3c6dad54-c4b4-4dfb-bd8b-d8dd56e342ec",
     "name": "NCRICVehicleRecordsHumboldtCounty",
     "title": "Humboldt County",
+    "organizationId": "1446ff84-7112-42ec-828d-f181f45e4d20",
+    "contacts": [
+      "devops@astrometrics.us"
+    ],
+    "flags": []
+  },
+  {
+    "entityTypeId": "3c6dad54-c4b4-4dfb-bd8b-d8dd56e342ec",
+    "name": "NCRICVehicleRecordsKaiserPermanenteVallejo",
+    "title": "Kaiser Permanente Vallejo",
     "organizationId": "1446ff84-7112-42ec-828d-f181f45e4d20",
     "contacts": [
       "devops@astrometrics.us"
@@ -459,6 +519,36 @@ _**NOTE**: These entity sets are already reflected in the PostgreSQL init script
   },
   {
     "entityTypeId": "3c6dad54-c4b4-4dfb-bd8b-d8dd56e342ec",
+    "name": "NCRICVehicleRecordsNovatoPD",
+    "title": "Novato PD",
+    "organizationId": "1446ff84-7112-42ec-828d-f181f45e4d20",
+    "contacts": [
+      "devops@astrometrics.us"
+    ],
+    "flags": []
+  },
+  {
+    "entityTypeId": "3c6dad54-c4b4-4dfb-bd8b-d8dd56e342ec",
+    "name": "NCRICVehicleRecordsOakleyPD",
+    "title": "Oakley PD",
+    "organizationId": "1446ff84-7112-42ec-828d-f181f45e4d20",
+    "contacts": [
+      "devops@astrometrics.us"
+    ],
+    "flags": []
+  },
+  {
+    "entityTypeId": "3c6dad54-c4b4-4dfb-bd8b-d8dd56e342ec",
+    "name": "NCRICVehicleRecordsOrindaPD",
+    "title": "Orinda PD",
+    "organizationId": "1446ff84-7112-42ec-828d-f181f45e4d20",
+    "contacts": [
+      "devops@astrometrics.us"
+    ],
+    "flags": []
+  },
+  {
+    "entityTypeId": "3c6dad54-c4b4-4dfb-bd8b-d8dd56e342ec",
     "name": "NCRICVehicleRecordsPaloAltoPD",
     "title": "Palo Alto PD",
     "organizationId": "1446ff84-7112-42ec-828d-f181f45e4d20",
@@ -471,6 +561,16 @@ _**NOTE**: These entity sets are already reflected in the PostgreSQL init script
     "entityTypeId": "3c6dad54-c4b4-4dfb-bd8b-d8dd56e342ec",
     "name": "NCRICVehicleRecordsPiedmontPD",
     "title": "Piedmont PD",
+    "organizationId": "1446ff84-7112-42ec-828d-f181f45e4d20",
+    "contacts": [
+      "devops@astrometrics.us"
+    ],
+    "flags": []
+  },
+  {
+    "entityTypeId": "3c6dad54-c4b4-4dfb-bd8b-d8dd56e342ec",
+    "name": "NCRICVehicleRecordsPleasantonPD",
+    "title": "Pleasanton PD",
     "organizationId": "1446ff84-7112-42ec-828d-f181f45e4d20",
     "contacts": [
       "devops@astrometrics.us"
@@ -539,8 +639,28 @@ _**NOTE**: These entity sets are already reflected in the PostgreSQL init script
   },
   {
     "entityTypeId": "3c6dad54-c4b4-4dfb-bd8b-d8dd56e342ec",
+    "name": "NCRICVehicleRecordsSanJoaquinCountySO",
+    "title": "San Joaquin County SO",
+    "organizationId": "1446ff84-7112-42ec-828d-f181f45e4d20",
+    "contacts": [
+      "devops@astrometrics.us"
+    ],
+    "flags": []
+  },
+  {
+    "entityTypeId": "3c6dad54-c4b4-4dfb-bd8b-d8dd56e342ec",
     "name": "NCRICVehicleRecordsSanLeandroPD",
     "title": "San Leandro PD",
+    "organizationId": "1446ff84-7112-42ec-828d-f181f45e4d20",
+    "contacts": [
+      "devops@astrometrics.us"
+    ],
+    "flags": []
+  },
+  {
+    "entityTypeId": "3c6dad54-c4b4-4dfb-bd8b-d8dd56e342ec",
+    "name": "NCRICVehicleRecordsSanMateoCountySO",
+    "title": "San Mateo County SO",
     "organizationId": "1446ff84-7112-42ec-828d-f181f45e4d20",
     "contacts": [
       "devops@astrometrics.us"
@@ -569,8 +689,18 @@ _**NOTE**: These entity sets are already reflected in the PostgreSQL init script
   },
   {
     "entityTypeId": "3c6dad54-c4b4-4dfb-bd8b-d8dd56e342ec",
-    "name": "NCRICVehicleRecordsSantaClaraCountySheriffsOffice",
-    "title": "Santa Clara County Sheriff's Office",
+    "name": "NCRICVehicleRecordsSanRamonPD",
+    "title": "San Ramon PD",
+    "organizationId": "1446ff84-7112-42ec-828d-f181f45e4d20",
+    "contacts": [
+      "devops@astrometrics.us"
+    ],
+    "flags": []
+  },
+  {
+    "entityTypeId": "3c6dad54-c4b4-4dfb-bd8b-d8dd56e342ec",
+    "name": "NCRICVehicleRecordsSantaClaraCountySO",
+    "title": "Santa Clara County SO",
     "organizationId": "1446ff84-7112-42ec-828d-f181f45e4d20",
     "contacts": [
       "devops@astrometrics.us"
@@ -599,8 +729,8 @@ _**NOTE**: These entity sets are already reflected in the PostgreSQL init script
   },
   {
     "entityTypeId": "3c6dad54-c4b4-4dfb-bd8b-d8dd56e342ec",
-    "name": "NCRICVehicleRecordsShastaCountySheriff",
-    "title": "Shasta County Sheriff",
+    "name": "NCRICVehicleRecordsShastaCountySO",
+    "title": "Shasta County SO",
     "organizationId": "1446ff84-7112-42ec-828d-f181f45e4d20",
     "contacts": [
       "devops@astrometrics.us"
@@ -609,8 +739,8 @@ _**NOTE**: These entity sets are already reflected in the PostgreSQL init script
   },
   {
     "entityTypeId": "3c6dad54-c4b4-4dfb-bd8b-d8dd56e342ec",
-    "name": "NCRICVehicleRecordsSolanoCountySheriffsOffice",
-    "title": "Solano County Sheriff's Office",
+    "name": "NCRICVehicleRecordsSolanoCountySO",
+    "title": "Solano County SO",
     "organizationId": "1446ff84-7112-42ec-828d-f181f45e4d20",
     "contacts": [
       "devops@astrometrics.us"

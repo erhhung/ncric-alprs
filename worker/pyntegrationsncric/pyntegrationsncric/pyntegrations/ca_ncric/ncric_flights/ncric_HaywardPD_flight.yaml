@@ -3,7 +3,7 @@ organizationId: 1446ff84-7112-42ec-828d-f181f45e4d20
 entityDefinitions:
   vehiclerecords:
     fqn: "ol.vehicle"
-    entitySetName: "NCRICVehicleRecordsAlamedaCountySheriff"
+    entitySetName: "NCRICVehicleRecordsHaywardPD"
     propertyDefinitions:
       ol.id:
         type: "ol.id"

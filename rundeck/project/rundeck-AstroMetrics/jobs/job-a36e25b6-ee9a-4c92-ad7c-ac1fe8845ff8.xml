@@ -133,8 +133,8 @@ print("total_hours:", total_hours)
 total_intervals = math.ceil(total_hours / hour_interval)
 print("total_intervals:", total_intervals)
 
-agency = "Santa Clara County Sheriff’s Office"
-agency_no_space = agency.replace(" ", "").replace("’", "")
+agency = "Santa Clara County SO"
+agency_no_space = agency.replace(" ", "")
 
 api_url = "@option.api_url@"
 usize = @option.upload_size@

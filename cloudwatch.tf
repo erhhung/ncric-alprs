@@ -24,6 +24,7 @@ resource "aws_cloudwatch_metric_alarm" "root_disk" {
   threshold           = 90
   evaluation_periods  = 2
   datapoints_to_alarm = 2
+  treat_missing_data  = "ignore"
 
   metric_query {
     id          = "disk_usage"
@@ -56,6 +57,7 @@ resource "aws_cloudwatch_metric_alarm" "data_disk" {
   threshold           = 90
   evaluation_periods  = 2
   datapoints_to_alarm = 2
+  treat_missing_data  = "ignore"
 
   metric_query {
     id          = "disk_usage"

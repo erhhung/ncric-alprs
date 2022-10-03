@@ -116,10 +116,15 @@ To export an updated "`ncric.sql.gz`", perform the following steps:
     ubuntu@alprsdev-postgresql:~$ sudo su postgres bash -c "pg_dump -C --no-acl \
                                     -n integrations -T 'boss4*' -T 'flock*' -T 'scso*' \
                                     org_1446ff84711242ec828df181f45e4d20" > ncric.sql
+
+    ubuntu@alprsdev-postgresql:~$ sudo su postgres bash -c "pg_dump -s --no-acl \
+                                    -n integrations -t 'flock_reads*' \
+                                    org_1446ff84711242ec828df181f45e4d20" > ncric2.sql
     ```
 2. Edit "`ncric.sql`" and **sort the lines** containing
    data for the `standardized_agency_names` table.
-3. Run the following commands:
+3. Manually merge "`ncric2.sql`" into "`ncric.sql`".
+4. Run the following commands:
     ```bash
       ubuntu@alprsdev-postgresql:~$ gzip -k9 ncric.sql
       ubuntu@alprsdev-postgresql:~$ exit

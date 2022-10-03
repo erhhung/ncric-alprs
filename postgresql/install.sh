@@ -205,24 +205,28 @@ install_scripts() {
 
 config_cronjobs() (
   cd /etc/cron.d
-  cat <<EOF > backup_flock
-USER=postgres
+  _mkcron() {
+    cat <<EOT
+USER=$1
 HOME=/var/lib/postgresql
 PATH=/bin:/usr/bin:/usr/sbin:/usr/local/bin:/snap/bin
 
 # min hr dom mon dow user command
+EOT
+    cat
+  }
+  cat <<EOT | _mkcron postgres > backup_flock
 20 2 ? * * postgres bash -c "\$HOME/backup-flock.sh $BACKUP_BUCKET"
-EOF
-  cat <<EOF > backup_all
-USER=root
-HOME=/var/lib/postgresql
-PATH=/bin:/usr/bin:/usr/sbin:/usr/local/bin:/snap/bin
-
-# min hr dom mon dow user command
+EOT
+  cat <<EOT | _mkcron root     > backup_all
 20 6 ? * * root bash -c "\$HOME/backup-all.sh $BACKUP_BUCKET"
+EOT
+  cat <<EOF | _mkcron postgres > drop_temps
+20 4 ? * * postgres bash -c "\$HOME/drop-temps.sh"
 EOF
   chmod +x backup_flock # enable
   chmod -x backup_all   # disable
+  chmod +x drop_temps   # enable
 )
 
 run create_xfs_volume

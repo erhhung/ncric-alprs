@@ -139,8 +139,8 @@ images_integration = BOSS4ImagesIntegration(
 images_clean_table_name = images_integration.clean_and_upload()
 print("Got the images data!")
 
-agency = "Santa Clara County Sheriff’s Office"
-agency_no_space = agency.replace(" ", "").replace("’", "")
+agency = "Santa Clara County SO"
+agency_no_space = agency.replace(" ", "")
 
 pyntegrations_path = os.environ.get("PYNTEGRATIONS_PATH")
 pyntegrations_path += "/ca_ncric"

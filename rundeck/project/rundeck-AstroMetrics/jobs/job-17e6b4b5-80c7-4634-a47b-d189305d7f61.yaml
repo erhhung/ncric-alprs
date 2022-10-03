@@ -1,11 +1,11 @@
 - defaultTab: nodes
   description: |-
-    Pull data from Flock Safety API server daily at midnight for the entire previous day
-    * Raw data is written by Flapper into the "flock_reads" table in the Atlas database
+    Pull data from Flock Safety API server daily at midnight for the entire previous day - chunk 8
+    * Raw data is written by Flapper into the "flock_reads_{dow}" tables in the Atlas database
   executionEnabled: true
-  id: 480f07bb-de39-4f04-a9ae-ca9f68bfec04
+  id: 17e6b4b5-80c7-4634-a47b-d189305d7f61
   loglevel: INFO
-  name: 'Recurring Flock: Pull RAW data daily by API'
+  name: 'Recurring Flock: Pull RAW data daily by API - chunk 8'
   nodeFilterEditable: false
   nodefilters:
     dispatch:
@@ -22,7 +22,7 @@
         attachLog: true
         attachLogInFile: true
         recipients: alprs.devops@maiveric.com
-        subject: '[Rundeck:PROD] Job ${execution.status}: ${job.name}'
+        subject: '[Rundeck:DEV] Job ${execution.status}: ${job.name}'
   notifyAvgDurationThreshold: null
   options:
   - description: API read chunk size in minutes
@@ -36,13 +36,13 @@
   schedule:
     month: '*'
     time:
-      hour: '00'
+      hour: '11'
       minute: '10'
       seconds: '0'
     weekday:
       day: '*'
     year: '*'
-  scheduleEnabled: true
+  scheduleEnabled: false
   sequence:
     commands:
     - description: entire previous day
@@ -59,9 +59,11 @@
                       --interval   @option.fetch_size@ \
                       --batch-size @option.batch_size@ \
                       --start $start \
-                      --hours 24
+                      --hours 24 \
+                      --camera-chunk-size 100 \
+                      --camera-chunk-pointer 8
     keepgoing: false
     strategy: node-first
   timeZone: America/Los_Angeles
   timeout: 23h
-  uuid: 480f07bb-de39-4f04-a9ae-ca9f68bfec04
+  uuid: 17e6b4b5-80c7-4634-a47b-d189305d7f61

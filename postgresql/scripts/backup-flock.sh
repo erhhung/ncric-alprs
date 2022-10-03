@@ -7,18 +7,18 @@
 # runs pg_repack on "flock_reads" afterwards to reclaim disk space
 
 [ "$1" ] || exit 1
-BACKUP_NAME=$(basename "$0" .sh)
+CRONJOB_NAME=$(basename "$0" .sh)
 BACKUP_BUCKET=$1
 
 NCRIC_DB="org_1446ff84711242ec828df181f45e4d20"
 # days to keep data in "flock_reads" table
 RETENTION_DAYS=3
 
- LOG_FILE="/opt/postgresql/$BACKUP_NAME.log"
-LOCK_FILE="/var/lock/$BACKUP_NAME"
+ LOG_FILE="/opt/postgresql/$CRONJOB_NAME.log"
+LOCK_FILE="/var/lock/$CRONJOB_NAME.lock"
 
-# don't start another backup if
-# previous one hasn't completed
+# don't run another job if the
+# previous one hasn't finished
 [ -e  $LOCK_FILE ] && exit 3
 touch $LOCK_FILE
 
@@ -27,10 +27,10 @@ ts() {
 }
 
 exec >> $LOG_FILE 2>&1
-echo -e "\n[`ts`] ===== BEGIN $BACKUP_NAME ====="
+echo -e "\n[`ts`] ===== BEGIN $CRONJOB_NAME ====="
 
 exiting() {
-  echo "[`ts`] ===== END $BACKUP_NAME ====="
+  echo "[`ts`] ===== END $CRONJOB_NAME ====="
   rm -f $LOCK_FILE
 }
 trap exiting EXIT
@@ -47,13 +47,13 @@ psql() {
   `which psql` -d $NCRIC_DB -c "$1" -tA "${@:2}"
 }
 
-# <date> <dest> [cols]
+# <dow> <date> <dest> [cols]
 backup() {
-  local date=$1 dest=$2 cols=${3:-'*'}
+  local dow=$1 date=$2 dest=$3 cols=${4:-'*'}
   echo "[`ts`] Compressing and writing: $dest"
 
   psql "COPY (SELECT $cols
-                FROM integrations.flock_reads
+                FROM integrations.flock_reads_$dow
                WHERE timestamp >= '$date'
                  AND timestamp <  '$date'::date + 1
             ORDER BY cameranetworkname, timestamp)
@@ -65,6 +65,20 @@ backup() {
     awk '{print "["$1" "$2"] Backup file: "$5" | Size: "$3$4}'
 }
 
+# <dow>
+repack() {
+  local dow=$1
+  # https://reorg.github.io/pg_repack/
+  # https://www.percona.com/blog/2021/06/24/understanding-pg_repack-what-can-go-wrong-and-how-to-avoid-it/
+  echo "[`ts`] Running pg_repack on flock_reads_$dow..."
+  pg_repack $NCRIC_DB \
+    -t integrations.flock_reads_$dow \
+    -o timestamp \
+    -j $(nproc)  \
+    -DZ -T 300 | \
+    `which ts` -s "[           %T]"
+}
+
 # <delim> [elts]...
 join() {
   local delim=$1 first=$2
@@ -74,46 +88,47 @@ join() {
 # get column names and nullify image value
 cols=($(psql "SELECT column_name
                 FROM information_schema.columns
-               WHERE table_name = 'flock_reads'
+               WHERE table_name = 'flock_reads_sun'
             ORDER BY ordinal_position" -q))
 cols=$(join ', ' "${cols[@]}")
 cols=${cols/' image,'/' NULL::bytea AS image,'}
 
-while true; do
-  # rerun query to select an eligible backup date
-  # per iteration because multiple iterations may
-  # take multiple days to complete
+# if today is a Tuesday, then the _mon (yesterday's)
+# table should be actively written to, so start from
+# 7 days ago (_tue) and backup + repack tables until
+# 2 days ago (_sun)
+day=-7
+
+while [ $day -lt -1 ]; do
+   # +%a outputs 3-char day-of-week
+   dow=$(date -d "$day days" "+%a")
+   dow=${dow,,}
   date=$(
     psql "SELECT DISTINCT(timestamp::date)
-            FROM integrations.flock_reads
+            FROM integrations.flock_reads_$dow
            WHERE timestamp < current_date - $RETENTION_DAYS - 1
         ORDER BY timestamp::date LIMIT 1" -q
   )
-  [ "$date" ] && repack=true || break
+  if [ "$date" ]; then
+    repack=true
+  else
+    if [ "$repack" ]; then
+      unset repack
+      repack $dow
+    fi
+    ((day++))
+    continue
+  fi
 
-  dest="s3://$BACKUP_BUCKET/flock/flock_reads_${date}_without_images.csv.bz"
-  backup $date $dest "$cols" || exit $?
+  dest="s3://$BACKUP_BUCKET/flock/flock_reads_${date}_${dow}"
+  backup $dow $date "${dest}_without_images.csv.bz" "$cols" || exit $?
+  backup $dow $date "${dest}_with_images.csv.bz"            || exit $?
 
-  dest="s3://$BACKUP_BUCKET/flock/flock_reads_${date}_with_images.csv.bz"
-  backup $date $dest || exit $?
-
-  sql="FROM integrations.flock_reads
+  sql="FROM integrations.flock_reads_$dow
       WHERE timestamp >= '$date'
         AND timestamp <  '$date'::date + 1"
   rows=$(psql "SELECT COUNT(*) $sql")
 
-  echo "[`ts`] Deleting ${rows:-???} rows from $date..."
+  echo "[`ts`] Deleting ${rows:-???} rows from flock_reads_$dow for $date..."
   psql "DELETE $sql" || exit $?
 done
-
-[ "$repack" ] || exit 0
-
-# https://reorg.github.io/pg_repack/
-# https://www.percona.com/blog/2021/06/24/understanding-pg_repack-what-can-go-wrong-and-how-to-avoid-it/
-echo "[`ts`] Running pg_repack on flock_reads..."
-pg_repack $NCRIC_DB \
-  -t integrations.flock_reads \
-  -o timestamp \
-  -j $(nproc)  \
-  -DZ -T 300 | \
-  `which ts` -s "[           %T]"
