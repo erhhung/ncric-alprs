@@ -61,6 +61,7 @@ backup() {
     nice pbzip2 -m1024 -c - | \
     nice aws s3 cp - $dest --no-progress || return $?
 
+  # timestamp shown is file creation
   aws s3 ls --human-readable $dest | \
     awk '{print "["$1" "$2"] Backup file: "$5" | Size: "$3$4}'
 }
@@ -120,15 +121,17 @@ while [ $day -lt -1 ]; do
     continue
   fi
 
-  dest="s3://$BACKUP_BUCKET/flock/flock_reads_${date}_${dow}"
-  backup $dow $date "${dest}_without_images.csv.bz" "$cols" || exit $?
-  backup $dow $date "${dest}_with_images.csv.bz"            || exit $?
-
   sql="FROM integrations.flock_reads_$dow
       WHERE timestamp >= '$date'
         AND timestamp <  '$date'::date + 1"
   rows=$(psql "SELECT COUNT(*) $sql")
 
-  echo "[`ts`] Deleting ${rows:-???} rows from flock_reads_$dow for $date..."
+  echo "[`ts`] Archiving $rows rows from flock_reads_$dow for $date..."
+  dest="s3://$BACKUP_BUCKET/flock/flock_reads_${date}_${dow}"
+
+  backup $dow $date "${dest}_without_images.csv.bz" "$cols" || exit $?
+  backup $dow $date "${dest}_with_images.csv.bz"            || exit $?
+
+  echo "[`ts`] Deleting $rows rows from flock_reads_$dow for $date..."
   psql "DELETE $sql" || exit $?
 done
