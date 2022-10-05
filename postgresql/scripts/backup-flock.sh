@@ -116,6 +116,8 @@ while [ $day -lt -1 ]; do
     if [ "$repack" ]; then
       unset repack
       repack $dow
+    else
+      echo "[`ts`] Found no data to archive from flock_reads_$dow."
     fi
     ((day++))
     continue

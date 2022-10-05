@@ -40,6 +40,7 @@ psql() {
 }
 
 cutoff=$(date -d "-$RETENTION_DAYS days -1 day" "+%Y-%m-%d")
+echo "[`ts`] Looking for temp tables prior to $cutoff..."
 
 while read table date; do
   echo "[`ts`] Dropping temp table from $date: $table..."
