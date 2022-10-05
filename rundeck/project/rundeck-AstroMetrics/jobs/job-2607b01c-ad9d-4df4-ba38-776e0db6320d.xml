@@ -98,8 +98,8 @@
 from datetime import datetime, timedelta
 from sqlalchemy import create_engine
 from pyntegrationsncric.pyntegrations.ca_ncric.boss4.integration_definitions \
-  import BOSS4Integration, BOSS4ImagesIntegration, BOSS4AgenciesIntegration, \
-  BOSS4ImageSourcesIntegration, BOSS4AgenciesStandardizedIntegration
+    import BOSS4Integration, BOSS4ImagesIntegration, BOSS4AgenciesIntegration, \
+    BOSS4ImageSourcesIntegration, BOSS4AgenciesStandardizedIntegration
 import pyntegrationsncric.pyntegrations.ca_ncric.utils.openlattice_functions as of
 import os
 
@@ -131,7 +131,7 @@ api_url = "@option.api_url@"
 fsize = @option.fetch_size@
 
 images_integration = BOSS4ImagesIntegration(
-    sql=f"select * from {images_table_name}",
+    sql=f"SELECT * FROM {images_table_name}",
     clean_table_name_root="boss4_hr_images_clean_fremont",
     base_url=api_url)
 
@@ -150,7 +150,7 @@ try:
     print(f"Integrating MAIN table for {agency}!")
     # integrate all with new tables
     main_integration.integrate_table(
-        sql=f"select * from {main_table_name} where standardized_agency_name = '{agency}'",
+        sql=f"SELECT * FROM {main_table_name} WHERE standardized_agency_name = '{agency}'",
         flight_path=pyntegrations_path+f"/ncric_flights/ncric_{agency_no_space}_flight.yaml",
         memory_size=3,
         shuttle_path=shuttle_path,
@@ -160,7 +160,7 @@ try:
     print(f"Integrating IMAGES table for {agency}!")
     # integrate images table
     images_integration.integrate_table(
-        sql=f"select * from {images_clean_table_name} where standardized_agency_name = '{agency}'",
+        sql=f"SELECT * FROM {images_clean_table_name} WHERE standardized_agency_name = '{agency}'",
         flight_path=pyntegrations_path+f"/ncric_image_flights/ncric_{agency_no_space}_images_flight.yaml",
         memory_size=5,
         shuttle_path=shuttle_path,
@@ -170,7 +170,7 @@ try:
     print("Integrating AGENCIES table!")
     # integrate agencies associate only
     integration = BOSS4AgenciesIntegration(
-        sql=f'select distinct "agency_id", "agencyName", "datasource", "agencyAcronym" from {main_table_name}',
+        sql=f'SELECT DISTINCT "agency_id", "agencyName", "datasource", "agencyAcronym" FROM {main_table_name}',
         clean_table_name_root="boss4_agencies_test",
         base_url=api_url)
     agencies_table_name = integration.clean_and_upload()
@@ -182,7 +182,7 @@ try:
     print("Integrating IMAGE SOURCES table!")
     # integrate image sources associate only
     integration = BOSS4ImageSourcesIntegration(
-        sql=f'select distinct "camera_id", "LPRCameraName", "datasource" from {main_table_name}',
+        sql=f'SELECT DISTINCT "camera_id", "LPRCameraName", "datasource" FROM {main_table_name}',
         clean_table_name_root="boss4_imagesources_test",
         base_url=api_url)
     image_sources_table = integration.clean_and_upload()
@@ -193,13 +193,13 @@ try:
 
     print("Integrating STANDARDIZED AGENCIES table!")
     sagency_integration = BOSS4AgenciesStandardizedIntegration(
-        sql="""select distinct standardized_agency_name from standardized_agency_names
-            where \"ol.datasource\" = 'BOSS4'
+        sql="""SELECT DISTINCT standardized_agency_name FROM standardized_agency_names
+            WHERE \"ol.datasource\" = 'BOSS4'
             """,
         base_url=api_url)
     sagency_integration.integrate_table(
-        sql="""select distinct standardized_agency_name from standardized_agency_names
-            where \"ol.datasource\" = 'BOSS4'
+        sql="""SELECT DISTINCT standardized_agency_name FROM standardized_agency_names
+            WHERE \"ol.datasource\" = 'BOSS4'
             """,
         shuttle_path=shuttle_path,
         shuttle_args=shuttle_args)

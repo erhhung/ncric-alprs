@@ -98,46 +98,46 @@ import math
 import os
 
 agencies = [
-  "Anderson City PD",
-  "Atherton PD",
-  "Benicia PD",
-  "Beverly Hills PD",
-  "Campbell PD",
-  "Colma PD",
-  "Danville PD",
-  "Dixon PD",
-  "Fairfield PD",
-  "Fremont PD",
-  "GGB Vista Point",
-  "Gilroy PD",
-  "Hayward PD",
-  "Hercules PD",
-  "Hillsborough PD",
-  "Kaiser Permanente Vallejo",
-  "Livermore PD",
-  "Millbrae PD",
-  "Morgan Hill PD",
-  "NCRIC",
-  "Napa PD",
-  "Novato PD",
-  "Oakley PD",
-  "Orinda PD",
-  "Piedmont PD",
-  "Pleasanton PD",
-  "Salinas PD",
-  "San Bruno PD",
-  "San Joaquin County SO",
-  "San Mateo County SO",
-  "San Mateo PD",
-  "San Ramon PD",
-  "Santa Clara PD",
-  "Vallejo PD",
+    "Anderson City PD",
+    "Atherton PD",
+    "Benicia PD",
+    "Beverly Hills PD",
+    "Campbell PD",
+    "Colma PD",
+    "Danville PD",
+    "Dixon PD",
+    "Fairfield PD",
+    "Fremont PD",
+    "GGB Vista Point",
+    "Gilroy PD",
+    "Hayward PD",
+    "Hercules PD",
+    "Hillsborough PD",
+    "Kaiser Permanente Vallejo",
+    "Livermore PD",
+    "Millbrae PD",
+    "Morgan Hill PD",
+    "NCRIC",
+    "Napa PD",
+    "Novato PD",
+    "Oakley PD",
+    "Orinda PD",
+    "Piedmont PD",
+    "Pleasanton PD",
+    "Salinas PD",
+    "San Bruno PD",
+    "San Joaquin County SO",
+    "San Mateo County SO",
+    "San Mateo PD",
+    "San Ramon PD",
+    "Santa Clara PD",
+    "Vallejo PD",
 ]
 
-# End datetime is the beginning of the hour that the job starts in
-dt_end = datetime.now().replace(microsecond=0, second=0, minute=0)
-dt_end = dt_end - timedelta(hours=24)
+dt_end = datetime.now().replace(microsecond=0, second=0, minute=0, hour=2)
+dt_12am = dt_end.replace(hour=0)
 dt_start = dt_end - timedelta(hours=6)
+dt_ranges = [(dt_start, dt_12am), (dt_12am, dt_end)]
 
 db_host = "@option.db_host@"
 db_name = "@option.db_name@"
@@ -155,67 +155,73 @@ shuttle_path = os.environ.get("SHUTTLE_PATH")
 shuttle_args = "@option.shuttle_args@"
 
 try:
-    for agency in agencies:
-        agency_no_space = agency.replace(" ", "").replace("'", "")
+    for dt_start, dt_end in dt_ranges:
+        # raw Flock data gets pulled into separate day-of-week reads tables
+        reads_table_name = "flock_reads_" + dt_start.strftime("%a").lower()
+        print(f'\nIntegrating from raw reads table "{reads_table_name}"...')
 
-        integration = FLOCKIntegration(sql=f'''
-            select f."readid",f."timestamp", f."type", f."plate", f."confidence",
-                f."latitude", f."longitude", f."cameraid", f."cameraname", f."platestate", f."speed",
-                f."direction", f."model", f."hotlistid", f."hotlistname", f."cameralocationlat",
-                f."cameralocationlon", f."cameranetworkid", f."cameranetworkname", s."standardized_agency_name"
-            from flock_reads f
-            left join standardized_agency_names s
-            on f.cameranetworkname = s."ol.name"
-            where "timestamp" >= '{dt_start}'
-              and "timestamp" <= '{dt_end}'
-              and s.standardized_agency_name = '{agency}'
+        for agency in agencies:
+            agency_no_space = agency.replace(" ", "")
+
+            integration = FLOCKIntegration(sql=f'''
+                SELECT f."readid",f."timestamp", f."type", f."plate", f."confidence",
+                    f."latitude", f."longitude", f."cameraid", f."cameraname", f."platestate", f."speed",
+                    f."direction", f."model", f."hotlistid", f."hotlistname", f."cameralocationlat",
+                    f."cameralocationlon", f."cameranetworkid", f."cameranetworkname", s."standardized_agency_name"
+                FROM {reads_table_name} f
+                LEFT JOIN standardized_agency_names s
+                ON f.cameranetworkname = s."ol.name"
+                WHERE "timestamp" >= '{dt_start}'
+                  AND "timestamp" <  '{dt_end}'
+                  AND s.standardized_agency_name = '{agency}'
+                ''',
+                flight_path=pyntegrations_path+f"/ncric_flights/ncric_{agency_no_space}_flight.yaml",
+                clean_table_name_suffix="recur",
+                base_url=api_url)
+            main_table = integration.clean_and_upload()
+
+            print(f"Integrating MAIN table for {agency}!")
+            result = engine.execute(f"SELECT COUNT(*) FROM {main_table}")
+            records = pd.DataFrame(result).iloc[0, 0]
+            print(f"{records} records to process")
+            chunks = math.ceil(records / limit)
+
+            for i in range(chunks):
+                print(f"Processing records {limit*i} through {limit*(i+1)}!")
+
+                integration.integrate_table(
+                    sql=f"SELECT * FROM {main_table} LIMIT {limit} OFFSET {limit*i}",
+                    drop_table_on_success=False,
+                    memory_size=4,
+                    shuttle_path=shuttle_path,
+                    shuttle_args=shuttle_args+f" --fetchsize {fsize} --upload-size {fsize}")
+
+            of.drop_table(engine, main_table)
+
+        print("Integrating IMAGE SOURCE table!")
+        integration = FLOCKImageSourceIntegration(sql=f'''
+            SELECT DISTINCT "cameraid", "cameraname"
+            FROM {reads_table_name}
+            WHERE "timestamp" >= '{dt_start}'
+              AND "timestamp" <  '{dt_end}'
             ''',
-            flight_path=pyntegrations_path+f"/ncric_flights/ncric_{agency_no_space}_flight.yaml",
-            clean_table_name_suffix="recur",
             base_url=api_url)
-        main_table = integration.clean_and_upload()
+        image_source_table = integration.clean_and_upload()
+        integration.integrate_table(
+            clean_table_name=image_source_table,
+            drop_table_on_success=True,
+            shuttle_path=shuttle_path,
+            shuttle_args=shuttle_args+f" --s3 PRODUCTION --fetchsize {fsize} --upload-size {fsize}")
 
-        print(f"Integrating MAIN table for {agency}!")
-        result = engine.execute(f"select count(*) from {main_table}")
-        records = pd.DataFrame(result).iloc[0, 0]
-        print(f"{records} records to process")
-        chunks = math.ceil(records / limit)
-
-        for i in range(chunks):
-            print(f"Processing records {limit*i} through {limit*(i+1)}!")
-
-            integration.integrate_table(
-                sql=f"select * from {main_table} limit {limit} offset {limit*i}",
-                drop_table_on_success=False,
-                memory_size=4,
-                shuttle_path=shuttle_path,
-                shuttle_args=shuttle_args+f" --fetchsize {fsize} --upload-size {fsize}")
-
-        of.drop_table(engine, main_table)
-
-    print("Integrating IMAGE SOURCE table!")
-    integration = FLOCKImageSourceIntegration(sql=f'''
-        select distinct "cameraid", "cameraname" from flock_reads
-        where "timestamp" >= '{dt_start}'
-          and "timestamp" <= '{dt_end}'
-        ''',
-        base_url=api_url)
-    image_source_table = integration.clean_and_upload()
-    integration.integrate_table(
-        clean_table_name=image_source_table,
-        drop_table_on_success=True,
-        shuttle_path=shuttle_path,
-        shuttle_args=shuttle_args+f" --s3 PRODUCTION --fetchsize {fsize} --upload-size {fsize}")
-
-    print("Integrating STANDARDIZED AGENCY table!")
-    sagency_integration = FLOCKAgencyStandardizationIntegration(
-        sql="select * from standardized_agency_names",
-        base_url=api_url)
-    sagency_integration.integrate_table(
-        sql="select * from standardized_agency_names",
-        drop_table_on_success=True,
-        shuttle_path=shuttle_path,
-        shuttle_args=shuttle_args)
+        print("Integrating STANDARDIZED AGENCY table!")
+        sagency_integration = FLOCKAgencyStandardizationIntegration(
+            sql="SELECT * FROM standardized_agency_names",
+            base_url=api_url)
+        sagency_integration.integrate_table(
+            sql="SELECT * FROM standardized_agency_names",
+            drop_table_on_success=True,
+            shuttle_path=shuttle_path,
+            shuttle_args=shuttle_args)
 
 except Exception as e:
     raise RuntimeError(f"Something went wrong with the job! Error message: {str(e)}")]]></script>
