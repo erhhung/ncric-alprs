@@ -18,7 +18,14 @@ which database you'd like to connect to._
 Show number of Flock reads per day:
 ```sql
 SELECT DISTINCT(timestamp::date) AS date,
-       COUNT(*) OVER (PARTITION BY timestamp::date) AS count
-FROM integrations.flock_reads
+  COUNT(*) OVER (PARTITION BY timestamp::date) AS count
+FROM (
+  SELECT timestamp FROM integrations.flock_reads_sun UNION
+  SELECT timestamp FROM integrations.flock_reads_mon UNION
+  SELECT timestamp FROM integrations.flock_reads_tue UNION
+  SELECT timestamp FROM integrations.flock_reads_wed UNION
+  SELECT timestamp FROM integrations.flock_reads_thu UNION
+  SELECT timestamp FROM integrations.flock_reads_fri UNION
+  SELECT timestamp FROM integrations.flock_reads_sat) AS _table
 ORDER BY timestamp::date;
 ```
