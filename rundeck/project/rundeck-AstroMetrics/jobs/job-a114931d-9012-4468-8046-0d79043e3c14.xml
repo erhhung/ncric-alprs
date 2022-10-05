@@ -146,7 +146,7 @@ dt_start = dt_end - timedelta(hours=3)
 if dt_start.day != dt_end.day and dt_end > dt_end.replace(hour=0):
     dt_12am = dt_end.replace(hour=0)
     dt_ranges = [(dt_start, dt_12am), (dt_12am, dt_end)]
-else
+else:
     dt_ranges = [(dt_start, dt_end)]
 
 db_host = "@option.db_host@"
