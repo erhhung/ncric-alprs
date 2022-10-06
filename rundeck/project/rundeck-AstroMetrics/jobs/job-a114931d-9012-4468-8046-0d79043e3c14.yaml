@@ -94,7 +94,7 @@
   - name: upload_size
     value: '100'
   - name: chunk_size
-    value: '1000'
+    value: '500'
   plugins:
     ExecutionLifecycle: null
   schedule:

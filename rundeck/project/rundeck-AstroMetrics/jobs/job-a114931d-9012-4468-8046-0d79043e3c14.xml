@@ -44,7 +44,7 @@
         </option>
         <option name='fetch_size' value='500' />
         <option name='upload_size' value='100' />
-        <option name='chunk_size' value='1000' />
+        <option name='chunk_size' value='500' />
       </options>
     </context>
     <defaultTab>nodes</defaultTab>

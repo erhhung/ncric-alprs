@@ -88,9 +88,11 @@
     storagePath: keys/ol_pass
     valueExposed: true
   - name: fetch_size
-    value: '10000'
+    value: '500'
+  - name: upload_size
+    value: '100'
   - name: chunk_size
-    value: '20000'
+    value: '1000'
   plugins:
     ExecutionLifecycle: null
   schedule:
@@ -170,6 +172,7 @@
 
         api_url = "@option.api_url@"
         fsize = @option.fetch_size@
+        usize = @option.upload_size@
         limit = @option.chunk_size@
 
         pyntegrations_path = os.environ.get("PYNTEGRATIONS_PATH")
@@ -217,7 +220,7 @@
                             drop_table_on_success=False,
                             memory_size=4,
                             shuttle_path=shuttle_path,
-                            shuttle_args=shuttle_args+f" --fetchsize {fsize} --upload-size {fsize}")
+                            shuttle_args=shuttle_args+f" --fetchsize {fsize} --upload-size {usize}")
 
                     of.drop_table(engine, main_table)
 
@@ -234,7 +237,7 @@
                     clean_table_name=image_source_table,
                     drop_table_on_success=True,
                     shuttle_path=shuttle_path,
-                    shuttle_args=shuttle_args+f" --s3 PRODUCTION --fetchsize {fsize} --upload-size {fsize}")
+                    shuttle_args=shuttle_args+f" --s3 PRODUCTION --fetchsize {fsize} --upload-size {usize}")
 
                 print("Integrating STANDARDIZED AGENCY table!")
                 sagency_integration = FLOCKAgencyStandardizationIntegration(
