@@ -31,7 +31,7 @@ LOCK_FILE="/var/lock/$CRONJOB_NAME.lock"
 touch $LOCK_FILE
 
 ts() {
-  date "+%Y-%m-%d %T"
+  date "+%F %T"
 }
 started=$(date "+%s")
 
@@ -65,16 +65,25 @@ role_arn=$(identity) && echo "[`ts`] Current role: $role_arn"
 role_arn="$(sed -En 's|^arn:(aws[^:]*):sts::([0-9]+).+$|arn:\1:iam::\2|p' \
   <<< "$role_arn"):role/$ASSUME_ROLE"
 
+# get credentials that expire in 12 hours,
+# the maximum allowed by the role and AWS
 get_creds() {
   eval export $(aws sts assume-role \
                   --role-arn $role_arn \
-                  --role-session-name postgresql-backup | \
+                  --role-session-name postgresql-backup \
+                  --duration-seconds  $((60*60 * 12)) | \
     jq -r '.Credentials |
            "AWS_ACCESS_KEY_ID=\"\(.AccessKeyId)\"
             AWS_SECRET_ACCESS_KEY=\"\(.SecretAccessKey)\"
-            AWS_SESSION_TOKEN=\"\(.SessionToken)\""')
+            AWS_SESSION_TOKEN=\"\(.SessionToken)\"
+            SESSION_EXPIRES=\"\(.Expiration)\"
+           "')
+  SESSION_EXPIRES=$(date -d "$SESSION_EXPIRES" "+%F %T")
 }
-get_creds && echo "[`ts`] Assumed role: $(identity)"
+
+get_creds && \
+  echo "[`ts`] Assumed role: $(identity)" && \
+  echo "[`ts`] Assumed role expires: $SESSION_EXPIRES"
 
 volume_id() {
   aws ec2 describe-volumes \

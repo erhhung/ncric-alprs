@@ -23,7 +23,7 @@ LOCK_FILE="/var/lock/$CRONJOB_NAME.lock"
 touch $LOCK_FILE
 
 ts() {
-  date "+%Y-%m-%d %T"
+  date "+%F %T"
 }
 
 exec >> $LOG_FILE 2>&1

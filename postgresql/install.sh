@@ -216,17 +216,15 @@ EOT
     cat
   }
   cat <<EOT | _mkcron postgres > backup_flock
-20 2 ? * * postgres bash -c "\$HOME/backup-flock.sh $BACKUP_BUCKET"
+20 2 * * * postgres bash -c "\$HOME/backup-flock.sh $BACKUP_BUCKET"
 EOT
-  cat <<EOT | _mkcron root     > backup_all
-20 6 ? * * root bash -c "\$HOME/backup-all.sh $BACKUP_BUCKET"
+  cat <<EOT | _mkcron root > backup_all.disabled
+20 6 * * * root bash -c "\$HOME/backup-all.sh $BACKUP_BUCKET"
 EOT
   cat <<EOF | _mkcron postgres > drop_temps
-20 4 ? * * postgres bash -c "\$HOME/drop-temps.sh"
+20 4 * * * postgres bash -c "\$HOME/drop-temps.sh"
 EOF
-  chmod 744 backup_flock # enable
-  chmod 644 backup_all   # disable
-  chmod 744 drop_temps   # enable
+  chmod 644 *
 )
 
 run create_xfs_volume
