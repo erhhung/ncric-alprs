@@ -327,8 +327,7 @@ class Integration(object):
         if flight_path is not None:
             self.flight_path = flight_path
         if self.flight_path is None or not os.path.isfile(self.flight_path):
-            # print(self.flight_path)
-            raise ValueError("Flight path has not been specified or is incorrect!")
+            raise ValueError(f"Flight path has not been specified or is incorrect: {self.flight_path}")
 
         host = environment[self.configuration.host]
         if local:
