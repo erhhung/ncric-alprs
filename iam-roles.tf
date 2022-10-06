@@ -59,6 +59,14 @@ data "aws_iam_policy_document" "user_data_bucket" {
   }
 }
 
+data "aws_iam_policy_document" "email_sender" {
+  statement {
+    effect    = "Allow"
+    actions   = ["ses:SendEmail"]
+    resources = [aws_ses_domain_identity.astrometrics.arn]
+  }
+}
+
 #################### Bastion ####################
 
 resource "aws_iam_role" "alprs_bastion" {
@@ -100,6 +108,11 @@ resource "aws_iam_role_policy" "alprs_bastion_alprs_buckets" {
   name   = "alprs-buckets-access-policy"
   role   = aws_iam_role.alprs_bastion.id
   policy = data.aws_iam_policy_document.alprs_buckets.json
+}
+resource "aws_iam_role_policy" "alprs_bastion_email_sender" {
+  name   = "email-sender-access-policy"
+  role   = aws_iam_role.alprs_bastion.id
+  policy = data.aws_iam_policy_document.email_sender.json
 }
 
 resource "aws_iam_instance_profile" "alprs_bastion" {
