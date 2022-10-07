@@ -2,13 +2,19 @@
 
 ## Local Environment
 
-Terraform and other deployment tools have been baked into a custom Docker
-image that will be built and run by "`tf.sh`". So, aside from **Docker**
-itself, no additional tools need to be installed in the local environment.
+Terraform and other deployment tools have been baked into a custom Docker image that will be built and run by "`tf.sh`".  
+So, aside from **Docker** itself, very few tools need to be installed in the local environment.
 
-Of course, AWS credentials under "`~/.aws`" and SSH keys under "`~/.ssh`"
-are still required, as is a properly formatted "`~/.ssh/config`" to get
-updated by "`upssh.sh`".
+Of course, AWS credentials under "`~/.aws`" and SSH keys under "`~/.ssh`" are still required, as is a properly formatted  
+"`~/.ssh/config`" (see "[`ssh-config`](ssh-config)" for example) to get updated by "`./upssh.sh`" after "`./tf.sh apply`".
+
+The following tools should be installed _(assumes macOS environment using Homebrew)_:
+
+* **`docker`** — `brew install --cask docker`
+* **`aws`**    — `brew install awscli`
+* **`jq`**     — `brew install jq`
+* **`pee`**    — `brew install moreutils`
+* **`delta`**  — `brew install git-delta`
 
 ## AWS Environment
 
