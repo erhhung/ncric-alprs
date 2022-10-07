@@ -161,7 +161,7 @@ HOME=/home/$DEFAULT_USER
 PATH=/usr/local/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/home/$DEFAULT_USER/.local/bin
 
 # min hr dom mon dow user command
-0/10 * * * * $DEFAULT_USER bash -c "\$HOME/health-check/health-check.sh $DEVOPS_EMAIL"
+*/10 * * * * $DEFAULT_USER bash -c "\$HOME/health-check/health-check.sh $DEVOPS_EMAIL"
 EOF
   chmod 644 *
   service crond reload

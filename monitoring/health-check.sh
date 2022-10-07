@@ -108,7 +108,7 @@ params=(
   audience=https://$auth0_domain/userinfo
   scope=openid
 )
-jwt=$(curl -sX  POST "$endpoint" \
+jwt=$(curl -sX POST "$endpoint" \
   -H 'Content-Type: application/x-www-form-urlencoded' \
   -d "$(IFS=\&; echo "${params[*]}")" | jq -r .id_token)
 
@@ -118,19 +118,19 @@ if [[ "$jwt" != ey* ]]; then
   exit 1
 fi
 
-# <route> [opts]...
+# <route> [opts...] [-X method]
 curl_api() {
   local endpoint method="${@: -1}"
   endpoint="$API_URL/datastore/$1"
   [ "$method" == POST ] || method=GET
   printf "[`ts`] %4s $endpoint\n" $method
 
-  local args=(
+  local status args=(
     -H  "Authorization: Bearer $jwt"
     -so /dev/null -w '%{http_code}\n'
     "${@:2}" "$endpoint"
   )
-  local  status=$(curl "${args[@]}" 2> /dev/null)
+  status=$(curl "${args[@]}" 2> /dev/null)
   if [ "$status" != 200 ]; then
     echo "[`ts`] Request FAILED with status $status!"
     failed=true
@@ -138,9 +138,14 @@ curl_api() {
   fi
 }
 
-# activates the OpenLattice user
+# activate the OpenLattice user
 curl_api principals/sync || exit $?
+
 # obtain information about this app
 curl_api app/lookup/astrometrics || exit $?
-# query "ol.appdetails" containing "AGENCY_VEHICLE_RECORDS_ENTITY_SETS"
-curl_api search/6d17e1c0-d61b-4ec8-80ce-1e82b4a64166 -X POST || exit $?
+
+# query "ol.appdetails" containing
+# AGENCY_VEHICLE_RECORDS_ENTITY_SETS
+curl_api search/6d17e1c0-d61b-4ec8-80ce-1e82b4a64166 \
+    -d '{"start":0, "maxHits":1, "searchTerm":"*"}' \
+    -H "Content-Type: application/json" -X POST || exit $?
