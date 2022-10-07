@@ -149,3 +149,5 @@ curl_api app/lookup/astrometrics || exit $?
 curl_api search/6d17e1c0-d61b-4ec8-80ce-1e82b4a64166 \
     -d '{"start":0, "maxHits":1, "searchTerm":"*"}' \
     -H "Content-Type: application/json" -X POST || exit $?
+
+echo "[`ts`] Health check completed successfully."

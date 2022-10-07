@@ -1,4 +1,4 @@
-# Route 53 Configuration
+## Route 53 Configuration
 
 The ALPRS commercial account is used to manage the astrometrics.us domain and its subdomain dev.astrometrics.us (two distinct hosted zones).  
 dev.astrometrics.us is used to serve the DEV deployment (includes api.dev.astrometrics.us) while the primary domain is for PROD.  

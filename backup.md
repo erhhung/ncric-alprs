@@ -1,4 +1,4 @@
-# AWS Backup
+## AWS Backup
 
 When destroying both the AWS Backup plan and the vault,
 Terraform apply may fail due to the following error:
