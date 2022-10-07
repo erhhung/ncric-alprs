@@ -19,7 +19,7 @@ install_rundeck() (
   # https://docs.rundeck.com/docs/administration/install/linux-rpm.html#installing-rundeck
   curl https://raw.githubusercontent.com/rundeck/packaging/main/scripts/rpm-setup.sh \
     2> /dev/null | bash -s rundeck
-  VERSION=4.6.1.20220914-1
+  VERSION=4.7.0.20221006-1
   # list available versions: yum list rundeck --showduplicates
   eval_with_retry "yum install -y rundeck-$VERSION rundeck-cli"
 )
