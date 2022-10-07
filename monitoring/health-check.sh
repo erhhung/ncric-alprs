@@ -72,7 +72,7 @@ notify() {
   local msg=$(cat <<EOT
 Subject={
   Charset=UTF-8,
-  Data="[AstroMetrics:$ENV] Health check failed!"
+  Data="[AstroMetrics:${ENV^^}] Health check failed!"
 },
 Body={
   Html={
@@ -132,7 +132,7 @@ curl_api() {
   )
   local  status=$(curl "${args[@]}" 2> /dev/null)
   if [ "$status" != 200 ]; then
-    echo "[`ts`] Request FAILED with HTTP status $status!"
+    echo "[`ts`] Request FAILED with status $status!"
     failed=true
     return 1
   fi
