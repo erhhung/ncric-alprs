@@ -211,6 +211,8 @@ unset AWS_ACCESS_KEY_ID \
 # to avoid exceeding the 10K part limit:
 # https://docs.aws.amazon.com/cli/latest/topic/s3-config.html
 aws configure set s3.multipart_chunksize 64MB
+# allow non-root scripts to configure
+chown -R postgres:postgres $HOME/.aws
 set -o pipefail
 
 # https://www.peterdavehello.org/2015/02/use-multi-threads-to-compress-files-when-taring-something/
