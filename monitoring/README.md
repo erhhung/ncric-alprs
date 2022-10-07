@@ -15,14 +15,15 @@ our DevOps team.
 
 ## Health Check
 
-A health check cron job is installed on the bastion host, and runs every
-10 minutes to make several API calls that the frontend webapp would make
-during user login.  
-If this simulated login fails two consecutive times, the script will send
-an email notification to our DevOps team.
+A health check script is installed on the bastion host in "`/home/ec2-user/health-check`"
+to accompany the corresponding cron job definition in "`/etc/cron.d`".  
+It runs every 10 minutes and makes a subset of the API calls that the
+frontend webapp makes during user login.  
+If this simulated login fails two consecutive times, the script will
+send an email notification to our DevOps team.
 
-The customary fix for login failure is to **restart the Datastore** service
-via the steps below:
+The customary fix for login failure is to **restart the Datastore**
+service via the steps below:
 
 ```bash
 $ ssh alprsproddata

@@ -1,6 +1,3 @@
-Elasticsearch
--------------
-
 ## Storage
 
 The Elasticsearch data volume is an **XFS-formatted volume** mounted at `/opt/elasticsearch`:

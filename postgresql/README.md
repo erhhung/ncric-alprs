@@ -1,9 +1,22 @@
-PostgreSQL
-----------
+## Cron Jobs
+
+Three scripts are installed on the PostgreSQL instance in "`/var/lib/postgresql`" (home directory of the `postgres` user)
+to accompany corresponding cron job definitions in "`/etc/cron.d`".
+
+* "`backup-all.sh`" **_(currently disabled and replaced by AWS Backup)_** — archives all databases to S3 using `pg_basebackup`  
+  _(creates and mounts a temporary EBS volume of the **same size** as "`/opt/postgresql/data`" at "`/opt/postgresql/temp`")._
+
+* "`backup-flock.sh`" (runs daily at 2:20am) — archives raw data in "flock_reads\__dow_" tables that are older than the retention period  
+  (currently 3 days) to S3, and then deletes them from the tables; also runs `pg_repack` on the purged tables to reclaim disk space.
+
+* "`drop-temps.sh`" (runs daily at 4:20am) — deletes "forgotten" temporary integration tables (likely due to failed Rundeck jobs)  
+  (e.g. "`boss4_catchup_2022_9_30_22_5_33`") in the Atlas database that are older than the retention period (currently 3 days).
+
+Logs from each script can be found in "`/opt/postgresql`" _(`$PG_HOME`)_.
 
 ## Storage
 
-The PostgreSQL data volume is an **XFS-formatted volume** mounted at `/opt/postgresql`:
+The PostgreSQL data volume is an **XFS-formatted volume** mounted at "`/opt/postgresql`":
 
 ```bash
 $ df -h /opt/postgresql
