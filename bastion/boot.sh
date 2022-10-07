@@ -146,6 +146,27 @@ $ES_IP${tab}elasticsearch
 EOF
 )
 
+install_scripts() (
+  mkdir -p health-check
+  cd health-check
+  aws s3 cp $S3_URL/bastion/health-check.sh . --no-progress
+  chmod +x health-check.sh
+)
+
+config_cronjobs() (
+  cd /etc/cron.d
+  cat <<EOF > health-check
+USER=$DEFAULT_USER
+HOME=/home/$DEFAULT_USER
+PATH=/usr/local/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/home/$DEFAULT_USER/.local/bin
+
+# min hr dom mon dow user command
+0/10 * * * * $DEFAULT_USER bash -c "\$HOME/health-check/health-check.sh $DEVOPS_EMAIL"
+EOF
+  chmod 644 *
+  service crond reload
+)
+
 install_cwagent() (
   shopt -s expand_aliases
   set +x; . .bash_aliases; set -x
@@ -182,6 +203,10 @@ fi
 
 export_buckets
 
+# allow scripts to
+# write lock files
+chmod 1777 /var/lock
+
 export -f eval_with_retry
 export -f yum_update
 
@@ -197,6 +222,8 @@ run root_dotfiles
 run install_utils
 run upgrade_utils
 run etc_hosts
+run install_scripts $DEFAULT_USER
+run config_cronjobs
 run install_cwagent
 run config_cwagent
 run start_cwagent

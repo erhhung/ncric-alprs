@@ -225,6 +225,7 @@ EOT
 20 4 * * * postgres bash -c "\$HOME/drop-temps.sh"
 EOF
   chmod 644 *
+  service cron reload
 )
 
 run create_xfs_volume

@@ -19,6 +19,9 @@ locals {
     data = data.external.bastion_cwagent_json.result.json
     type = "application/json"
     }, {
+    path = "bastion/health-check.sh"
+    file = "${path.module}/monitoring/health-check.sh"
+    }, {
     path = "bastion/.bash_aliases"
     data = <<-EOF
 ${file("${path.module}/shared/.bash_aliases")}
@@ -32,11 +35,12 @@ EOF
     data = <<-EOF
 ${file("${path.module}/shared/prolog.sh")}
 ${templatefile("${path.module}/bastion/boot.tftpl", {
-    ENV         = var.env
-    PG_IP       = module.postgresql_server.private_ip
-    ES_IP       = module.elasticsearch_server.private_ip
-    S3_URL      = local.user_data_s3_url
-    ALL_BUCKETS = local.all_bucket_names
+    ENV          = var.env
+    PG_IP        = module.postgresql_server.private_ip
+    ES_IP        = module.elasticsearch_server.private_ip
+    S3_URL       = local.user_data_s3_url
+    ALL_BUCKETS  = local.all_bucket_names
+    DEVOPS_EMAIL = var.ALPRS_DEVOPS_EMAIL
 })}
 ${file("${path.module}/bastion/boot.sh")}
 ${local.webapp_bootstrap}
