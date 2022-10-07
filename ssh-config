@@ -1,8 +1,14 @@
 # global options
 Host *
+  # the "ServerAlive*" settings prevent an SSH
+  # session from idle disconnection, but could
+  # be a security risk
+  ServerAliveInterval 30
+  ServerAliveCountMax 2
   TCPKeepAlive yes
   ForwardAgent yes
   IdentitiesOnly yes
+  GSSAPIAuthentication no
   IgnoreUnknown UseKeychain
   UseKeychain yes
 
