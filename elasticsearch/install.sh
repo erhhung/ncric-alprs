@@ -25,9 +25,6 @@ EOF
   mkdir $volume
   mount -a
   df -h $volume
-  cat <<EOF >> /etc/environment
-ES_HOME="$volume"
-EOF
 )
 
 resize_xfs_volume() (
@@ -209,6 +206,12 @@ start_nginx() {
   restart_service Nginx 443 9200 9300
 }
 
+user_dotfiles() {
+  cat <<'EOF' >> /etc/environment
+ES_HOME="/opt/elasticsearch"
+EOF
+}
+
 run install_java
 run create_xfs_volume
 run resize_xfs_volume
@@ -218,3 +221,4 @@ run start_elasticsearch
 run config_elasticsearch root after_start
 run config_nginx
 run start_nginx
+run user_dotfiles

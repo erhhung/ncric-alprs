@@ -18,9 +18,6 @@ EOF
   mkdir $volume
   mount -a
   df -h $volume
-  cat <<EOF >> /etc/environment
-PG_HOME="$volume"
-EOF
 )
 
 resize_xfs_volume() (
@@ -180,6 +177,11 @@ config_databases() (
 
 user_dotfiles() {
   case `whoami` in
+    root)
+      cat <<'EOF' >> /etc/environment
+PG_HOME="/opt/postgresql"
+EOF
+      ;;
     postgres)
       (cd /home/$DEFAULT_USER; cp .bashrc .bash_aliases .emacs ~/)
       aws s3 sync $S3_URL/postgresql . --exclude '*' --include '.*' --no-progress
@@ -237,6 +239,7 @@ run start_postgresql
 run create_databases   postgres
 run config_databases   postgres
 run install_extensions postgres
+run user_dotfiles
 run user_dotfiles      postgres
 run user_dotfiles      $DEFAULT_USER
 run install_scripts    postgres
