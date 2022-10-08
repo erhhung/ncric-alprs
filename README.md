@@ -25,10 +25,11 @@ The following tools should be installed _(assumes macOS environment using Homebr
 
 ## Terraform State
 
-Create S3 bucket for Terraform to store its state:  
-_(adjust values for **prod** environment accordingly)_
+Create S3 bucket for Terraform to store its state _(assumes
+**AWS CLI profiles `alprscom` or `alprsgov` already exist!**)_:
 
 ```bash
+# adjust settings accordingly for the prod environment
 AWS_PROFILE=alprscom
 BUCKET=alprs-infra-dev
 REGION=us-west-2
@@ -47,7 +48,34 @@ aws s3api put-bucket-encryption \
   --server-side-encryption-configuration '{"Rules":[{"ApplyServerSideEncryptionByDefault":{"SSEAlgorithm":"AES256"}}]}'
 ```
 
-**_Assumes AWS CLI profiles `alprscom` and `alprsgov` already exist!_**
+### `conf.sh` — Config Tool
+
+Environment-specific configuration file "`config/dev.tfvars`" or "`config/prod.tfvars`"
+(there should **only be one** of these in "`config/`")  
+can be pulled from, pushed to, and compared with their remote copy in S3 (in the same
+folder as the Terraform state file) using the `conf.sh` script:
+
+```bash
+$ ./conf.sh diff
+Retrieving Terraform output variables...DONE.
+File not found: config/dev.tfvars
+
+$ ./conf.sh pull
+Retrieving Terraform output variables...DONE.
+Writing: config/dev.tfvars
+download: s3://alprs-infra-dev/tfstate/dev.tfvars to ./dev.tfvars
+
+$ ./conf.sh diff
+Reading: s3://alprs-infra-dev/tfstate/dev.tfvars
+download: s3://alprs-infra-dev/tfstate/dev.tfvars to ./dev.tfvars.remote
+👍 No differences found.
+
+$ ./conf.sh push
+Writing: s3://alprs-infra-dev/tfstate/dev.tfvars.backup
+copy: s3://alprs-infra-dev/tfstate/dev.tfvars to s3://alprs-infra-dev/tfstate/dev.tfvars.backup
+Writing: s3://alprs-infra-dev/tfstate/dev.tfvars
+upload: ./dev.tfvars to s3://alprs-infra-dev/tfstate/dev.tfvars
+```
 
 ## Terraform Init
 
@@ -61,8 +89,11 @@ _Due to some `for_each` values that depend on resource attributes that cannot be
   until apply, the `-target` option must be used to create those dependent resources first._
 
 ```bash
-# download dev.tfvars from S3 bucket if you don't have one
-aws s3 cp s3://alprs-infra-dev/tfstate/dev.tfvars config/
+# check whether your "config/dev.tfvars" is up-to-date,
+# and download it from the infra S3 bucket if you don't
+# have one (it contains secrets and is not checked into
+# GitHub) or is out-of-date
+./conf.sh diff # and "pull"
 
 # explicit -target is only necessary if provisioning the tfstate for the first time
 ./tf.sh apply -var-file config/dev.tfvars -target aws_ses_domain_dkim.astrometrics

@@ -57,7 +57,7 @@ fi
 s3_cp() {
   local profile=alprs
   [ "$env" == dev ] && profile+=com || profile+=gov
-  aws --profile $profile s3 cp "$@" --quiet || exit $?
+  aws --profile $profile s3 cp "$@" || exit $?
 }
 
 push() {
@@ -70,8 +70,10 @@ push() {
 
 pull() {
   local conf_backup="$conf_local.backup"
-  echo "Writing: config/$conf_backup"
-  [ -f $conf_local ] && cp -a $conf_local $conf_backup
+  if [ -f $conf_local ]; then
+    echo "Writing: config/$conf_backup"
+    cp -a $conf_local $conf_backup
+  fi
   echo "Writing: config/$conf_local"
   s3_cp $conf_remote $conf_local
 }
@@ -83,7 +85,7 @@ diff() {
   s3_cp    $conf_remote $temp_remote
   $diff -q $conf_local  $temp_remote &> /dev/null
   if (($?)); then
-    delta -s $temp_remote $conf_local
+    delta -s $temp_remote $conf_local && exit 1
   else
     echo -e "\xf0\x9f\x91\x8d No differences found."
   fi
