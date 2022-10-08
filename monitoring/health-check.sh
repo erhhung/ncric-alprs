@@ -41,8 +41,9 @@ exiting() {
     local count=$(wc -l $FAIL_LIST | awk '{print $1}')
     # only send email if failure has repeated
     # and send just once on prolonged failure
-    [ 0$count -eq 2 ] && notify
+    [  0$count -eq 2 ] && notify "$(fail_msg)"
   else
+    [  -e $FAIL_LIST ] && notify "$(pass_msg)"
     rm -f $FAIL_LIST
   fi
 
@@ -68,11 +69,34 @@ eval $(egrep "($regex)=\"" /bootstrap.sh | awk '{print $2}')
 MAIL_FROM=${auth0_email/*@/monitor@}
 auth0_domain="maiveric.us.auth0.com"
 
-notify() {
-  local msg=$(cat <<EOT
+# <since>
+elasped() {
+  _output() {
+    [ 0$1 -eq 0 ] && return
+    [ 0$1 -eq 1 ] && echo $1 $2
+    echo $1 ${2}s,
+  }
+
+  local days hours mins secs output=()
+  # add 5 seconds to ensure we round up the minute
+  secs=$((`date "+%s"` - `date -d "$1" "+%s"` + 5))
+  mins=$((secs / 60)) hours=$((mins  / 60))
+                       days=$((hours / 24))
+  mins=$((mins % 60)) hours=$((hours % 24))
+
+  output+=(`_output $days  day`)
+  output+=(`_output $hours hour`)
+  output+=(`_output $mins  minute`)
+  output=$(echo "${output[@]}")
+  # trim trailing comma
+  echo "${output:0:-1}"
+}
+
+fail_msg() {
+  cat <<EOT
 Subject={
   Charset=UTF-8,
-  Data="[AstroMetrics:${ENV^^}] Health check failed!"
+  Data="[AstroMetrics:${ENV^^}] Health check FAILED!"
 },
 Body={
   Html={
@@ -88,12 +112,39 @@ Body={
   }
 }
 EOT
-  )
+}
+
+pass_msg() {
+  local elapsed=$(elapsed "`head -1 $FAIL_LIST`")
+  cat <<EOT
+Subject={
+  Charset=UTF-8,
+  Data="[AstroMetrics:${ENV^^}] Health check PASSED!"
+},
+Body={
+  Html={
+    Charset=UTF-8,
+    Data="
+<html>
+<body>
+<b>$APP_URL — service has been restored.</b><br>
+The outage lasted approximately <b>$elapsed.</b>
+<pre>$(< $MAIL_BODY)
+</pre>
+</body>
+</html>"
+  }
+}
+EOT
+}
+
+# <message>
+notify() {
   echo "Sending notification email to $MAIL_TO..."
   aws ses send-email \
     --from $MAIL_FROM \
     --to   $MAIL_TO \
-    --message "$msg" \
+    --message "$1" \
     --output yaml 2> /dev/null
 }
 
