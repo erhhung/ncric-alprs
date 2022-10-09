@@ -211,7 +211,7 @@
                           AND s.standardized_agency_name = '{agency}'
                         ''',
                         flight_path=pyntegrations_path+f"/ncric_flights/ncric_{agency_no_space}_flight.yaml",
-                        clean_table_name_suffix="recur",
+                        clean_table_name_suffix="recurring",
                         base_url=api_url)
                     main_table = integration.clean_and_upload()
 

@@ -16,10 +16,9 @@ from datetime import datetime, timedelta
 
 
 class BOSS4Integration(ALPRIntegration):
-    def __init__(self,
-                 sql=None,
-                 raw_table_name='boss4_hourly_clean',
-                 raw_table_name_images='boss4_images_hourly_raw',
+    def __init__(self, sql=None,
+                 raw_table_name="boss4_hourly_clean",
+                 raw_table_name_images="boss4_images_hourly_raw",
                  s3_bucket="alprs-sftp-prod",
                  s3_prefix="boss4",
                  limit=None,
@@ -33,8 +32,8 @@ class BOSS4Integration(ALPRIntegration):
             dt = datetime.now()
             dt_string = "_".join([str(dt.year), str(dt.month), str(
                 dt.day), str(dt.hour), str(dt.minute), str(dt.second)])
-            raw_table_name = f"{raw_table_name}_{dt_string}"
-            raw_table_name_images = f"{raw_table_name_images}_{dt_string}"
+            raw_table_name += f"_{dt_string}"
+            raw_table_name_images += f"_{dt_string}"
 
         self.raw_table_name = raw_table_name
         self.raw_table_name_images = raw_table_name_images
