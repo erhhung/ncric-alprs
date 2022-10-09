@@ -19,7 +19,8 @@ up_mins=$(awk '{print int($1/60)}' /proc/uptime)
 LOCK_FILE="/var/lock/$CRONJOB_NAME.lock"
  LOG_FILE="`pwd`/$CRONJOB_NAME.log"
 FAIL_LIST="`pwd`/failure-list.log"
-MAIL_BODY="/tmp/$CRONJOB_NAME.msg"
+CURL_BODY="/tmp/$CRONJOB_NAME-curl"
+MAIL_BODY="/tmp/$CRONJOB_NAME-mail"
 
 # don't run another job if the
 # previous one hasn't finished
@@ -41,14 +42,14 @@ exiting() {
     local count=$(wc -l $FAIL_LIST | awk '{print $1}')
     # only send email if failure has repeated
     # and send just once on prolonged failure
-    [  0$count -eq 2 ] && notify "$(fail_msg)"
+    [  0$count -eq 2 ] && alert "$(fail_msg)"
   else
-    [  -e $FAIL_LIST ] && notify "$(pass_msg)"
+    [  -e $FAIL_LIST ] && alert "$(pass_msg)"
     rm -f $FAIL_LIST
   fi
 
   cat $MAIL_BODY >> $LOG_FILE
-  rm -f $MAIL_BODY $LOCK_FILE
+  rm -f $LOCK_FILE $CURL_BODY $MAIL_BODY
 }
 trap exiting EXIT
 
@@ -70,19 +71,23 @@ MAIL_FROM=${auth0_email/*@/monitor@}
 auth0_domain="maiveric.us.auth0.com"
 
 # <since>
-elasped() {
+elapsed() {
   _output() {
-    [ 0$1 -eq 0 ] && return
-    [ 0$1 -eq 1 ] && echo $1 $2
-    echo $1 ${2}s,
+    if [ 0$1 -eq 1 ]; then
+      echo $1 $2,
+    elif [ 0$1 -gt 1 ]; then
+      echo $1 ${2}s,
+    fi
   }
 
   local days hours mins secs output=()
   # add 5 seconds to ensure we round up the minute
-  secs=$((`date "+%s"` - `date -d "$1" "+%s"` + 5))
-  mins=$((secs / 60)) hours=$((mins  / 60))
-                       days=$((hours / 24))
-  mins=$((mins % 60)) hours=$((hours % 24))
+  ((secs  = `date "+%s"` - `date -d "$1" "+%s"` + 5))
+  ((mins  =  secs  / 60))
+  ((hours =  mins  / 60))
+  ((days  =  hours / 24))
+  ((mins  %= 60))
+  ((hours %= 24))
 
   output+=(`_output $days  day`)
   output+=(`_output $hours hour`)
@@ -139,8 +144,8 @@ EOT
 }
 
 # <message>
-notify() {
-  echo "Sending notification email to $MAIL_TO..."
+alert() {
+  echo -e "\nSending email alert to $MAIL_TO..."
   aws ses send-email \
     --from $MAIL_FROM \
     --to   $MAIL_TO \
@@ -159,12 +164,18 @@ params=(
   audience=https://$auth0_domain/userinfo
   scope=openid
 )
-jwt=$(curl -sX POST "$endpoint" \
+# write body to file; return status
+status=$(curl -X POST "$endpoint" \
+  -s -m 30 --connect-timeout 20 \
   -H 'Content-Type: application/x-www-form-urlencoded' \
-  -d "$(IFS=\&; echo "${params[*]}")" | jq -r .id_token)
+  -d "$(IFS=\&; echo "${params[*]}")" \
+  -o $CURL_BODY -w '%{http_code}')
 
-# JWTs always begin with "ey"
-if [[ "$jwt" != ey* ]]; then
+if [ 0$status -eq 200 ]; then
+  jwt=$(jq -r .id_token $CURL_BODY)
+else
+  echo "[`ts`] Request FAILED with status $status!"
+  echo "Auth0 response: $(xargs < $CURL_BODY)"
   failed=true
   exit 1
 fi
@@ -177,12 +188,13 @@ curl_api() {
   printf "[`ts`] %4s $endpoint\n" $method
 
   local status args=(
-    -H  "Authorization: Bearer $jwt"
-    -so /dev/null -w '%{http_code}\n'
+    -s -m 30 --connect-timeout 20
+    -H "Authorization: Bearer $jwt"
+    -o /dev/null -w '%{http_code}'
     "${@:2}" "$endpoint"
   )
   status=$(curl "${args[@]}" 2> /dev/null)
-  if [ "$status" != 200 ]; then
+  if [ 0$status -ne 200 ]; then
     echo "[`ts`] Request FAILED with status $status!"
     failed=true
     return 1
@@ -198,7 +210,7 @@ curl_api app/lookup/astrometrics || exit $?
 # query "ol.appdetails" containing
 # AGENCY_VEHICLE_RECORDS_ENTITY_SETS
 curl_api search/6d17e1c0-d61b-4ec8-80ce-1e82b4a64166 \
-    -d '{"start":0, "maxHits":1, "searchTerm":"*"}' \
-    -H "Content-Type: application/json" -X POST || exit $?
+  -d '{"start":0, "maxHits":1, "searchTerm":"*"}' \
+  -H "Content-Type: application/json" -X POST || exit $?
 
 echo "[`ts`] Health check completed successfully."
