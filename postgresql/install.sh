@@ -202,7 +202,7 @@ EOF
 
 install_scripts() {
   aws s3 sync $S3_URL/postgresql/scripts . --no-progress
-  chmod +x *.sh
+  chmod 755 *.sh
 }
 
 config_cronjobs() (

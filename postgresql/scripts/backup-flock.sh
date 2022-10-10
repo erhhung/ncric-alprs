@@ -76,8 +76,8 @@ repack() {
     -t integrations.flock_reads_$dow \
     -o timestamp \
     -j $(nproc)  \
-    -DZ -T 300 | \
-    `which ts` -s "[           %T]"
+    -DZ -T 300 2>&1 | \
+    `which ts`  -s "[           %T]"
 }
 
 # <delim> [elts]...
