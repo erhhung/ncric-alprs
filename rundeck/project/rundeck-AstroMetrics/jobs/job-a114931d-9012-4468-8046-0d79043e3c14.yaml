@@ -205,7 +205,7 @@
                 for agency in agencies:
                     agency_no_space = agency.replace(" ", "")
 
-                    print(f"Integrating IMAGES table for {agency}!")
+                    print(f"\nIntegrating IMAGES table for {agency}!")
                     result = engine.execute(f'''
                         SELECT COUNT(*) FROM (
                             SELECT f.readid, f.image, s.standardized_agency_name

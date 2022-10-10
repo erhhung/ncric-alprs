@@ -158,7 +158,7 @@ images_clean_table_name = images_integration.clean_and_upload()
 print("Got the images data!")
 
 try:
-    print(f"Integrating MAIN table for {agency}!")
+    print(f"\nIntegrating MAIN table for {agency}!")
     # integrate all with new tables
     main_integration.integrate_table(
         sql=f"SELECT * FROM {main_table_name} WHERE standardized_agency_name = '{agency}'",
@@ -168,7 +168,7 @@ try:
         shuttle_args=shuttle_args+f" --upload-size {usize}")
     print("Passed: integrate_table MAIN table")
 
-    print(f"Integrating IMAGES table for {agency}!")
+    print(f"\nIntegrating IMAGES table for {agency}!")
     # integrate images table
     images_integration.integrate_table(
         sql=f"SELECT * FROM {images_clean_table_name} WHERE standardized_agency_name = '{agency}'",
@@ -178,12 +178,12 @@ try:
         shuttle_args=shuttle_args+f" --s3 PRODUCTION --upload-size {usize}")
     print("Passed: integrate_table IMAGES table")
 
-    print("Integrating AGENCIES table!")
+    print("\nIntegrating AGENCIES table!")
     # integrate agencies associate only
     integration = BOSS4AgenciesIntegration(
         jwt=jwt,
         sql=f'SELECT DISTINCT "agency_id", "agencyName", "datasource", "agencyAcronym" FROM {main_table_name}',
-        clean_table_name_root="boss4_agencies_test",
+        clean_table_name_root="boss4_agencies",
         base_url=api_url)
     agencies_table_name = integration.clean_and_upload()
     integration.integrate_table(
@@ -191,21 +191,20 @@ try:
         shuttle_path=shuttle_path,
         shuttle_args=shuttle_args)
 
-    print("Integrating IMAGE SOURCES table!")
+    print("\nIntegrating IMAGE SOURCES table!")
     # integrate image sources associate only
     integration = BOSS4ImageSourcesIntegration(
         jwt=jwt,
         sql=f'SELECT DISTINCT "camera_id", "LPRCameraName", "datasource" FROM {main_table_name}',
-        clean_table_name_root="boss4_imagesources_test",
+        clean_table_name_root="boss4_imagesources",
         base_url=api_url)
     image_sources_table = integration.clean_and_upload()
     integration.integrate_table(
         clean_table_name=image_sources_table,
-        drop_table_on_success=True,
         shuttle_path=shuttle_path,
         shuttle_args=shuttle_args)
 
-    print("Integrating STANDARDIZED AGENCIES table!")
+    print("\nIntegrating STANDARDIZED AGENCIES table!")
     sagency_integration = BOSS4StandardizedAgenciesIntegration(
         jwt=jwt,
         sql='''
