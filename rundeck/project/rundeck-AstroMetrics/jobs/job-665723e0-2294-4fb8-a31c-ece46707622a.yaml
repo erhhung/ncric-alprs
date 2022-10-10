@@ -104,6 +104,9 @@
     value: '5000'
   plugins:
     ExecutionLifecycle: null
+  retry:
+    delay: 5m
+    retry: '2'
   schedule:
     month: '*'
     time:

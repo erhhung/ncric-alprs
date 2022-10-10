@@ -82,6 +82,7 @@
     </notification>
     <notifyAvgDurationThreshold />
     <plugins />
+    <retry delay='5m'>2</retry>
     <schedule>
       <month month='*' />
       <time hour='*' minute='15' seconds='0' />
