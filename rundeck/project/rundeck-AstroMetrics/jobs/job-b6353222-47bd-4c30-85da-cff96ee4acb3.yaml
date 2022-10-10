@@ -1,6 +1,6 @@
 - defaultTab: nodes
   description: |-
-    Hourly job for BOSS4 into Aurora with entity sets broken out by agency
+    Hourly job for BOSS4 into Postgres with entity sets broken out by agency
     * End datetime range is the bottom of the hour that the job is run. For a job at 9:10 am, covers 8-9 am.
     * All BOSS4 data is in UTC time
   executionEnabled: true

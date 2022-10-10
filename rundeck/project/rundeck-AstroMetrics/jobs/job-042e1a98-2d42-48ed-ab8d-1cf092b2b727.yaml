@@ -1,6 +1,6 @@
 - defaultTab: nodes
   description: |-
-    Catchup job for BOSS4 into Aurora with entity sets broken out by agency
+    Catchup job for BOSS4 into Postgres with entity sets broken out by agency
     * End datetime range is the bottom of the hour that the job is run. For a job at 9:10 am, covers 8-9 am.
     * Does the whole day for the day before yesterday
     * All BOSS4 data is in UTC time

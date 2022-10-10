@@ -1,6 +1,6 @@
 - defaultTab: nodes
   description: |-
-    Hourly job for Fremont only, from BOSS4 into Aurora and the agency entity sets
+    Hourly job for Fremont only, from BOSS4 into Postgres and the agency entity sets
     * End datetime range is the bottom of the hour that the job is run. For a job at 9:05 am, covers 8-9 am.
     * All BOSS4 data is in UTC time
   executionEnabled: true

@@ -54,7 +54,7 @@
       </options>
     </context>
     <defaultTab>nodes</defaultTab>
-    <description><![CDATA[Catchup job for SCSO into Aurora with entity sets broken out by agency
+    <description><![CDATA[Catchup job for SCSO into Postgres with entity sets broken out by agency
 * End datetime range is the bottom of the hour that the job is run. For a job at 9:10 am, covers 8-9 am.
 * Does the whole day for the day before yesterday
 * All SCSO data is in UTC time]]></description>

@@ -1,6 +1,6 @@
 - defaultTab: nodes
   description: |-
-    Hourly job for Santa Clara Sheriff only, from BOSS4 into Aurora and the agency entity sets
+    Hourly job for Santa Clara Sheriff only, from BOSS4 into Postgres and the agency entity sets
     * This ONLY WORKS if in the SQL statement we use a single curly quote in the "standardized_agency_name" column and DO NOT comment it out
     * End datetime range is the bottom of the hour that the job is run. For a job at 9:15 am, covers 8-9 am.
     * All BOSS4 data is in UTC time
