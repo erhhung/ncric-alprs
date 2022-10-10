@@ -199,7 +199,7 @@ su -l postgres -c "nice pg_basebackup -D $TEMP_DIR -X stream" || exit $?
 echo "[`ts`] Temp volume: $(fs_stats $TEMP_DIR)"
 
 # destination file may be overwritten multiple times per day via cron job
-dest="s3://$BACKUP_BUCKET/postgresql/pg_backup_$(date "+%Y-%m-%d").tar.bz"
+dest="s3://$BACKUP_BUCKET/postgresql/pg_backup_$(date "+%F").tar.bz"
 echo "[`ts`] Compressing and writing: $dest"
 (
 # use original instance role to access S3

@@ -139,7 +139,7 @@ import_project() (
   if eval_with_retry "rd projects list" | grep -q $proj; then
     # project already exists; backup before overwriting
     echo "Archiving Rundeck project \"$proj\"..."
-    jar="${proj,,}_$(date "+%Y-%m-%d").rdproject.jar"
+    jar="${proj,,}_$(date "+%F").rdproject.jar"
     args=(-p $proj -f $jar -i jobs -i configs -i executions)
     eval_with_retry "rd projects archives export ${args[*]}"
     aws s3 cp $jar s3://$BACKUP_BUCKET/rundeck/$jar --no-progress
@@ -153,7 +153,9 @@ import_project() (
   eval_with_retry "rd projects archives import -f $jar -p $proj"
 
   if [ "$ENV" == dev ]; then
-    jobs=($(rd jobs list -% %id))  # disable all jobs on DEV
+    # disable all jobs on DEV
+    jobs=($(rd jobs list -% "%id %name" | \
+               awk '{if ($2 == "Recurring") print $1}'))
     rd jobs unschedulebulk -i $(IFS=,; echo "${jobs[*]}") -y
   fi
   rd jobs list -f - -F yaml | \

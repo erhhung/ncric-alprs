@@ -9,6 +9,24 @@
   `region_name` parameter) as they will also be replaced with the
   appropriate region by the `mkwhl.sh` script.
 
+## Update Packages
+
+To update `olpy` and `pyntegrationsncric` packages on the Worker
+after Terraform apply, run the following via SSH:
+
+```bash
+(
+cd ~/packages
+eval $(egrep "(S3_URL)=\"" /bootstrap.sh | awk '{print $2}')
+aws s3 sync $S3_URL/worker . --exclude '*' --include '*.whl' --no-progress
+
+for wheel in pyntegrationsncric olpy; do
+  whl=$(unzip -l $wheel.whl | sed -En "s|.+($wheel-[0-9.]+)\.dist-info/WHEEL|\1-py3-none-any.whl|p")
+  mv -f $wheel.whl $whl && pip3 install --force-reinstall $whl
+done
+)
+```
+
 ## Useful Queries
 
 _Enter the `pgcli` prompt by running either `alprs` or `atlas`
