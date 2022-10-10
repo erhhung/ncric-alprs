@@ -4,9 +4,7 @@ from pyntegrationsncric.pyntegrations.ca_ncric.alpr_cleaning.integration_definit
 from pkg_resources import resource_filename
 from datetime import datetime
 
-# BOSS4 integration
-# gets cleaning function from ALPRIntegration; passing in None as datasource
-# in order to create IDs
+# gets cleaning function from ALPRIntegration; passing in None as datasource in order to create IDs
 
 
 def timestamp_suffix():
@@ -34,9 +32,6 @@ class BOSS4Integration(ALPRIntegration):
             table_name_suffix = timestamp_suffix()
             raw_table_name += table_name_suffix
             raw_table_name_images += table_name_suffix
-
-        self.raw_table_name = raw_table_name
-        self.raw_table_name_images = raw_table_name_images
 
         super().__init__(
             raw_table_name=raw_table_name,
@@ -96,7 +91,7 @@ class BOSS4ImagesIntegration(Integration):
 
 
 class BOSS4ImageSourcesIntegration(Integration):
-    # 'select distinct "LPRCameraID", "LPRCameraName", "datasource" from boss4_hourly'
+    # 'SELECT DISTINCT "LPRCameraID", "LPRCameraName", "datasource" FROM boss4_hourly'
     # imagesources uses the same flight everywhere, so we can specify here the flight
     def __init__(self,
                  sql,
@@ -127,13 +122,13 @@ class BOSS4ImageSourcesIntegration(Integration):
 
 
 class BOSS4AgenciesIntegration(Integration):
-    # 'select distinct "agency_id", "agencyName", "datasource", "agencyAcronym" from boss4_hourly_clean'
+    # 'SELECT DISTINCT "agency_id", "agencyName", "datasource", "agencyAcronym" FROM boss4_hourly_clean'
     def __init__(self,
                  sql,
                  jwt=None,
                  base_url="http://datastore:8080",
                  flight_name="ncric_boss4_agencies_flight.yaml",
-                 clean_table_name_root="boss4_agencies_clean",
+                 clean_table_name_root="boss4_agencies",
                  use_timestamp_table=True,
                  drop_table_on_success=False,
                  ):
@@ -156,13 +151,40 @@ class BOSS4AgenciesIntegration(Integration):
         return ALPRAgenciesIntegration.clean_row(cls, row)
 
 
-class BOSS4AgenciesStandardizedIntegration(Integration):
+class BOSS4StandardizedAgenciesIntegration(Integration):
     def __init__(self,
-                 sql="""SELECT DISTINCT standardized_agency_name FROM standardized_agency_names WHERE "ol.datasource" = 'BOSS4';""",
                  jwt=None,
+                 sql=None,
                  base_url="http://datastore:8080",
                  flight_name="ncric_boss4_agencies_standardized.yaml",
-                 drop_table_on_success=False,
+                 ):
+
+        if sql is None:
+            sql = """
+                SELECT DISTINCT standardized_agency_name
+                FROM standardized_agency_names
+                WHERE "ol.datasource" = 'BOSS4'
+                """
+
+        super().__init__(
+            jwt=jwt,
+            sql=sql,
+            base_url=base_url,
+            clean_table_name_root=clean_table_name_root,
+            standardize_clean_table_name=True,
+            if_exists="replace",
+            flight_path=resource_filename(__name__, flight_name),
+        )
+
+
+class BOSS4HotlistDaily(Integration):
+    # """SELECT hotlist_daily.*, boss4_hourly_clean.* FROM hotlist_daily
+    # INNER JOIN boss4_hourly ON "plate" = "VehicleLicensePlateID";"""
+    def __init__(self,
+                 sql,
+                 jwt=None,
+                 base_url="http://datastore:8080",
+                 flight_name="ncric_boss4_hotlist_flight.yaml",
                  ):
 
         super().__init__(
@@ -172,29 +194,4 @@ class BOSS4AgenciesStandardizedIntegration(Integration):
             standardize_clean_table_name=True,
             if_exists="replace",
             flight_path=resource_filename(__name__, flight_name),
-            drop_table_on_success=drop_table_on_success,
-        )
-
-
-class BOSS4HotlistDaily(Integration):
-    # """select hotlist_daily.*, boss4_hourly_clean.* from hotlist_daily
-    # inner join boss4_hourly on "plate" = "VehicleLicensePlateID";"""
-    def __init__(self,
-                 sql,
-                 jwt=None,
-                 base_url="http://datastore:8080",
-                 clean_table_name_root="clean_boss4_hotlist_hourly",
-                 drop_table_on_success=False,
-                 ):
-
-        super().__init__(
-            jwt=jwt,
-            sql=sql,
-            atlas_organization_id="1446ff84-7112-42ec-828d-f181f45e4d20",
-            base_url=base_url,
-            clean_table_name_root=clean_table_name_root,
-            standardize_clean_table_name=True,
-            if_exists="replace",
-            flight_path=resource_filename(__name__, "ncric_boss4_hotlist_flight.yaml"),
-            drop_table_on_success=drop_table_on_success,
         )

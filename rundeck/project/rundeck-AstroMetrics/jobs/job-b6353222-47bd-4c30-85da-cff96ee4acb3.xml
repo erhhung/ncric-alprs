@@ -99,7 +99,7 @@
 from datetime import datetime, timedelta
 from pyntegrationsncric.pyntegrations.ca_ncric.boss4.integration_definitions \
     import BOSS4Integration, BOSS4ImagesIntegration, BOSS4AgenciesIntegration, \
-    BOSS4ImageSourcesIntegration, BOSS4AgenciesStandardizedIntegration, \
+    BOSS4ImageSourcesIntegration, BOSS4StandardizedAgenciesIntegration, \
     BOSS4HotlistDaily
 import pyntegrationsncric.pyntegrations.ca_ncric.utils.openlattice_functions as of
 import os
@@ -248,23 +248,28 @@ try:
     table_name = integration.clean_and_upload()
     integration.integrate_table(
         clean_table_name=table_name,
+        drop_table_on_success=True,
         shuttle_path=shuttle_path,
         shuttle_args=shuttle_args)
 
     print("Integrating STANDARDIZED AGENCIES table!")
     jwt = of.refresh_jwt_if_needed(jwt=jwt, min_ttl_mins=120,
         client_id=client_id, username=ol_user, password=ol_pass)
-    sagency_integration = BOSS4AgenciesStandardizedIntegration(
+    sagency_integration = BOSS4StandardizedAgenciesIntegration(
         jwt=jwt,
-        sql="""SELECT DISTINCT standardized_agency_name FROM standardized_agency_names
-            WHERE \"ol.datasource\" = 'BOSS4'
-            """,
-        drop_table_on_success=False,
+        sql='''
+            SELECT DISTINCT standardized_agency_name
+            FROM standardized_agency_names
+            WHERE "ol.datasource" = 'BOSS4'
+        ''',
         base_url=api_url)
     sagency_integration.integrate_table(
-        sql="""SELECT DISTINCT standardized_agency_name FROM standardized_agency_names
-            WHERE \"ol.datasource\" = 'BOSS4'
-            """,
+        sql='''
+            SELECT DISTINCT standardized_agency_name
+            FROM standardized_agency_names
+            WHERE "ol.datasource" = 'BOSS4'
+        ''',
+        drop_table_on_success=False,
         shuttle_path=shuttle_path,
         shuttle_args=shuttle_args)
 

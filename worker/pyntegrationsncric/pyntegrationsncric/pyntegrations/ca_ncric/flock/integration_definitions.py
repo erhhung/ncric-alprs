@@ -150,8 +150,50 @@ class FLOCKIntegration(Integration):
         print("No new agencies to add!")
 
 
+class FLOCKImagesIntegration(Integration):
+    def __init__(self,
+                 jwt=None,
+                 sql=None,
+                 base_url="http://datastore:8080",
+                 flight_file="flock_images_flight.yaml",
+                 clean_table_name_suffix="",
+                 use_timestamp_table=True,
+                 ):
+
+        if sql is None:
+            sql = """
+                SELECT "readid", "image"
+                FROM flock_reads
+                WHERE "timestamp" BETWEEN current_date - interval '1 day'
+                                      AND current_date - interval '0 days'
+                """
+
+        clean_table_name_root = "_".join(filter(None, ["clean_flock_images", clean_table_name_suffix]))
+
+        if use_timestamp_table:
+            clean_table_name_root += timestamp_suffix()
+
+        super().__init__(
+            jwt=jwt,
+            sql=sql,
+            base_url=base_url,
+            clean_table_name_root=clean_table_name_root,
+            standardize_clean_table_name=False,
+            if_exists="replace",
+            flight_path=resource_filename(__name__, flight_file),
+        )
+
+    def clean_row(cls, row):
+        new_dict = pd.Series(dtype='object')
+
+        new_dict['vehicle_record_id'] = f'{str(row.readid)}_FLOCK'
+        new_dict['LPRVehiclePlatePhoto'] = row.image
+
+        return new_dict
+
+
 # Defaults to yesterday, midnight to midnight.
-class FLOCKImageSourceIntegration(Integration):
+class FLOCKImageSourcesIntegration(Integration):
     def __init__(self,
                  jwt=None,
                  sql=None,
@@ -250,46 +292,32 @@ class FLOCKAgenciesIntegration(Integration):
         return new_dict
 
 
-class FLOCKImagesIntegration(Integration):
+class FLOCKStandardizedAgenciesIntegration(Integration):
+    # sql is necessary here, but we don't actually clean any files...
+    # just set integration.integrate_table(sql = "select * from standardized_agency_names_flock")
     def __init__(self,
                  jwt=None,
                  sql=None,
                  base_url="http://datastore:8080",
-                 flight_file="flock_images_flight.yaml",
-                 clean_table_name_suffix="",
-                 use_timestamp_table=True,
+                 flight_file="flock_agencies_standardized.yaml",
                  ):
 
         if sql is None:
             sql = """
-                SELECT "readid", "image"
-                FROM flock_reads
-                WHERE "timestamp" BETWEEN current_date - interval '1 day'
-                                      AND current_date - interval '0 days'
+                SELECT DISTINCT standardized_agency_name
+                FROM standardized_agency_names
+                WHERE "ol.datasource" = 'FLOCK'
                 """
-
-        clean_table_name_root = "_".join(filter(None, ["clean_flock_images", clean_table_name_suffix]))
-
-        if use_timestamp_table:
-            clean_table_name_root += timestamp_suffix()
 
         super().__init__(
             jwt=jwt,
             sql=sql,
             base_url=base_url,
-            clean_table_name_root=clean_table_name_root,
+            clean_table_name_root="flock_agencies_standardized",
             standardize_clean_table_name=False,
             if_exists="replace",
             flight_path=resource_filename(__name__, flight_file),
         )
-
-    def clean_row(cls, row):
-        new_dict = pd.Series(dtype='object')
-
-        new_dict['vehicle_record_id'] = f'{str(row.readid)}_FLOCK'
-        new_dict['LPRVehiclePlatePhoto'] = row.image
-
-        return new_dict
 
 
 # Daily hotlist left joined to same data as in the main flock integration (all but images)
@@ -363,71 +391,3 @@ class FlockHotlistIntegration(Integration):
         new_dict['datasource'] = 'FLOCK'
 
         return new_dict
-
-
-class FLOCKAgencyStandardizationFixIntegration(Integration):
-    """
-    This is primarily for data fixes
-    general sql query should be:
-    select readid, timestamp, cameranetworkname, standardized_agency_name cameraid
-    from flock_reads f
-    left join standardized_agency_names_flock s
-    on cast(f.cameranetworkid as text) = s."ol.id";
-    """
-
-    def __init__(self,
-                 sql,
-                 jwt=None,
-                 base_url="http://datastore:8080",
-                 flight_file="flock_agencies_standardized_fix.yaml",
-                 ):
-
-        super().__init__(
-            jwt=jwt,
-            sql=sql,
-            base_url=base_url,
-            clean_table_name_root="flock_agencies_standardized",
-            standardize_clean_table_name=False,
-            if_exists="replace",
-            flight_path=resource_filename(__name__, flight_file),
-        )
-
-    def clean_row(cls, row):
-        """
-        Cleans row from the FLOCK dataset for integration.
-        :param row: a row from the FLOCK data set
-        :return: a cleaned row of data from the FLOCK data set
-        """
-
-        new_dict = pd.Series(dtype='object')
-
-        new_dict['vehicle_record_id'] = f'{str(row.readid)}_FLOCK'
-        new_dict['eventDateTime'] = row.timestamp
-        new_dict['standardized_agency_name'] = row.standardized_agency_name
-        new_dict['cameraid'] = str(row.cameraid)
-        new_dict['recordedby3_id'] = "_".join(filter(lambda x: x != "None" and x is not None,
-                                                     [str(row.readid), str(row.standardized_agency_name), str(row.timestamp), "FLOCK"]))
-        new_dict['collectedby2_id'] = "_".join(filter(lambda x: x != "None" and x is not None,
-                                                      [str(row.cameraid), str(row.standardized_agency_name), "FLOCK"]))
-        return new_dict
-
-
-class FLOCKAgencyStandardizationIntegration(Integration):
-    # sql is necessary here, but we don't actually clean any files...
-    # just set integration.integrate_table(sql = "select * from standardized_agency_names_flock")
-    def __init__(self,
-                 jwt=None,
-                 sql="SELECT * FROM standardized_agency_names",
-                 base_url="http://datastore:8080",
-                 flight_file="flock_agencies_standardized.yaml",
-                 ):
-
-        super().__init__(
-            jwt=jwt,
-            sql=sql,
-            base_url=base_url,
-            clean_table_name_root="flock_agencies_standardized",
-            standardize_clean_table_name=False,
-            if_exists="replace",
-            flight_path=resource_filename(__name__, flight_file),
-        )

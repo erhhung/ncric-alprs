@@ -117,7 +117,7 @@
         from datetime import datetime, timedelta
         from sqlalchemy import create_engine
         from pyntegrationsncric.pyntegrations.ca_ncric.flock.integration_definitions import \
-            FLOCKIntegration, FLOCKImageSourceIntegration, FLOCKAgencyStandardizationIntegration
+            FLOCKIntegration, FLOCKImageSourcesIntegration, FLOCKStandardizedAgenciesIntegration
         import pyntegrationsncric.pyntegrations.ca_ncric.utils.openlattice_functions as of
         import pandas as pd
         import math
@@ -205,16 +205,18 @@
 
                     jwt = of.refresh_jwt_if_needed(jwt=jwt, min_ttl_mins=120,
                         client_id=client_id, username=ol_user, password=ol_pass)
-                    integration = FLOCKIntegration(jwt=jwt, sql=f'''
-                        SELECT f."readid",f."timestamp", f."type", f."plate", f."confidence",
-                            f."latitude", f."longitude", f."cameraid", f."cameraname", f."platestate", f."speed",
-                            f."direction", f."model", f."hotlistid", f."hotlistname", f."cameralocationlat",
-                            f."cameralocationlon", f."cameranetworkid", f."cameranetworkname", s."standardized_agency_name"
-                        FROM {reads_table_name} f
-                        LEFT JOIN standardized_agency_names s ON f.cameranetworkname = s."ol.name"
-                        WHERE "timestamp" >= '{dt_start}'
-                          AND "timestamp" <  '{dt_end}'
-                          AND s.standardized_agency_name = '{agency}'
+                    integration = FLOCKIntegration(
+                        jwt=jwt,
+                        sql=f'''
+                            SELECT f."readid",f."timestamp", f."type", f."plate", f."confidence",
+                                f."latitude", f."longitude", f."cameraid", f."cameraname", f."platestate", f."speed",
+                                f."direction", f."model", f."hotlistid", f."hotlistname", f."cameralocationlat",
+                                f."cameralocationlon", f."cameranetworkid", f."cameranetworkname", s."standardized_agency_name"
+                            FROM {reads_table_name} f
+                            LEFT JOIN standardized_agency_names s ON f.cameranetworkname = s."ol.name"
+                            WHERE "timestamp" >= '{dt_start}'
+                              AND "timestamp" <  '{dt_end}'
+                              AND s.standardized_agency_name = '{agency}'
                         ''',
                         flight_path=pyntegrations_path+f"/ncric_flights/ncric_{agency_no_space}_flight.yaml",
                         clean_table_name_suffix="recurring",
@@ -242,11 +244,13 @@
                 print("Integrating IMAGE SOURCE table!")
                 jwt = of.refresh_jwt_if_needed(jwt=jwt, min_ttl_mins=120,
                     client_id=client_id, username=ol_user, password=ol_pass)
-                integration = FLOCKImageSourceIntegration(jwt=jwt, sql=f'''
-                    SELECT DISTINCT "cameraid", "cameraname"
-                    FROM {reads_table_name}
-                    WHERE "timestamp" >= '{dt_start}'
-                      AND "timestamp" <  '{dt_end}'
+                integration = FLOCKImageSourcesIntegration(
+                    jwt=jwt,
+                    sql=f'''
+                        SELECT DISTINCT "cameraid", "cameraname"
+                        FROM {reads_table_name}
+                        WHERE "timestamp" >= '{dt_start}'
+                          AND "timestamp" <  '{dt_end}'
                     ''',
                     base_url=api_url)
                 image_source_table = integration.clean_and_upload()
@@ -259,11 +263,20 @@
                 print("Integrating STANDARDIZED AGENCY table!")
                 jwt = of.refresh_jwt_if_needed(jwt=jwt, min_ttl_mins=120,
                     client_id=client_id, username=ol_user, password=ol_pass)
-                sagency_integration = FLOCKAgencyStandardizationIntegration(
-                    jwt=jwt, sql="SELECT * FROM standardized_agency_names",
+                sagency_integration = FLOCKStandardizedAgenciesIntegration(
+                    jwt=jwt,
+                    sql='''
+                        SELECT DISTINCT standardized_agency_name
+                        FROM standardized_agency_names
+                        WHERE "ol.datasource" = 'FLOCK'
+                    ''',
                     base_url=api_url)
                 sagency_integration.integrate_table(
-                    sql="SELECT * FROM standardized_agency_names",
+                    sql='''
+                        SELECT DISTINCT standardized_agency_name
+                        FROM standardized_agency_names
+                        WHERE "ol.datasource" = 'FLOCK'
+                    ''',
                     drop_table_on_success=False,
                     shuttle_path=shuttle_path,
                     shuttle_args=shuttle_args)

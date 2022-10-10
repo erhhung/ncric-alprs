@@ -128,7 +128,7 @@
         from sqlalchemy import create_engine
         from pyntegrationsncric.pyntegrations.ca_ncric.boss4.integration_definitions \
             import BOSS4Integration, BOSS4ImagesIntegration, BOSS4AgenciesIntegration, \
-            BOSS4ImageSourcesIntegration, BOSS4AgenciesStandardizedIntegration
+            BOSS4ImageSourcesIntegration, BOSS4StandardizedAgenciesIntegration
         import pyntegrationsncric.pyntegrations.ca_ncric.utils.openlattice_functions as of
         import os
 
@@ -228,20 +228,26 @@
             image_sources_table = integration.clean_and_upload()
             integration.integrate_table(
                 clean_table_name=image_sources_table,
+                drop_table_on_success=True,
                 shuttle_path=shuttle_path,
                 shuttle_args=shuttle_args)
 
             print("Integrating STANDARDIZED AGENCIES table!")
-            sagency_integration = BOSS4AgenciesStandardizedIntegration(
+            sagency_integration = BOSS4StandardizedAgenciesIntegration(
                 jwt=jwt,
-                sql="""SELECT DISTINCT standardized_agency_name FROM standardized_agency_names
-                    WHERE \"ol.datasource\" = 'BOSS4'
-                    """,
+                sql='''
+                    SELECT DISTINCT standardized_agency_name
+                    FROM standardized_agency_names
+                    WHERE "ol.datasource" = 'BOSS4'
+                ''',
                 base_url=api_url)
             sagency_integration.integrate_table(
-                sql="""SELECT DISTINCT standardized_agency_name FROM standardized_agency_names
-                    WHERE \"ol.datasource\" = 'BOSS4'
-                    """,
+                sql='''
+                    SELECT DISTINCT standardized_agency_name
+                    FROM standardized_agency_names
+                    WHERE "ol.datasource" = 'BOSS4'
+                ''',
+                drop_table_on_success=False,
                 shuttle_path=shuttle_path,
                 shuttle_args=shuttle_args)
 

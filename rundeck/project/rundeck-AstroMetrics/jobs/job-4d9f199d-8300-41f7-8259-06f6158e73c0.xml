@@ -99,7 +99,8 @@
 from datetime import datetime, timedelta
 from pyntegrationsncric.pyntegrations.ca_ncric.scso.integration_definitions \
     import SCSOIntegration, SCSOImagesIntegration, SCSOAgenciesIntegration, \
-    SCSOImageSourcesIntegration, SCSOAgenciesStandardizedIntegration
+    SCSOImageSourcesIntegration, SCSOStandardizedAgenciesIntegration
+import pyntegrationsncric.pyntegrations.ca_ncric.utils.openlattice_functions as of
 import os
 
 agencies = [
@@ -127,33 +128,42 @@ print("dt_end:", dt_end)
 
 dt_end_str = f"{dt_end.year}-{dt_end.month}-{dt_end.day} 00:00:00"
 dt_start_str = f"{dt_start.year}-{dt_start.month}-{dt_start.day} 00:00:00"
-
 print(f"Searching {dt_start_str} through {dt_end_str} to integrate!")
-main_integration = SCSOIntegration(
-    date_start=dt_start_str,
-    date_end=dt_end_str,
-    limit=1,
-    s3_bucket=s3_bucket,
-    s3_prefix=s3_prefix)
 
-main_table_name, images_table_name = main_integration.get_raw_data_from_s3()
-print(main_table_name, images_table_name)
-print("Got the raw data!")
+client_id = "@option.client_id@"
+ol_user = "@option.ol_user@"
+ol_pass = "@option.ol_pass@"
+jwt = of.get_jwt(client_id=client_id, username=ol_user, password=ol_pass)
 
 api_url = "@option.api_url@"
 usize = @option.upload_size@
-
-images_integration = SCSOImagesIntegration(
-    sql=f"SELECT * FROM {images_table_name}",
-    base_url=api_url)
-
-images_clean_table_name = images_integration.clean_and_upload()
-print("Got the images data!")
 
 pyntegrations_path = os.environ.get("PYNTEGRATIONS_PATH")
 pyntegrations_path += "/ca_ncric"
 shuttle_path = os.environ.get("SHUTTLE_PATH")
 shuttle_args = "@option.shuttle_args@"
+
+main_integration = SCSOIntegration(
+    jwt=jwt,
+    date_start=dt_start_str,
+    date_end=dt_end_str,
+    s3_bucket=s3_bucket,
+    s3_prefix=s3_prefix,
+    limit=1)
+
+main_table_name, images_table_name = main_integration.get_raw_data_from_s3()
+print(main_table_name, images_table_name)
+print("Got the raw data!")
+
+jwt = of.refresh_jwt_if_needed(jwt=jwt, min_ttl_mins=120,
+    client_id=client_id, username=ol_user, password=ol_pass)
+images_integration = SCSOImagesIntegration(
+    jwt=jwt,
+    sql=f"SELECT * FROM {images_table_name}",
+    base_url=api_url)
+
+images_clean_table_name = images_integration.clean_and_upload()
+print("Got the images data!")
 
 try:
     for agency in agencies:
@@ -181,7 +191,10 @@ try:
 
     print("Integrating AGENCIES table!")
     # integrate agencies associate only
+    jwt = of.refresh_jwt_if_needed(jwt=jwt, min_ttl_mins=120,
+        client_id=client_id, username=ol_user, password=ol_pass)
     integration = SCSOAgenciesIntegration(
+        jwt=jwt,
         sql=f'SELECT DISTINCT "agency_id", "agencyName", "datasource", "agencyAcronym" FROM {main_table_name}',
         base_url=api_url)
     table_name = integration.clean_and_upload()
@@ -192,25 +205,37 @@ try:
 
     print("Integrating IMAGE SOURCES table!")
     # integrate image sources associate only
+    jwt = of.refresh_jwt_if_needed(jwt=jwt, min_ttl_mins=120,
+        client_id=client_id, username=ol_user, password=ol_pass)
     integration = SCSOImageSourcesIntegration(
+        jwt=jwt,
         sql=f'SELECT DISTINCT "camera_id", "LPRCameraName", "datasource" FROM {main_table_name}',
         base_url=api_url)
     table_name = integration.clean_and_upload()
     integration.integrate_table(
         clean_table_name=table_name,
+        drop_table_on_success=True,
         shuttle_path=shuttle_path,
         shuttle_args=shuttle_args)
 
     print("Integrating STANDARDIZED AGENCIES table!")
-    sagency_integration = SCSOAgenciesStandardizedIntegration(
-        sql="""SELECT DISTINCT standardized_agency_name FROM standardized_agency_names
-            WHERE \"ol.datasource\" = 'SCSO'
-            """,
+    jwt = of.refresh_jwt_if_needed(jwt=jwt, min_ttl_mins=120,
+        client_id=client_id, username=ol_user, password=ol_pass)
+    sagency_integration = SCSOStandardizedAgenciesIntegration(
+        jwt=jwt,
+        sql='''
+            SELECT DISTINCT standardized_agency_name
+            FROM standardized_agency_names
+            WHERE "ol.datasource" = 'SCSO'
+        ''',
         base_url=api_url)
     sagency_integration.integrate_table(
-        sql="""SELECT DISTINCT standardized_agency_name FROM standardized_agency_names
-            WHERE \"ol.datasource\" = 'SCSO'
-            """,
+        sql='''
+            SELECT DISTINCT standardized_agency_name
+            FROM standardized_agency_names
+            WHERE "ol.datasource" = 'SCSO'
+        ''',
+        drop_table_on_success=False,
         shuttle_path=shuttle_path,
         shuttle_args=shuttle_args)
 
