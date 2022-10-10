@@ -170,7 +170,6 @@ class BOSS4StandardizedAgenciesIntegration(Integration):
             jwt=jwt,
             sql=sql,
             base_url=base_url,
-            clean_table_name_root=clean_table_name_root,
             standardize_clean_table_name=True,
             if_exists="replace",
             flight_path=resource_filename(__name__, flight_name),
