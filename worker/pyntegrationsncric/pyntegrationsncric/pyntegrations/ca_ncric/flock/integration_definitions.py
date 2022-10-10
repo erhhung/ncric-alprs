@@ -2,7 +2,6 @@ from pyntegrationsncric.pyntegrations.ca_ncric.utils.integration_base_classes im
 from pkg_resources import resource_filename
 from datetime import datetime
 import pandas as pd
-import sqlalchemy
 import os
 
 # Defaults to yesterday, midnight to today's midnight.
@@ -16,13 +15,22 @@ db_host = os.environ.get("RD_OPTION_DB_HOST")
 db_name = os.environ.get("RD_OPTION_DB_NAME")
 
 
+def timestamp_suffix():
+    dt = datetime.now()
+    dt_string = "_".join([str(dt.year), str(dt.month), str(
+        dt.day), str(dt.hour), str(dt.minute), str(dt.second)])
+    return f"_{dt_string}"
+
+
 class FLOCKIntegration(Integration):
-    def __init__(self, sql=None,
+    def __init__(self,
+                 jwt=None,
+                 sql=None,
+                 org_id="1446ff84-7112-42ec-828d-f181f45e4d20",
+                 base_url="http://datastore:8080",
                  flight_path=None,
                  clean_table_name_suffix="",
-                 add_timestamp_table=True,
-                 org_id="1446ff84-7112-42ec-828d-f181f45e4d20",
-                 base_url="http://datastore:8080"
+                 use_timestamp_table=True,
                  ):
 
         if sql is None:
@@ -34,30 +42,29 @@ class FLOCKIntegration(Integration):
                     f."cameranetworkname", s."standardized_agency_name"
                 FROM flock_reads f
                 LEFT JOIN standardized_agency_names s ON f.cameranetworkname = s."ol.name"
-                WHERE \"timestamp\" BETWEEN current_date - interval '1 day'
-                                        AND current_date + interval '1 day'
+                WHERE "timestamp" BETWEEN current_date - interval '1 day'
+                                      AND current_date + interval '1 day'
                 """
             clean_table_name_suffix = "recurring"
 
         clean_table_name_root = "_".join(filter(None, ["clean_flock", clean_table_name_suffix]))
 
-        if add_timestamp_table:
-            dt = datetime.now()
-            dt_string = "_".join([str(dt.year), str(dt.month), str(
-                dt.day), str(dt.hour), str(dt.minute), str(dt.second)])
-            clean_table_name_root += f"_{dt_string}"
+        if use_timestamp_table:
+            clean_table_name_root += timestamp_suffix()
 
         if flight_path is None:
             flight_path = resource_filename(__name__, "ncric_flock_flight.yaml")
 
         super().__init__(
+            jwt=jwt,
             sql=sql,
             atlas_organization_id=org_id,
+            base_url=base_url,
             clean_table_name_root=clean_table_name_root,
             standardize_clean_table_name=False,
             if_exists="replace",
             flight_path=flight_path,
-            base_url=base_url)
+        )
 
     def clean_row(cls, row):
         """
@@ -66,7 +73,6 @@ class FLOCKIntegration(Integration):
         :return: a cleaned row of data from the FLOCK data set
         """
 
-        # Empty pd.Series for storing the cleaned row
         new_dict = pd.Series(dtype='object')
 
         # Reformat variables as needed
@@ -87,7 +93,7 @@ class FLOCKIntegration(Integration):
             new_dict['model'] = row.model
         new_dict['datasource'] = 'FLOCK'
 
-        # Creates IDs for entity associations.
+        # Creates IDs for entity associations
         new_dict['has_id'] = "_".join(filter(lambda x: x != "None" and x is not None,
                                              [row.plate, str(row.readid), "FLOCK"]))
 
@@ -115,9 +121,13 @@ class FLOCKIntegration(Integration):
 
         return new_dict
 
-    def add_new_agencies(cls, sql="""select distinct cameranetworkname, cameranetworkid, standardized_agency_name
-        from flock_reads f left join standardized_agency_names s
-            on f.cameranetworkname = s.\"ol.name\""""):
+    def add_new_agencies(cls,
+                         sql="""
+                            SELECT DISTINCT cameranetworkname, cameranetworkid, standardized_agency_name
+                            FROM flock_reads f
+                            LEFT JOIN standardized_agency_names s ON f.cameranetworkname = s."ol.name"
+                         """
+                         ):
         """
         Function to add new agencies every time Flock integration runs
         This probably won't be useful majority of the time, but we want to capture all "standardizations"
@@ -142,23 +152,37 @@ class FLOCKIntegration(Integration):
 
 # Defaults to yesterday, midnight to midnight.
 class FLOCKImageSourceIntegration(Integration):
-    def __init__(self, sql=None, flight_file=None,
+    def __init__(self,
+                 jwt=None,
+                 sql=None,
+                 base_url="http://datastore:8080",
+                 flight_file="flock_imagesources_flight.yaml",
                  clean_table_name_suffix="",
-                 base_url="http://datastore:8080"):
+                 use_timestamp_table=True,
+                 ):
 
         if sql is None:
-            sql = """select distinct \"cameraid\", \"cameraname\" from flock_reads
-                where \"timestamp\" between current_date - interval '1 day' and current_date - interval '0 days';"""
-        if flight_file is None:
-            flight_file = "flock_imagesources_flight.yaml"
+            sql = """
+                SELECT DISTINCT "cameraid", "cameraname"
+                FROM flock_reads
+                WHERE "timestamp" BETWEEN current_date - interval '1 day'
+                                      AND current_date - interval '0 days'
+                """
+
+        clean_table_name_root = "_".join(filter(None, ["clean_flock_imagesources", clean_table_name_suffix]))
+
+        if use_timestamp_table:
+            clean_table_name_root += timestamp_suffix()
 
         super().__init__(
+            jwt=jwt,
             sql=sql,
-            clean_table_name_root="zzz_clean_flock_imagessources" + clean_table_name_suffix,
+            base_url=base_url,
+            clean_table_name_root=clean_table_name_root,
             standardize_clean_table_name=False,
             if_exists="replace",
             flight_path=resource_filename(__name__, flight_file),
-            base_url=base_url)
+        )
 
     def clean_row(cls, row):
         """
@@ -168,6 +192,7 @@ class FLOCKImageSourceIntegration(Integration):
         """
 
         new_dict = pd.Series(dtype=pd.StringDtype())
+
         new_dict['camera_id'] = str(row.cameraid)
         new_dict['LPRCameraName'] = row.cameraname
         new_dict['datasource'] = "FLOCK"
@@ -177,23 +202,37 @@ class FLOCKImageSourceIntegration(Integration):
 
 # Defaults to yesterday, midnight to midnight.
 class FLOCKAgenciesIntegration(Integration):
-    def __init__(self, sql=None, flight_file=None,
+    def __init__(self,
+                 jwt=None,
+                 sql=None,
+                 base_url="http://datastore:8080",
+                 flight_file="flock_agencies_flight.yaml",
                  clean_table_name_suffix="",
-                 base_url="http://datastore:8080"):
+                 use_timestamp_table=True,
+                 ):
 
         if sql is None:
-            sql = """select distinct \"cameranetworkid\", \"cameranetworkname\" from flock_reads
-                where \"timestamp\" between current_date - interval '1 day' and current_date - interval '0 days';"""
-        if flight_file is None:
-            flight_file = "flock_agencies_flight.yaml"
+            sql = """
+                SELECT DISTINCT "cameranetworkid", "cameranetworkname"
+                FROM flock_reads
+                WHERE "timestamp" BETWEEN current_date - interval '1 day'
+                                      AND current_date - interval '0 days'
+                """
+
+        clean_table_name_root = "_".join(filter(None, ["clean_flock_agencylist", clean_table_name_suffix]))
+
+        if use_timestamp_table:
+            clean_table_name_root += timestamp_suffix()
 
         super().__init__(
+            jwt=jwt,
             sql=sql,
-            clean_table_name_root="zzz_clean_flock_agencylist" + clean_table_name_suffix,
+            base_url=base_url,
+            clean_table_name_root=clean_table_name_root,
             standardize_clean_table_name=False,
             if_exists="replace",
             flight_path=resource_filename(__name__, flight_file),
-            base_url=base_url)
+        )
 
     def clean_row(cls, row):
         """
@@ -203,6 +242,7 @@ class FLOCKAgenciesIntegration(Integration):
         """
 
         new_dict = pd.Series(dtype=pd.StringDtype())
+
         new_dict['agency_id'] = str(row.cameranetworkid)
         new_dict['agencyName'] = row.cameranetworkname
         new_dict['datasource'] = "FLOCK"
@@ -211,24 +251,39 @@ class FLOCKAgenciesIntegration(Integration):
 
 
 class FLOCKImagesIntegration(Integration):
-    def __init__(self, sql=None, flight_file=None,
+    def __init__(self,
+                 jwt=None,
+                 sql=None,
+                 base_url="http://datastore:8080",
+                 flight_file="flock_images_flight.yaml",
                  clean_table_name_suffix="",
-                 base_url="http://datastore:8080"):
+                 use_timestamp_table=True,
+                 ):
+
         if sql is None:
-            sql = "select \"readid\", \"image\" from flock_reads where \"timestamp\" between current_date - interval '1 day' and current_date - interval '0 days';"
-        if flight_file is None:
-            flight_file = "flock_images_flight.yaml"
+            sql = """
+                SELECT "readid", "image"
+                FROM flock_reads
+                WHERE "timestamp" BETWEEN current_date - interval '1 day'
+                                      AND current_date - interval '0 days'
+                """
+
+        clean_table_name_root = "_".join(filter(None, ["clean_flock_images", clean_table_name_suffix]))
+
+        if use_timestamp_table:
+            clean_table_name_root += timestamp_suffix()
 
         super().__init__(
+            jwt=jwt,
             sql=sql,
-            clean_table_name_root="zzz_clean_flock_images" + clean_table_name_suffix,
+            base_url=base_url,
+            clean_table_name_root=clean_table_name_root,
             standardize_clean_table_name=False,
             if_exists="replace",
             flight_path=resource_filename(__name__, flight_file),
-            base_url=base_url)
+        )
 
     def clean_row(cls, row):
-
         new_dict = pd.Series(dtype='object')
 
         new_dict['vehicle_record_id'] = f'{str(row.readid)}_FLOCK'
@@ -240,29 +295,48 @@ class FLOCKImagesIntegration(Integration):
 # Daily hotlist left joined to same data as in the main flock integration (all but images)
 # we only need to copy data that is already integrating into all the Flock entity sets,
 # ...into 2 hotlist-specific entity sets (and no associations).
-# This also integrates the standardized agency name instead of the original one (captured in other Flock entity sets)
+# This also integrates the standardized agency name instead
+# of the original one (captured in other Flock entity sets)
 class FlockHotlistIntegration(Integration):
-    def __init__(self, sql='''
-            select * from (select hot.*, "readid","timestamp","type", "confidence",
-            "latitude", "longitude", "cameraid", "cameraname", "platestate", "speed",
-            "direction", "model", "image", "hotlistid", "hotlistname", "cameralocationlat",
-            "cameralocationlon", "cameranetworkid", "cameranetworkname", s."standardized_agency_name" from hotlist_daily hot
-            inner join flock_reads f USING("plate")
-            left join standardized_agency_names_flock s
-            on cast(f.cameranetworkid as text) = s."ol.id"
-            ) temp where "timestamp" between current_date - interval '1 day' and current_date + interval '1 day';
-            ''',
+    def __init__(self,
+                 jwt=None,
+                 sql=None,
+                 base_url="http://datastore:8080",
                  flight_file="flock_hotlist_flight.yaml",
-                 clean_table_suffix="",
-                 base_url="http://datastore:8080"):
+                 clean_table_name_suffix="",
+                 use_timestamp_table=True,
+                 ):
+
+        if sql is None:
+            sql = """
+                SELECT * FROM (
+                    SELECT hot.*, "readid", "timestamp", "type", "confidence",
+                        "latitude", "longitude", "cameraid", "cameraname", "platestate",
+                        "speed", "direction", "model", "image", "hotlistid", "hotlistname",
+                        "cameralocationlat", "cameralocationlon", "cameranetworkid",
+                        "cameranetworkname", s."standardized_agency_name"
+                    FROM hotlist_daily hot
+                    INNER JOIN flock_reads f USING("plate")
+                     LEFT JOIN standardized_agency_names_flock s ON f.cameranetworkid::text = s."ol.id"
+                ) temp
+                WHERE "timestamp" BETWEEN current_date - interval '1 day'
+                                      AND current_date + interval '1 day'
+                """
+
+        clean_table_name_root = "_".join(filter(None, ["clean_flock_hotlist", clean_table_name_suffix]))
+
+        if use_timestamp_table:
+            clean_table_name_root += timestamp_suffix()
 
         super().__init__(
+            jwt=jwt,
             sql=sql,
-            clean_table_name_root="_".join(filter(None, ["zzz_clean_flock_hotlist", clean_table_suffix])),
+            base_url=base_url,
+            clean_table_name_root=clean_table_name_root,
             standardize_clean_table_name=False,
             if_exists="replace",
             flight_path=resource_filename(__name__, flight_file),
-            base_url=base_url)
+        )
 
     def clean_row(self, row):
         """
@@ -301,17 +375,22 @@ class FLOCKAgencyStandardizationFixIntegration(Integration):
     on cast(f.cameranetworkid as text) = s."ol.id";
     """
 
-    def __init__(self, sql,
+    def __init__(self,
+                 sql,
+                 jwt=None,
+                 base_url="http://datastore:8080",
                  flight_file="flock_agencies_standardized_fix.yaml",
-                 base_url="http://datastore:8080"):
+                 ):
 
         super().__init__(
+            jwt=jwt,
             sql=sql,
+            base_url=base_url,
             clean_table_name_root="flock_agencies_standardized",
             standardize_clean_table_name=False,
             if_exists="replace",
             flight_path=resource_filename(__name__, flight_file),
-            base_url=base_url)
+        )
 
     def clean_row(cls, row):
         """
@@ -320,10 +399,8 @@ class FLOCKAgencyStandardizationFixIntegration(Integration):
         :return: a cleaned row of data from the FLOCK data set
         """
 
-        # Empty pd.Series for storing the cleaned row
         new_dict = pd.Series(dtype='object')
 
-        # Reformat variables as needed
         new_dict['vehicle_record_id'] = f'{str(row.readid)}_FLOCK'
         new_dict['eventDateTime'] = row.timestamp
         new_dict['standardized_agency_name'] = row.standardized_agency_name
@@ -338,14 +415,19 @@ class FLOCKAgencyStandardizationFixIntegration(Integration):
 class FLOCKAgencyStandardizationIntegration(Integration):
     # sql is necessary here, but we don't actually clean any files...
     # just set integration.integrate_table(sql = "select * from standardized_agency_names_flock")
-    def __init__(self, sql="select * from standardized_agency_names",
+    def __init__(self,
+                 jwt=None,
+                 sql="SELECT * FROM standardized_agency_names",
+                 base_url="http://datastore:8080",
                  flight_file="flock_agencies_standardized.yaml",
-                 base_url="http://datastore:8080"):
+                 ):
 
         super().__init__(
+            jwt=jwt,
             sql=sql,
+            base_url=base_url,
             clean_table_name_root="flock_agencies_standardized",
             standardize_clean_table_name=False,
             if_exists="replace",
             flight_path=resource_filename(__name__, flight_file),
-            base_url=base_url)
+        )

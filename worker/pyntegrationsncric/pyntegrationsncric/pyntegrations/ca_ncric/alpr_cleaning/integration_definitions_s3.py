@@ -20,26 +20,27 @@ db_name = os.environ.get("RD_OPTION_DB_NAME")
 
 
 class ALPRIntegration(Integration):
-    def __init__(
-        self,
-        raw_table_name,
-        raw_table_name_images,
-        datasource,
-        s3_bucket,
-        s3_prefix,
-        limit=None,
-        date_start=None,
-        date_end=None,
-        atlas_organization_id="1446ff84-7112-42ec-828d-f181f45e4d20",
-        standardized_agency_table="standardized_agency_names",
-        col_list=None
-    ):
+    def __init__(self,
+                 raw_table_name,
+                 raw_table_name_images,
+                 datasource,
+                 s3_bucket,
+                 s3_prefix,
+                 limit=None,
+                 date_start=None,
+                 date_end=None,
+                 atlas_organization_id="1446ff84-7112-42ec-828d-f181f45e4d20",
+                 standardized_agency_table="standardized_agency_names",
+                 col_list=None,
+                 jwt=None,
+                 ):
 
         super().__init__(
+            jwt=jwt,
             if_exists="replace",
             base_url="http://datastore:8080",
-            atlas_organization_id=atlas_organization_id)
-
+            atlas_organization_id=atlas_organization_id,
+        )
         self.s3_bucket = s3_bucket
         self.s3_prefix = s3_prefix
         self.limit = limit

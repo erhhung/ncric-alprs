@@ -95,6 +95,7 @@ from datetime import datetime, timedelta
 from sqlalchemy import create_engine
 from pyntegrationsncric.pyntegrations.ca_ncric.flock.integration_definitions \
     import FLOCKImagesIntegration
+import pyntegrationsncric.pyntegrations.ca_ncric.utils.openlattice_functions as of
 import pandas as pd
 import math
 import os
@@ -155,6 +156,11 @@ db_user = "@option.db_user@"
 db_pass = "@option.db_pass@"
 engine = create_engine(f"postgresql://{db_user}:{db_pass}@{db_host}:5432/{db_name}")
 
+client_id = "@option.client_id@"
+ol_user = "@option.ol_user@"
+ol_pass = "@option.ol_pass@"
+jwt = of.get_jwt(client_id=client_id, username=ol_user, password=ol_pass)
+
 api_url = "@option.api_url@"
 fsize = @option.fetch_size@
 usize = @option.upload_size@
@@ -180,8 +186,7 @@ try:
                 SELECT COUNT(*) FROM (
                     SELECT f.readid, f.image, s.standardized_agency_name
                     FROM {reads_table_name} f
-                    LEFT JOIN standardized_agency_names s
-                    ON f.cameranetworkname = s."ol.name"
+                    LEFT JOIN standardized_agency_names s ON f.cameranetworkname = s."ol.name"
                     WHERE "timestamp" >= '{dt_start}'
                       AND "timestamp" <  '{dt_end}'
                       AND s.standardized_agency_name = '{agency}'
@@ -206,7 +211,9 @@ try:
                     ORDER BY f.readid
                     LIMIT {limit} OFFSET {limit*i}
                     '''
-                images_integration = FLOCKImagesIntegration(sql=query, base_url=api_url)
+                jwt = of.refresh_jwt_if_needed(jwt=jwt, min_ttl_mins=120,
+                    client_id=client_id, username=ol_user, password=ol_pass)
+                images_integration = FLOCKImagesIntegration(jwt=jwt, sql=query, base_url=api_url)
                 images_integration.integrate_table(sql=query, drop_table_on_success=True,
                     flight_path=pyntegrations_path+f"/ncric_image_flights/ncric_{agency_no_space}_images_flight.yaml",
                     memory_size=9,

@@ -106,6 +106,9 @@ import pyntegrationsncric.pyntegrations.ca_ncric.utils.openlattice_functions as 
 import math
 import os
 
+agency = "Santa Clara County SO"
+agency_no_space = agency.replace(" ", "")
+
 s3_bucket = "@option.s3_bucket@"
 s3_prefix = "@option.s3_prefix@"
 
@@ -133,8 +136,16 @@ print("total_hours:", total_hours)
 total_intervals = math.ceil(total_hours / hour_interval)
 print("total_intervals:", total_intervals)
 
-agency = "Santa Clara County SO"
-agency_no_space = agency.replace(" ", "")
+db_host = "@option.db_host@"
+db_name = "@option.db_name@"
+db_user = "@option.db_user@"
+db_pass = "@option.db_pass@"
+engine = create_engine(f"postgresql://{db_user}:{db_pass}@{db_host}:5432/{db_name}")
+
+client_id = "@option.client_id@"
+ol_user = "@option.ol_user@"
+ol_pass = "@option.ol_pass@"
+jwt = of.get_jwt(client_id=client_id, username=ol_user, password=ol_pass)
 
 api_url = "@option.api_url@"
 usize = @option.upload_size@
@@ -144,18 +155,15 @@ pyntegrations_path += "/ca_ncric"
 shuttle_path = os.environ.get("SHUTTLE_PATH")
 shuttle_args = "@option.shuttle_args@"
 
-db_host = "@option.db_host@"
-db_name = "@option.db_name@"
-db_user = "@option.db_user@"
-db_pass = "@option.db_pass@"
-engine = create_engine(f"postgresql://{db_user}:{db_pass}@{db_host}:5432/{db_name}")
-
 for i in range(total_intervals):
     sdate = dt_start + timedelta(hours=i*hour_interval)
     edate = min(dt_start + timedelta(hours=(i+1)*hour_interval), dt_end)
     print(f"Searching dates from {sdate} to {edate} to integrate MAIN BOSS4 table!")
 
+    jwt = of.refresh_jwt_if_needed(jwt=jwt, min_ttl_mins=120,
+        client_id=client_id, username=ol_user, password=ol_pass)
     main_integration = BOSS4Integration(
+        jwt=jwt,
         date_start=str(sdate),
         date_end=str(edate),
         raw_table_name="boss4_catchup_scsheriff",
@@ -167,7 +175,10 @@ for i in range(total_intervals):
     print(main_table_name, images_table_name)
     print("Got the raw data!")
 
+    jwt = of.refresh_jwt_if_needed(jwt=jwt, min_ttl_mins=120,
+        client_id=client_id, username=ol_user, password=ol_pass)
     images_integration = BOSS4ImagesIntegration(
+        jwt=jwt,
         sql=f"SELECT * FROM {images_table_name}",
         clean_table_name_root="boss4_catchup_images_scsheriff",
         base_url=api_url)
@@ -198,7 +209,10 @@ for i in range(total_intervals):
 
         print("Integrating AGENCIES table!")
         # integrate agencies associate only
+        jwt = of.refresh_jwt_if_needed(jwt=jwt, min_ttl_mins=120,
+            client_id=client_id, username=ol_user, password=ol_pass)
         integration = BOSS4AgenciesIntegration(
+            jwt=jwt,
             sql=f'SELECT DISTINCT "agency_id", "agencyName", "datasource", "agencyAcronym" FROM {main_table_name}',
             clean_table_name_root="boss4_agencies_catchup_scsheriff",
             base_url=api_url)
@@ -210,7 +224,10 @@ for i in range(total_intervals):
 
         print("Integrating IMAGE SOURCES table!")
         # integrate image sources associate only
+        jwt = of.refresh_jwt_if_needed(jwt=jwt, min_ttl_mins=120,
+            client_id=client_id, username=ol_user, password=ol_pass)
         integration = BOSS4ImageSourcesIntegration(
+            jwt=jwt,
             sql=f'SELECT DISTINCT "camera_id", "LPRCameraName", "datasource" FROM {main_table_name}',
             clean_table_name_root="boss4_imagesources_catchup_scsheriff",
             base_url=api_url)
@@ -221,7 +238,10 @@ for i in range(total_intervals):
             shuttle_args=shuttle_args)
 
         print("Integrating STANDARDIZED AGENCIES table!")
+        jwt = of.refresh_jwt_if_needed(jwt=jwt, min_ttl_mins=120,
+            client_id=client_id, username=ol_user, password=ol_pass)
         sagency_integration = BOSS4AgenciesStandardizedIntegration(
+            jwt=jwt,
             sql="""SELECT DISTINCT standardized_agency_name FROM standardized_agency_names
                 WHERE \"ol.datasource\" = 'BOSS4'
                 """,

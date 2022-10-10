@@ -20,13 +20,13 @@ import pyntegrationsncric.pyntegrations.ca_ncric.utils.openlattice_functions as 
 
 
 # Configuration credentials
-client_id = os.environ.get("RD_OPTION_CLIENT_ID")
-ol_user = os.environ.get("RD_OPTION_OL_USER")
-ol_pass = os.environ.get("RD_OPTION_OL_PASS")
 db_user = os.environ.get("RD_OPTION_DB_USER")
 db_pass = os.environ.get("RD_OPTION_DB_PASS")
 db_host = os.environ.get("RD_OPTION_DB_HOST")
 db_name = os.environ.get("RD_OPTION_DB_NAME")
+client_id = os.environ.get("RD_OPTION_CLIENT_ID")
+ol_user = os.environ.get("RD_OPTION_OL_USER")
+ol_pass = os.environ.get("RD_OPTION_OL_PASS")
 
 
 class Integration(object):
@@ -123,9 +123,13 @@ class Integration(object):
         # if not self.flight_path:
         #     raise ValueError("No flight_path specified")
 
-        # finish setup
-        token = of.get_jwt(ol_user, ol_pass, client_id)
-        self.configuration = of.get_config(jwt=token, base_url=base_url)
+        self.jwt = of.refresh_jwt_if_needed(jwt=self.jwt,
+                                            client_id=client_id,
+                                            username=ol_user,
+                                            password=ol_pass,
+                                            base_url=base_url)
+        self.configuration = of.get_config(jwt=self.jwt, base_url=base_url)
+
         self.flight = flight.Flight(configuration=self.configuration)
         if self.flight_path is not None:  # KIM ADDED
             self.flight.deserialize(self.flight_path)
@@ -199,7 +203,6 @@ class Integration(object):
                     chunksize=1000,
                     method='multi'
                 )
-
         else:
             raise Exception("Data frame is empty. Nothing to integrate.")
 

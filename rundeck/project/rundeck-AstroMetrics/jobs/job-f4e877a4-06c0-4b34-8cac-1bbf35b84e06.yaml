@@ -170,6 +170,11 @@
         db_pass = "@option.db_pass@"
         engine = create_engine(f"postgresql://{db_user}:{db_pass}@{db_host}:5432/{db_name}")
 
+        client_id = "@option.client_id@"
+        ol_user = "@option.ol_user@"
+        ol_pass = "@option.ol_pass@"
+        jwt = of.get_jwt(client_id=client_id, username=ol_user, password=ol_pass)
+
         api_url = "@option.api_url@"
         fsize = @option.fetch_size@
         usize = @option.upload_size@
@@ -189,14 +194,15 @@
                 for agency in agencies:
                     agency_no_space = agency.replace(" ", "")
 
-                    integration = FLOCKIntegration(sql=f'''
+                    jwt = of.refresh_jwt_if_needed(jwt=jwt, min_ttl_mins=120,
+                        client_id=client_id, username=ol_user, password=ol_pass)
+                    integration = FLOCKIntegration(jwt=jwt, sql=f'''
                         SELECT f."readid",f."timestamp", f."type", f."plate", f."confidence",
                             f."latitude", f."longitude", f."cameraid", f."cameraname", f."platestate", f."speed",
                             f."direction", f."model", f."hotlistid", f."hotlistname", f."cameralocationlat",
                             f."cameralocationlon", f."cameranetworkid", f."cameranetworkname", s."standardized_agency_name"
                         FROM {reads_table_name} f
-                        LEFT JOIN standardized_agency_names s
-                        ON f.cameranetworkname = s."ol.name"
+                        LEFT JOIN standardized_agency_names s ON f.cameranetworkname = s."ol.name"
                         WHERE "timestamp" >= '{dt_start}'
                           AND "timestamp" <  '{dt_end}'
                           AND s.standardized_agency_name = '{agency}'
@@ -225,7 +231,9 @@
                     of.drop_table(engine, main_table)
 
                 print("Integrating IMAGE SOURCE table!")
-                integration = FLOCKImageSourceIntegration(sql=f'''
+                jwt = of.refresh_jwt_if_needed(jwt=jwt, min_ttl_mins=120,
+                    client_id=client_id, username=ol_user, password=ol_pass)
+                integration = FLOCKImageSourceIntegration(jwt=jwt, sql=f'''
                     SELECT DISTINCT "cameraid", "cameraname"
                     FROM {reads_table_name}
                     WHERE "timestamp" >= '{dt_start}'
@@ -240,8 +248,10 @@
                     shuttle_args=shuttle_args+f" --s3 PRODUCTION --fetchsize {fsize} --upload-size {usize}")
 
                 print("Integrating STANDARDIZED AGENCY table!")
+                jwt = of.refresh_jwt_if_needed(jwt=jwt, min_ttl_mins=120,
+                    client_id=client_id, username=ol_user, password=ol_pass)
                 sagency_integration = FLOCKAgencyStandardizationIntegration(
-                    sql="SELECT * FROM standardized_agency_names",
+                    jwt=jwt, sql="SELECT * FROM standardized_agency_names",
                     base_url=api_url)
                 sagency_integration.integrate_table(
                     sql="SELECT * FROM standardized_agency_names",

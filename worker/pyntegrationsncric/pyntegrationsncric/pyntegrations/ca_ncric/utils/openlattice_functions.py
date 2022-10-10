@@ -1,16 +1,22 @@
 from auth0.v3.authentication import GetToken
 from auth0.v3.exceptions import RateLimitError
+from datetime import datetime
 import openlattice
 import os
 import re
 import sys
 import time
 import random
+import base64
+import json
 
 
-def get_jwt(username=None, password=None, client_id=None, base_url='http://datastore:8080'):
+def get_jwt(client_id=None,
+            username=None,
+            password=None,
+            base_url="http://datastore:8080"):
     """
-    Gets the jwt token for a given usr/pw from a given url.
+    Gets the JWT token for a given user from a given URL.
     """
 
     domain = 'maiveric.us.auth0.com'
@@ -55,8 +61,8 @@ def get_jwt(username=None, password=None, client_id=None, base_url='http://datas
         raise ValueError("Not all necessary variables for authentication are present!")
 
     get_token = GetToken(domain)
-    # Allow retries with exponential backoff (5, 10, 20,
-    # 40 +/- 2 seconds) to accommodate rate limit errors
+    # Allow retries with exponential backoff (5, 10, 20, 40 +/- 2 secs)
+    # to accommodate errors such as API rate limits and network timeouts
     tries = 0
     delay = 0
     token = None
@@ -72,28 +78,68 @@ def get_jwt(username=None, password=None, client_id=None, base_url='http://datas
                 audience=base_url,
                 grant_type='http://auth0.com/oauth/grant-type/password-realm')
 
-        except RateLimitError as e:
+        except Exception as e:
             tries += 1
             if tries == 10:
                 msg = 'Giving up retrying Auth0 authentication!'
                 print(msg, file=sys.stderr)
                 raise e
-            msg = f'{e.status_code} Auth0 {type(e).__name__}: {e.message}'
+
+            # RateLimitError: HTTP Status Code 429 (Too Many Requests)
+            if isinstance(e, RateLimitError):
+                msg = f'{e.status_code} Auth0 '
+            else:
+                msg = ''
+            msg += f'{type(e).__name__}: {e.message}'
             print(msg, file=sys.stderr)
+
             # get next base backoff delay
             for backoff in 5, 10, 20, 40:
                 if delay < backoff:
                     delay = backoff
                     break
+
             # prevent surge by adding +/- 2 seconds
             sleep = delay + random.randrange(-2, 3)
             msg = f'Retrying Auth0 authentication after {sleep} seconds...'
             print(msg, file=sys.stderr)
             time.sleep(sleep)
+
+    # Auth0 JWT has an expiration of 10 hours
     return token['id_token']
 
 
-def get_config(jwt=None, base_url='http://datastore:8080'):
+def refresh_jwt_if_needed(jwt=None,
+                          min_ttl_mins=120,
+                          client_id=None,
+                          username=None,
+                          password=None,
+                          base_url="http://datastore:8080"):
+    """
+    Checks the expiration of the given JWT and, if less than
+    the minimum TTL (in minutes), gets a new JWT; otherwise,
+    just returns the same JWT.
+    """
+
+    if jwt:
+        try:
+            claims = json.loads(base64.b64decode(jwt.split(".")[1] + "==").decode())
+            ttl = datetime.fromtimestamp(claims["exp"]) - datetime.now()
+            if ttl.seconds / 60 < min_ttl_mins:
+                jwt = None
+        except Exception as e:
+            print(f"Could not determine JWT expiration due to: {str(e)}")
+            jwt = None
+
+    if not jwt:
+        jwt = get_jwt(client_id=client_id,
+                      username=username,
+                      password=password,
+                      base_url=base_url)
+    return jwt
+
+
+def get_config(jwt=None, base_url="http://datastore:8080"):
     if not jwt:
         jwt = get_jwt(base_url=base_url)
     configuration = openlattice.Configuration()
@@ -103,17 +149,20 @@ def get_config(jwt=None, base_url='http://datastore:8080'):
 
 
 def drop_table(engine, table_name):
-    """Drops a table. Useful for dropping intermediate tables
-    after they are used in an integration"""
+    """
+    Drops a table. Useful for dropping intermediate tables
+    after they are used in an integration.
+    """
+
     try:
         engine.execute(f"DROP TABLE {table_name};")
         print(f"Dropped table {table_name}")
     except Exception as e:
-        print(f"Could not drop main table due to {str(e)}")
+        print(f"Could not drop main table due to: {str(e)}")
 
 
 def entity_set_permissions(recipients_perms, entity_set_names, recip_type, configuration, action="ADD"):
-    '''
+    """
     Most common, most basic use case for permissions api.
     recipients_perms is something like this for email users:
     [
@@ -132,7 +181,7 @@ def entity_set_permissions(recipients_perms, entity_set_names, recip_type, confi
     or a valid string to be passed to Principal as its type.
     configuration is used for constructing api instances
     action is what action to take (most commonly "ADD")
-    '''
+    """
 
     edm_api = openlattice.EdmApi(openlattice.ApiClient(configuration))
     permissions_api = openlattice.PermissionsApi(openlattice.ApiClient(configuration))
@@ -151,12 +200,10 @@ def entity_set_permissions(recipients_perms, entity_set_names, recip_type, confi
         recip_type = "USER"
 
     for recipient, perms in recipients_perms:
-
         ace = openlattice.Ace(
             principal=openlattice.Principal(type=recip_type, id=recipient),
             permissions=perms
         )
-
         for entset_name in entity_set_names:
             try:
                 entset_id = entity_sets_api.get_entity_set_id(entset_name)
