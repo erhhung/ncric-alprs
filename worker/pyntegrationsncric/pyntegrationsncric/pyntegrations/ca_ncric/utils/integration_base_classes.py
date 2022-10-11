@@ -240,7 +240,7 @@ class Integration(object):
                     return clean_table_name
                 if self.if_exists == "replace":
                     print("Clean table already exists. Replacing...")
-                    connection.execute(f"drop table {clean_table_name};")
+                    connection.execute(f"DROP TABLE {clean_table_name};")
                 if self.if_exists == "fail":
                     raise Exception("Clean table name already in use.")
 
@@ -255,7 +255,7 @@ class Integration(object):
             #     print("self.file_path and self.file_path is not None")
             #     self.upload_raw_data_from_filepath(connection)
             #     generator = pd.read_sql_query(
-            #         f"select * from {self.raw_table_name}",
+            #         f"SELECT * FROM {self.raw_table_name}",
             #         connection,
             #         chunksize=1000)
             # else:
@@ -376,7 +376,7 @@ class Integration(object):
             if sql:
                 sql = sql.replace('"', '\\"').replace('\\\\"', '\\"')
             else:
-                sql = f"select * from {clean_table_name}"
+                sql = f"SELECT * FROM {clean_table_name}"
 
             statement = f'{shuttle_path} --flight {self.flight_path} --token {token} --config {tmp_mapper_path} --datasource {integration_identifier} --sql "{sql}" --environment {host}'
 
@@ -427,6 +427,7 @@ class Integration(object):
                   shuttle_path=None,
                   shuttle_args=None,
                   drop_table_on_success=None):
+
         table = self.clean_and_upload()
         self.integrate_table(
             clean_table_name=table,

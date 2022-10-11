@@ -294,7 +294,7 @@ class FLOCKAgenciesIntegration(Integration):
 
 class FLOCKStandardizedAgenciesIntegration(Integration):
     # sql is necessary here, but we don't actually clean any files...
-    # just set integration.integrate_table(sql = "select * from standardized_agency_names_flock")
+    # just set integration.integrate_table(sql="SELECT * FROM standardized_agency_names_flock")
     def __init__(self,
                  jwt=None,
                  sql=None,

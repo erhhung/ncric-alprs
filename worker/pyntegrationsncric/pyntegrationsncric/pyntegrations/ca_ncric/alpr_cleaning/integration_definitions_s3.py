@@ -252,7 +252,7 @@ class ALPRIntegration(Integration):
                     dtype=sqlalchemy.types.VARCHAR,  # dtypes,
                     index=False
                 )
-            # return f"select * from {self.raw_table_name}"
+            # return f"SELECT * FROM {self.raw_table_name}"
             return self.raw_table_name, self.raw_table_name_images
 
         # filter out any bad dates
@@ -269,7 +269,7 @@ class ALPRIntegration(Integration):
 
         # grab the standardized agency table and left join
         standardized_agency_table = pd.read_sql(
-            f"""select * from {self.standardized_agency_table} where "ol.datasource" = '{self.datasource}';""", engine)
+            f"""SELECT * FROM {self.standardized_agency_table} WHERE "ol.datasource" = '{self.datasource}';""", engine)
         df = df.merge(standardized_agency_table, left_on="agencyName", right_on="ol.name", how="left")
 
         add_agency = pd.DataFrame()
@@ -345,9 +345,9 @@ class ALPRImagesIntegration(Integration):
     '''
     For the Hotlist images, we will reuse this class but input "ncric_boss4_hotlistimages_flight.yaml"
     and add a clean table suffix of "hotlist"
-    and hotlist sql="select \"LPREventID\", \"LPRVehiclePlatePhoto\", \"LPRAdditionalPhoto\"
-    from hotlist_daily inner join boss4_hourly on \"plate\" = \"VehicleLicensePlateID\"
-                       inner join boss4_images_hourly using(\"LPREventID\");"
+    and hotlist sql="SELECT \"LPREventID\", \"LPRVehiclePlatePhoto\", \"LPRAdditionalPhoto\"
+    FROM hotlist_daily INNER JOIN boss4_hourly ON \"plate\" = \"VehicleLicensePlateID\"
+                       INNER JOIN boss4_images_hourly USING(\"LPREventID\");"
     It's all the same property values, just different entity sets
     '''
     def clean_row(cls, row, datasource):

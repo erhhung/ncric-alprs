@@ -10,6 +10,7 @@ import re
 import os
 from geoalchemy2 import Geometry, WKTElement
 
+
 def get_temp_table_name(table_name, dt=datetime.datetime.now(timezone("US/Pacific"))):
     """
     Produces the name of a temp table based on the original name and the current PST.
@@ -19,6 +20,7 @@ def get_temp_table_name(table_name, dt=datetime.datetime.now(timezone("US/Pacifi
 
     dt_string = "_".join([str(dt.year), str(dt.month), str(dt.day), str(dt.hour), str(dt.minute), str(dt.second)])
     return "zzz_%s_%s_pst" % (table_name, dt_string)
+
 
 def get_atlas_engine_for_individual_user(organization_id, configuration):
     if not configuration:
@@ -35,6 +37,7 @@ def get_atlas_engine_for_individual_user(organization_id, configuration):
     engine = sq.create_engine(jdbc_url)
 
     return engine
+
 
 def get_atlas_engine_for_organization(organization_id, configuration):
     if not configuration:
@@ -59,10 +62,11 @@ def get_atlas_engine(db_name, db_password, usr_name=None):
     if usr_name is None:
         usr_name = db_name
     return sq.create_engine(
-        'postgresql://%s:%s@atlas.openlattice.com:30001/%s' \
+        'postgresql://%s:%s@atlas.openlattice.com:30001/%s'
         % (usr_name, urllib.parse.quote_plus(db_password), db_name),
         connect_args={'sslmode': 'require'}
     )
+
 
 def drop_table(engine, table_name):
     """Drops a table. Useful for drropping intermediate tables
@@ -73,7 +77,8 @@ def drop_table(engine, table_name):
     except Exception as e:
         print(f"Could not drop main table due to {str(e)}")
 
-def overwrite_tables(df, table_name, engine, geom_data_type = None, geometry_col = None, crs = None):
+
+def overwrite_tables(df, table_name, engine, geom_data_type=None, geometry_col=None, crs=None):
     """
     Overwrites tables without deleting table by truncating table first
     then appending data
@@ -87,13 +92,13 @@ def overwrite_tables(df, table_name, engine, geom_data_type = None, geometry_col
             pass
 
     if geometry_col is not None:
-        df.to_sql(table_name, 
-                   engine, 
-                   if_exists='append', 
-                    index=False, 
-                    dtype={geometry_col: Geometry(geom_data_type, srid= crs)})
+        df.to_sql(table_name,
+                  engine,
+                  if_exists='append',
+                  index=False,
+                  dtype={geometry_col: Geometry(geom_data_type, srid=crs)})
     else:
-        df.to_sql(table_name, engine, if_exists = "append", index = False)
+        df.to_sql(table_name, engine, if_exists="append", index=False)
 
 
 def get_atlas_engine_from_mapper(config_file, datasource):
@@ -110,14 +115,15 @@ def get_atlas_engine_from_mapper(config_file, datasource):
 
     jdbc = re.search('jdbc:(.*?)\?', jdbc).group(1) \
         .replace("postgresql://", "postgresql://{username}:{password}@".format(
-        username=username,
-        password=password
-    ))
+            username=username,
+            password=password
+        ))
 
     return sq.create_engine(
         jdbc,
         connect_args={'sslmode': 'require'}
     )
+
 
 def select_tables(labeled_sqls, df_pred, con):
     """
@@ -159,7 +165,7 @@ def count_rows(sql, con):
     """
 
     sql = sql.replace(";", "")
-    df = pd.read_sql("select count(*) from (%s) foo;" % sql, con)
+    df = pd.read_sql("SELECT COUNT(*) FROM (%S) foo;" % sql, con)
     return df["count"].iloc[0]
 
 
@@ -169,6 +175,7 @@ def get_cols_from_sql(sql, con):
     """
 
     return pd.read_sql(limit_query(sql, 1), con).columns
+
 
 def get_datatypes(table_name, engine):
     '''

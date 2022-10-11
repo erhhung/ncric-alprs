@@ -5,7 +5,8 @@ import pandas as pd
 from . import clean
 import re
 
-def collect_all_accessible(auth_api, object_types = ["Role", "Organization", "EntitySet", "PropertyTypeInEntitySet"], permissions = ["OWNER", "READ", "WRITE"]):
+
+def collect_all_accessible(auth_api, object_types=["Role", "Organization", "EntitySet", "PropertyTypeInEntitySet"], permissions=["OWNER", "READ", "WRITE"]):
     """
     Creates a dict with outputs of get_all_accessible_at_permission_level over various object_types and permission levels
 
@@ -19,7 +20,7 @@ def collect_all_accessible(auth_api, object_types = ["Role", "Organization", "En
     out = dict()
     for perm in permissions:
         for object_type in object_types:
-            api_output = auth_api.get_accessible_objects(object_type = object_type, permission = perm)
+            api_output = auth_api.get_accessible_objects(object_type=object_type, permission=perm)
             accessibles = [tuple(a) for a in api_output.authorized_objects]
             for a in accessibles:
                 if a in out.keys():
@@ -32,8 +33,8 @@ def collect_all_accessible(auth_api, object_types = ["Role", "Organization", "En
 def transfer_owner_permissions(
     configuration,
     recipient,
-    object_types = ["Role", "Organization", "EntitySet", "PropertyTypeInEntitySet"],
-    recipient_auth_api = None
+    object_types=["Role", "Organization", "EntitySet", "PropertyTypeInEntitySet"],
+    recipient_auth_api=None
 ):
     """
     Transfers ownership permissions on all objects of specified type from the user specified in the configuration to the given recipient user ID. Permission granting seems to be fairly slow (~10 per second), even if the recipient already had access. If you have the recipient's token, you can optionally provide an instance of their auth_api. This makes skipping the things they already have access to much faster.
@@ -41,11 +42,12 @@ def transfer_owner_permissions(
 
     auth_api = openlattice.AuthorizationsApi(openlattice.ApiClient(configuration))
     permissions_api = openlattice.PermissionsApi(openlattice.ApiClient(configuration))
-    all_accessible = collect_all_accessible(auth_api, object_types = object_types, permissions = ["OWNER"])
+    all_accessible = collect_all_accessible(auth_api, object_types=object_types, permissions=["OWNER"])
 
     to_skip = set()
     if recipient_auth_api is not None:
-        already_accessible = collect_all_accessible(recipient_auth_api, object_types = object_types, permissions = ["OWNER"])
+        already_accessible = collect_all_accessible(
+            recipient_auth_api, object_types=object_types, permissions=["OWNER"])
         to_skip = set(already_accessible.keys())
 
     print("Finished collecting all accessible objects!")
@@ -57,13 +59,13 @@ def transfer_owner_permissions(
             acl_key = list(o)
 
             ace = openlattice.Ace(
-                    principal = openlattice.Principal(type="USER", id=recipient),
-                    permissions = perms
+                principal=openlattice.Principal(type="USER", id=recipient),
+                permissions=perms
             )
             try:
                 acldata = openlattice.AclData(
-                    action = "ADD", 
-                    acl = openlattice.Acl(acl_key = acl_key, aces = [ace])
+                    action="ADD",
+                    acl=openlattice.Acl(acl_key=acl_key, aces=[ace])
                 )
                 permissions_api.update_acl(acldata)
                 total_transferred += 1
@@ -72,17 +74,17 @@ def transfer_owner_permissions(
             except Exception as exc:
                 print("Failed to give permissions on " + str(acl_key))
                 print(exc)
-            
+
 
 def integration_checksums(
     flight,
     configuration,
-    sql = None,
-    engine = None,
-    df = None,
-    entity_set_names = None,
-    check_random_n_entity_sets = None
-    ):
+    sql=None,
+    engine=None,
+    df=None,
+    entity_set_names=None,
+    check_random_n_entity_sets=None
+):
     """
     For a given list of entity sets, checks the number of unique pk values in source data against those integrated
 
@@ -91,14 +93,14 @@ def integration_checksums(
 
     entity_sets_api = openlattice.EntitySetsApi(openlattice.ApiClient(configuration))
     data_api = openlattice.DataApi(openlattice.ApiClient(configuration))
-    
+
     all_ent_assn_defns = list(flight.entity_definitions.values()) + list(flight.association_definitions.values())
 
     if not entity_set_names:
         entity_set_names = list(set([x.entity_set_name for x in all_ent_assn_defns]))
         if check_random_n_entity_sets:
             check_random_n_entity_sets = min(check_random_n_entity_sets, len(entity_set_names))
-            entity_set_names = np.random.choice(entity_set_names, size = check_random_n_entity_sets, replace = False)
+            entity_set_names = np.random.choice(entity_set_names, size=check_random_n_entity_sets, replace=False)
 
     compiled = [
         (entity_set_name, set([frozenset(x.get_columns_from_pk()) for x in all_ent_assn_defns if x.entity_set_name == entity_set_name])) for entity_set_name in entity_set_names
@@ -113,20 +115,21 @@ def integration_checksums(
         lower = 0
         upper = 0
         if not col_lists:
-            lower = 1 # singleton entity definition
+            lower = 1  # singleton entity definition
             upper = 1
         else:
             for col_list in col_lists:
                 additional = 1
                 if sql:
-                    additional = pd.read_sql("select count(distinct(" + clean.cols_to_string_with_dubquotes(col_list) + ")) from (" + sql + ") foo", engine)["count"].iloc[0]
+                    additional = pd.read_sql(
+                        "SELECT COUNT(DISTINCT(" + clean.cols_to_string_with_dubquotes(col_list) + ")) FROM (" + sql + ") foo", engine)["count"].iloc[0]
                 elif df:
                     additional = len(df[col_list].unique())
-                lower += additional - 1 # empty pks are not written to prod
+                lower += additional - 1  # empty pks are not written to prod
                 upper += additional
-        out[entity_set_name] = (lower, upper, data_api.get_entity_set_size(entity_sets_api.get_entity_set_id(entity_set_name)))
+        out[entity_set_name] = (lower, upper, data_api.get_entity_set_size(
+            entity_sets_api.get_entity_set_id(entity_set_name)))
     return out
-
 
 
 def test_auth(configuration):
@@ -142,7 +145,7 @@ def test_auth(configuration):
         return False
 
 
-def entity_set_permissions(recipients_perms, entity_set_names, recip_type, configuration, action = "ADD"):
+def entity_set_permissions(recipients_perms, entity_set_names, recip_type, configuration, action="ADD"):
     '''
     Most common, most basic use case for permissions api.
     recipients_perms is something like this for email users:
@@ -156,7 +159,7 @@ def entity_set_permissions(recipients_perms, entity_set_names, recip_type, confi
         ("00000000-0000-0000-0000-000000000000|JurisdictionREAD", ["READ"]),
         ("00000000-0000-0000-0000-000000000000|JurisdictionWRITE", ["WRITE"])
     ]
-    
+
     entity_set_names is an iterable collection of entity set names
     recip_type is the type of username included in recipients_perms. Must be either "EMAIL"
     or a valid string to be passed to Principal as its type.
@@ -183,28 +186,24 @@ def entity_set_permissions(recipients_perms, entity_set_names, recip_type, confi
     for recipient, perms in recipients_perms:
 
         ace = openlattice.Ace(
-                principal = openlattice.Principal(type=recip_type, id=recipient),
-                permissions = perms
-            )
+            principal=openlattice.Principal(type=recip_type, id=recipient),
+            permissions=perms
+        )
 
         for entset_name in entity_set_names:
             try:
                 entset_id = entity_sets_api.get_entity_set_id(entset_name)
                 props = edm_api.get_entity_type(entity_sets_api.get_entity_set(entset_id).entity_type_id).properties
 
-                acldata = openlattice.AclData(action = action, 
-                    acl = openlattice.Acl(acl_key = [entset_id], aces = [ace]))
-                
+                acldata = openlattice.AclData(action=action,
+                                              acl=openlattice.Acl(acl_key=[entset_id], aces=[ace]))
+
                 permissions_api.update_acl(acldata)
                 print("Giving permissions for entity set %s " % (entset_name))
 
                 for prop in props:
-                    acldata = openlattice.AclData(action = action, 
-                        acl = openlattice.Acl(acl_key = [entset_id,prop], aces = [ace]))
+                    acldata = openlattice.AclData(action=action,
+                                                  acl=openlattice.Acl(acl_key=[entset_id, prop], aces=[ace]))
                     permissions_api.update_acl(acldata)
             except:
                 print(entset_name, recipient, perms)
-
-
-
-                
