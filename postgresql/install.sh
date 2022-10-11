@@ -44,7 +44,7 @@ EOF
                      pgxnclient postgresql-server-dev-14 liblz4-dev libreadline-dev"
 )
 
-install_extensions() (
+install_extensions() {
   case `whoami` in
     root)
       [ "`find /usr/lib/postgresql -name pg_repack.so`" ] && exit
@@ -52,12 +52,13 @@ install_extensions() (
       # pgxn install pg_repack
       ;;
     postgres)
+      wait_service # wait if "database system is starting up"
       psql -d $NCRIC_DB -tAc "SELECT extname FROM pg_extension" | \
                      grep -q pg_repack && exit
       pgxn load -d $NCRIC_DB pg_repack
       ;;
   esac
-)
+}
 
 config_postgresql() (
   cd /etc/security/limits.d
@@ -115,15 +116,27 @@ EOF
 )
 
 wait_service() {
-  local name=$1 port=$2 count=12
-  while ! nc -z localhost $port && [ $((count--)) -ge 0 ]; do
-    echo "[`__ts`] Waiting for $name on port $port..."
-    sleep 5
-  done
-  if [ $count -lt 0 ]; then
-    echo >&2 "$name failed to start!"
-    return 1
-  fi
+  case `whoami` in
+    root)
+      local name=$1 port=$2 count=12
+      while ! nc -z localhost $port && [ $((count--)) -ge 0 ]; do
+        echo "[`__ts`] Waiting for $name on port $port..."
+        sleep 5
+      done
+      if [ $count -lt 0 ]; then
+        echo >&2 "$name failed to start!"
+        return 1
+      fi
+      ;;
+    postgres)
+      local err="database system is starting up"
+      while eval_with_retry "psql -c '\conninfo'" 2>&1 | \
+            grep -q "$err"; do
+        echo "The $err..."
+      done
+      return 0
+      ;;
+  esac
 }
 
 start_postgresql() {

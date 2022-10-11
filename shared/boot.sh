@@ -18,6 +18,7 @@ eval_with_retry() {
     sleep 5
   done
   sleep 1
+  [ $tries -gt 0 ]
 }
 
 wait_apt_get() {
