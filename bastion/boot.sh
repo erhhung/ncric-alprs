@@ -176,7 +176,7 @@ install_cwagent() (
   rpm=amazon-cloudwatch-agent.rpm
   # https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/download-cloudwatch-agent-commandline.html
   curl -sO https://s3.$region.amazonaws.com/amazoncloudwatch-agent-$region/amazon_linux/amd64/latest/$rpm
-  eval_with_retry "amazon-linux-extras install -y collectd && rpm -U ./$rpm"
+  eval_with_retry "amazon-linux-extras install -y collectd && rpm -F ./$rpm"
   rm ./$rpm
 )
 
