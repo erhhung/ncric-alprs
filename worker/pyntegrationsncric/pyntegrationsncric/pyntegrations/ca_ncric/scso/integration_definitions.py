@@ -17,8 +17,8 @@ def timestamp_suffix():
 class SCSOIntegration(ALPRIntegration):
     def __init__(self,
                  jwt=None,
-                 raw_table_name="scso_hourly_clean",
-                 raw_table_name_images="scso_images_hourly_raw",
+                 raw_table_name="scso_hourly",
+                 raw_table_name_images="scso_images_hourly",
                  use_timestamp_table=True,
                  s3_bucket="alprs-sftp-prod",
                  s3_prefix="scso",

@@ -8,6 +8,7 @@ import pytz
 import sqlalchemy
 import os
 
+region = os.environ.get("RD_OPTION_REGION")
 db_user = os.environ.get("RD_OPTION_DB_USER")
 db_pass = os.environ.get("RD_OPTION_DB_PASS")
 db_host = os.environ.get("RD_OPTION_DB_HOST")
@@ -150,7 +151,7 @@ class ALPRIntegration(Integration):
         return pd.Series(newdict)
 
     def get_raw_data_from_s3(self):
-        session = boto3.session.Session(region_name="us-gov-west-1")
+        session = boto3.session.Session(region_name=region)
         s3 = session.resource('s3')
         bucket = s3.Bucket(name=self.s3_bucket)
 
@@ -169,10 +170,12 @@ class ALPRIntegration(Integration):
             # check that the file extension is correctly JSON
             if extension == "json":
                 if self.date_start is not None:
-                    # currently structured as ncric/READS_OpenLattice_20201026T223918_20201026T224259_609759672.json
-                    # so we can extract date from here
+                    # currently structured as:
+                    # boss4/READS_maiveric-astrometrics_2022-10-11_08-13-35_2022-10-11_08-17-40_2924020749.json
+                    #  scso/READS_maiveric-astrometrics_2022-10-10_17-46-45_2022-10-10_17-53-37_1820300760.json
+                    # obj.last_modified is often the same for multiple files named after different time ranges
                     date = obj.last_modified
-                    if date < self.date_start or date > self.date_end:
+                    if date < self.date_start or date >= self.date_end:
                         continue
                 file = s3.Object(self.s3_bucket, obj.key)
                 try:

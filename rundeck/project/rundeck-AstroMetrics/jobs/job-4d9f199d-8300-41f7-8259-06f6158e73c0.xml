@@ -148,8 +148,7 @@ main_integration = SCSOIntegration(
     date_start=dt_start_str,
     date_end=dt_end_str,
     s3_bucket=s3_bucket,
-    s3_prefix=s3_prefix,
-    limit=1)
+    s3_prefix=s3_prefix)
 
 main_table_name, images_table_name = main_integration.get_raw_data_from_s3()
 print(main_table_name, images_table_name)
