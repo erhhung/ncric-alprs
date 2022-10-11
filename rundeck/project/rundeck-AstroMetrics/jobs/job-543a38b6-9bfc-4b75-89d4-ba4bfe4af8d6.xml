@@ -51,7 +51,7 @@
 # JOB: Recurring Flock: Pull RAW data daily by API
 
 # start at midnight PST of previous day
-start=$(date -d "-1 day" "+%Y-%m-%dT00:00:00%:z")
+start=$(date -d "-1 day" "+%FT00:00:00%:z")
 
 # FLAPPER variables are defined in /etc/environment
 $FLAPPER_PATH --file $FLAPPER_CONF \

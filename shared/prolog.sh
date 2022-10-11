@@ -7,7 +7,7 @@
 # and finally ending with "epilog.sh".
 
 __ts() {
-  date "+%Y-%m-%d %T"
+  date "+%F %T"
 }
 
 cd /root 2> /dev/null

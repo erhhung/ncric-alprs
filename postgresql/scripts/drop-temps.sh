@@ -39,7 +39,7 @@ psql() {
   `which psql` -d $NCRIC_DB -c "$1" -tA "${@:2}"
 }
 
-cutoff=$(date -d "-$RETENTION_DAYS days -1 day" "+%Y-%m-%d")
+cutoff=$(date -d "-$RETENTION_DAYS days -1 day" "+%F")
 echo "[`ts`] Looking for temp tables prior to $cutoff..."
 
 while read table date; do
