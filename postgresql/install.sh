@@ -243,6 +243,8 @@ EOF
   service cron reload
 )
 
+export -f wait_service
+
 run create_xfs_volume
 run resize_xfs_volume
 run install_postgresql
