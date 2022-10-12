@@ -16,7 +16,10 @@ MAIL_TO=$1
 up_mins=$(awk '{print int($1/60)}' /proc/uptime)
 [ 0$up_mins -lt 20 ] && exit
 
-LOCK_FILE="/var/lock/$CRONJOB_NAME.lock"
+# "/var/lock/jobs" created in "/bootstrap.sh" using
+# systemd-tmpfiles conf "/etc/tmpfiles.d/jobs.conf"
+LOCK_FILE="/var/lock/jobs/$CRONJOB_NAME.lock"
+
  LOG_FILE="`pwd`/$CRONJOB_NAME.log"
 FAIL_LIST="`pwd`/failure-list.log"
 CURL_BODY="/tmp/$CRONJOB_NAME-curl"

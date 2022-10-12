@@ -168,6 +168,18 @@ EOF
   service crond reload
 )
 
+# this is necessary on CentOS to allow apps to
+# create temp files like locks under /run/lock
+config_tmpfiles() (
+  cd /etc/tmpfiles.d
+  # see: man tmpfiles.d
+  cat <<EOF > jobs.conf
+# Type Path Mode UID GID Age Argument
+d /var/lock/jobs 0755 $DEFAULT_USER $DEFAULT_USER - -
+EOF
+  systemd-tmpfiles --create --remove
+)
+
 install_cwagent() (
   shopt -s expand_aliases
   set +x; . .bash_aliases; set -x
@@ -204,10 +216,6 @@ fi
 
 export_buckets
 
-# allow scripts to
-# write lock files
-chmod 1777 /var/lock
-
 export -f eval_with_retry
 export -f yum_update
 
@@ -225,6 +233,7 @@ run upgrade_utils
 run etc_hosts
 run install_scripts $DEFAULT_USER
 run config_cronjobs
+run config_tmpfiles
 run install_cwagent
 run config_cwagent
 run start_cwagent
