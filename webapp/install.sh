@@ -158,6 +158,7 @@ EOF
   )
 }
 EOF
+
   cd ../quality
   cat <<'EOF' | indent_code 4 | \
     replace_code QualityDashboard.js \
@@ -165,6 +166,9 @@ EOF
 // sort table by Count in descending order, then by Agency in ascending order
 rows.sort((a, b) => a[2] != b[2] ? b[2] - a[2] : a[0].localeCompare(b[0]));
 EOF
+  cd ../alerts
+  # skip Hotlist Alert or Custom Vehicle Alert selection dialog: hotlist functionality disabled
+  sed -Ei 's/alertType: undefined/alertType: ALERT_TYPES.CUSTOM_VEHICLE_ALERT/' NewAlertModal.js
 }
 
 config_orgapp() {
