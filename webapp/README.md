@@ -45,5 +45,6 @@ _**NOTE:** If you have redeployed multiple times within a short
 period of time (a few minutes) and you don't see your changes,  
 it's likely that CloudFront is still caching the previous build.
 You may want to explicitly trigger a cache invalidation operation  
-on the CloudFront distribution for the prefix "`/*`", wait until
-it completes, and then reload your browser._
+on the CloudFront distribution (in "**alprscom**" account for both
+dev and prod environments) for the prefix "`/*`", wait until it  
+completes, and then reload your browser._
