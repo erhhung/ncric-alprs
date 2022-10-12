@@ -122,6 +122,9 @@ config_webapp() {
   while read file; do
     sed -Ei "s/[a-zA-Z0-9_.+-]+@openlattice\\.com\b/$SUPPORT_EMAIL/g" $file
   done < <(egrep -rl '@openlattice\.com\b')
+  while read file; do
+    sed -Ei 's/650-597-2989/415-289-9497/' $file
+  done < <(egrep -rl '650-597-2989')
 
   # show Data Quality tab to all users
   # (currently showing to owners only)
