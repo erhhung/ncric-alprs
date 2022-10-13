@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # usage: build.sh [branch]
-# optional branch override (default is main)
+# optional branch override (default is develop)
 
 PROJECT=indexer
 
@@ -19,7 +19,7 @@ if [ ! -d $PROJECT ]; then
 fi
 
 git stash > /dev/null
-git checkout ${1:-main}
+git checkout ${1:-develop}
 git pull --rebase --prune
 git submodule update --recursive
 git stash pop 2> /dev/null || true

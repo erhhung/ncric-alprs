@@ -25,6 +25,7 @@ ${templatefile("${path.module}/conductor/boot.tftpl", {
     S3_URL        = local.user_data_s3_url
     GH_TOKEN      = var.GITHUB_ACCESS_TOKEN
     FROM_EMAIL    = local.alprs_sender_email
+    SUPPORT_EMAIL = var.ALPRS_SUPPORT_EMAIL
     BACKUP_BUCKET = var.buckets["backup"]
     CONFIG_BUCKET = var.buckets["config"]
   })}

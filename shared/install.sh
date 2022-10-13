@@ -95,6 +95,55 @@ clone_repos() {
   git sub deinit neuron
 }
 
+# indent lines from stdin by n spaces
+indent_code() {
+  local sp=${1:-0}
+  eval "printf -v sp ' %.0s' {1..$sp}"
+  [ "$1" ] && sed "s/^/$sp/" || cat
+}
+
+# replace_code <file> <match> <in|ex> <match> <in|ex>
+# in|ex: start/end line is <in>clusive or <ex>clusive
+# the replacement content will be obtained from stdin
+replace_code() {
+  set +x
+  local   file=$1 code=$(cat)
+  local match0=$2  ex0=$3 line
+  local match1=$4  ex1=$5 state
+  (
+    while IFS= read line; do
+      case $state in
+        started)
+          if [[ "$line" == *$match1* ]]; then
+            [ "$ex1" == ex ] && echo "$line"
+            state=ended
+          fi
+          ;;
+        ended)
+          echo "$line"
+          ;;
+        *)
+          if [[ "$line" == *$match0* ]]; then
+            [ "$ex0" == ex ] && echo "$line"
+            echo "$code"
+            if [[ "$line" == *$match1* ]]; then
+              # echo start/end line at most
+              # once if they match the same
+              [ "$ex1$ex0" == exin ] && echo "$line"
+              state=ended
+            else
+              state=started
+            fi
+          else
+            echo "$line"
+          fi
+          ;;
+      esac
+    done <   "$file"
+  ) | sponge "$file"
+  set -x
+}
+
 config_service() {
   az_url="http://169.254.169.254/latest/meta-data/placement/availability-zone"
   region=$(curl -s $az_url | sed 's/[a-z]$//')
@@ -104,12 +153,28 @@ region: $region
 bucket: $CONFIG_BUCKET
 folder: ${HOST,,}
 EOF
-  if [ "$FROM_EMAIL" ]; then
-    cd ~/openlattice/conductor-client/src/main/kotlin/com/openlattice/search/renderers
+
+  cd ~/openlattice/conductor-client/src/main
+  if [ "$FROM_EMAIL" ]; then (
+    # update email sender address
+    cd kotlin/com/openlattice/search/renderers
     for file in Alpr*EmailRenderer.kt; do
       sed -Ei "s/FROM_EMAIL =.+/FROM_EMAIL = \"$FROM_EMAIL\"/" $file
     done
-  fi
+  ) fi
+  if [ "$SUPPORT_EMAIL" ]; then (
+    # update support contact in emails
+    cd resources/mail/templates/shared
+    for file in *Template.mustache; do
+      cat <<EOF | indent_code 8 | \
+        replace_code $file \
+          '<div class="footer">' ex \
+          '</div>'               ex
+<span>This subscription was created by {{subscriber}}.</span><br />
+<span>To report an issue, please email <a href="mailto:$SUPPORT_EMAIL">$SUPPORT_EMAIL</a>.</span>
+EOF
+    done
+  ) fi
 }
 
 build_service() {
