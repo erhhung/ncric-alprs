@@ -242,6 +242,8 @@ trigger_index() (
 )
 
 export -f git_clone
+export -f indent_code
+export -f replace_code
 export -f wait_service
 
 run etc_hosts
