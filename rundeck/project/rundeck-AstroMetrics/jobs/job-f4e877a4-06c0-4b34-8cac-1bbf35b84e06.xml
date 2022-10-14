@@ -90,6 +90,7 @@
 # JOB: Recurring Flock: realtime - catchup
 
 from datetime import datetime, timedelta
+from dateutil import tz
 from sqlalchemy import create_engine
 from pyntegrationsncric.pyntegrations.ca_ncric.flock.integration_definitions import \
     FLOCKIntegration, FLOCKImageSourcesIntegration, FLOCKStandardizedAgenciesIntegration
@@ -135,10 +136,13 @@ agencies = [
     "Vallejo PD",
 ]
 
+# IMPORTANT! dt_end needs to be in UTC because it's used in the
+# SQL to filter against the "timestamp" column, which is in UTC,
+# and it's also used to select the day-of-week table to look in.
 dt_end = datetime.now().replace(microsecond=0, second=0, minute=0, hour=2)
-dt_12am = dt_end.replace(hour=0)
+dt_end = dt_end.astimezone(tz.gettz('UTC'))
 dt_start = dt_end - timedelta(hours=6)
-dt_ranges = [(dt_start, dt_12am), (dt_12am, dt_end)]
+dt_ranges = [(dt_start, dt_end)]
 
 db_host = "@option.db_host@"
 db_name = "@option.db_name@"

@@ -177,8 +177,11 @@
         s3_bucket = "@option.s3_bucket@"
         s3_prefix = "@option.s3_prefix@"
 
-        # End datetime is the beginning of the hour that the job starts in
-        dt_end = datetime.now().replace(microsecond=0, second=0, minute=0)
+        # End datetime is the start of the hour that the job starts in.
+        # IMPORTANT! dt_end needs to be in UTC because ALPRIntegration
+        # uses it to filter against an S3 object's "LastModified" time,
+        # which is in UTC.
+        dt_end = datetime.utcnow().replace(microsecond=0, second=0, minute=0)
         dt_start = dt_end - timedelta(hours=1)
 
         # This is now changed to "start hour" since the hour should not change here

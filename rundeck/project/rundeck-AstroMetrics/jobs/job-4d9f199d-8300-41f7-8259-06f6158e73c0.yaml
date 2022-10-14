@@ -145,12 +145,9 @@
         s3_bucket = "@option.s3_bucket@"
         s3_prefix = "@option.s3_prefix@"
 
-        # Include start date and end date - IN UTC
         dt_end = datetime.now().replace(microsecond=0, second=0, minute=0, hour=0)
         dt_start = dt_end - timedelta(days=2)
         dt_end = dt_end - timedelta(days=1)
-        print("dt_start:", dt_start)
-        print("dt_end:", dt_end)
 
         dt_end_str = f"{dt_end.year}-{dt_end.month}-{dt_end.day} 00:00:00"
         dt_start_str = f"{dt_start.year}-{dt_start.month}-{dt_start.day} 00:00:00"

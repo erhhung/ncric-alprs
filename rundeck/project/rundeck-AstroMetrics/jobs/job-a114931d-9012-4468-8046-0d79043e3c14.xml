@@ -137,8 +137,11 @@ agencies = [
     "Vallejo PD",
 ]
 
-# End datetime is the beginning of the hour that the job starts in
-dt_end = datetime.now().replace(microsecond=0, second=0, minute=0)
+# End datetime is the start of the hour that the job starts in.
+# IMPORTANT! dt_end needs to be in UTC because it's used in the
+# SQL to filter against the "timestamp" column, which is in UTC,
+# and it's also used to select the day-of-week table to look in.
+dt_end = datetime.utcnow().replace(microsecond=0, second=0, minute=0)
 dt_end = dt_end - timedelta(hours=24)
 dt_start = dt_end - timedelta(hours=3)
 

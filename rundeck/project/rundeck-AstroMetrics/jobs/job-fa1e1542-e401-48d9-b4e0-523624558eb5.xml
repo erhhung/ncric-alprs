@@ -111,7 +111,6 @@ agency_no_space = agency.replace(" ", "")
 s3_bucket = "@option.s3_bucket@"
 s3_prefix = "@option.s3_prefix@"
 
-# Include start date and end date - IN UTC
 dt_end = datetime.now().replace(microsecond=0, second=0, minute=0, hour=0)
 dt_start = dt_end - timedelta(days=2)
 dt_end = dt_end - timedelta(days=1)
