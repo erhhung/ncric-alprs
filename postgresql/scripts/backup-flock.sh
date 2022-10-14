@@ -128,12 +128,12 @@ while [ $day -lt -1 ]; do
         AND timestamp <  '$date'::date + 1"
   rows=$(psql "SELECT COUNT(*) $sql")
 
-  echo "[`ts`] Archiving $rows rows from flock_reads_$dow for $date..."
+  printf "[`ts`] Archiving %'d rows from flock_reads_$dow for $date...\n" $rows
   dest="s3://$BACKUP_BUCKET/flock/flock_reads_${date}_${dow}"
 
   backup $dow $date "${dest}_without_images.csv.bz" "$cols" || exit $?
   backup $dow $date "${dest}_with_images.csv.bz"            || exit $?
 
-  echo "[`ts`] Deleting $rows rows from flock_reads_$dow for $date..."
+  printf "[`ts`] Deleting %'d rows from flock_reads_$dow for $date...\n" $rows
   psql "DELETE $sql" || exit $?
 done

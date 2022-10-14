@@ -6,6 +6,7 @@ set_hostname() (
 
 set_timezone() {
   timedatectl set-timezone America/Los_Angeles
+  update-locale LANG=en_US.UTF-8 LANGUAGE
   service cron restart
   timedatectl
 }
