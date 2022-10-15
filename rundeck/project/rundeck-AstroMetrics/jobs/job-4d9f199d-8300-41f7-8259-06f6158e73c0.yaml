@@ -153,8 +153,8 @@
         dt_start = dt_end - timedelta(days=2)
         dt_end = dt_end - timedelta(days=1)
 
-        dt_end_str = f"{dt_end.year}-{dt_end.month}-{dt_end.day} 00:00:00"
-        dt_start_str = f"{dt_start.year}-{dt_start.month}-{dt_start.day} 00:00:00"
+        dt_start_str = dt_start.strftime("%Y-%m-%d %H:%M:%S")
+        dt_end_str = dt_end.strftime("%Y-%m-%d %H:%M:%S")
         print(f"Searching {dt_start_str} through {dt_end_str} to integrate!")
 
         client_id = "@option.client_id@"

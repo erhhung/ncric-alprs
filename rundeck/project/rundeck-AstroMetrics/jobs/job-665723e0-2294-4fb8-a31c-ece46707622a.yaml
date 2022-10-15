@@ -146,9 +146,10 @@
         dt_end = datetime.utcnow().replace(microsecond=0, second=0, minute=0)
         dt_start = dt_end - timedelta(hours=1)
 
-        # This is now changed to "start hour" since the hour should not change here
-        dt_end_str = f"{dt_end.year}-{dt_end.month}-{dt_end.day} {dt_end.hour}:00:00"
-        dt_start_str = f"{dt_start.year}-{dt_start.month}-{dt_start.day} {dt_start.hour}:00:00"
+        # This is now changed to start hour
+        # since hour should not change here
+        dt_start_str = dt_start.strftime("%Y-%m-%d %H:%M:%S")
+        dt_end_str = dt_end.strftime("%Y-%m-%d %H:%M:%S")
         print(f"Searching {dt_start_str} through {dt_end_str} to integrate!")
 
         client_id = "@option.client_id@"

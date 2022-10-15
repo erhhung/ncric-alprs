@@ -193,8 +193,8 @@
                 client_id=client_id, username=ol_user, password=ol_pass)
             main_integration = BOSS4Integration(
                 jwt=jwt,
-                date_start=str(sdate),
-                date_end=str(edate),
+                date_start=sdate.strftime("%Y-%m-%d %H:%M:%S"),
+                date_end=edate.strftime("%Y-%m-%d %H:%M:%S"),
                 raw_table_name="boss4_catchup_scsheriff",
                 raw_table_name_images="boss4_catchup_images_scsheriff",
                 s3_bucket=s3_bucket,
