@@ -98,6 +98,7 @@
 # JOB: Recurring BOSS4 - Santa Clara Sheriff: asynchronous - goes back two days
 
 from datetime import datetime, timedelta
+from dateutil import tz
 from sqlalchemy import create_engine
 from pyntegrationsncric.pyntegrations.ca_ncric.boss4.integration_definitions \
     import BOSS4Integration, BOSS4ImagesIntegration, BOSS4AgenciesIntegration, \
@@ -112,7 +113,10 @@ agency_no_space = agency.replace(" ", "")
 s3_bucket = "@option.s3_bucket@"
 s3_prefix = "@option.s3_prefix@"
 
+# IMPORTANT! dt_end needs to be in UTC because ALPRIntegration uses it
+# to filter against an S3 object's "LastModified" time, which is in UTC
 dt_end = datetime.now().replace(microsecond=0, second=0, minute=0, hour=0)
+dt_end = dt_end.astimezone(tz.gettz('UTC'))
 dt_start = dt_end - timedelta(days=2)
 dt_end = dt_end - timedelta(days=1)
 print("dt_start:", dt_start)

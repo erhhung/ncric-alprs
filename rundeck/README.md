@@ -1,3 +1,17 @@
+## Job Definitions
+
+Job definition files under "[`project/rundeck-AstroMetrics/jobs`
+](project/rundeck-AstroMetrics/jobs)" come in `.xml` and `.yaml`
+formats.  
+The YAML format is only kept because they are easier to read and
+can be imported into Rundeck individually,  
+but do not actually get packaged into "`astrometrics.rdproject.jar`"
+because the CLI command  
+"`rd projects archives import`" only looks for `.xml` files in
+a `.jar` archive.  
+Nevertheless, please keep both formats in sync when making job
+modifications.
+
 ## Update Jobs
 
 To update Rundeck job definitions from the Bastion host after
