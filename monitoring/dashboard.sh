@@ -42,7 +42,7 @@ add_header() {
 templates:
   metric_widget: &metric_widget
     type: metric
-    height: 3
+    height: 4
     x: 0
   metric_props: &metric_props
     view: singleValue
@@ -68,7 +68,7 @@ add_widget() {
   shift 2
 
   ((width *= $#)) # add 6 per metric shown
-  ((y     += 3))  # add 3 per widget shown
+  ((y     += 4))  # add 4 per widget shown
 
   cat <<EOT
   - <<: *metric_widget
