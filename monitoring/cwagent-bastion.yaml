@@ -10,7 +10,59 @@ logs:
   logs_collected:
     files:
       collect_list:
-        - file_path: /var/log/rundeck/*.log
+        - file_path: /home/ec2-user/health-check/*.log
           log_group_name: astrometrics
+          log_stream_name: health-check
+          retention_in_days: 90
+        - file_path: /var/log/rundeck/service.log
+          log_group_name: rundeck
+          log_stream_name: service
+          retention_in_days: 30
+        - file_path: /var/log/rundeck/rundeck.log
+          log_group_name: rundeck
           log_stream_name: rundeck
+          retention_in_days: 30
+        - file_path: /var/log/rundeck/rundeck.access.log
+          log_group_name: rundeck
+          log_stream_name: access
+          retention_in_days: 30
+        - file_path: /var/log/rundeck/rundeck.api.log
+          log_group_name: rundeck
+          log_stream_name: api
+          retention_in_days: 30
+        - file_path: /var/log/rundeck/rundeck.audit.events.log
+          log_group_name: rundeck
+          log_stream_name: audit-events
+          retention_in_days: 30
+        - file_path: /var/log/rundeck/rundeck.audit.log
+          log_group_name: rundeck
+          log_stream_name: audit
+          retention_in_days: 30
+        - file_path: /var/log/rundeck/rundeck.cleanup.log
+          log_group_name: rundeck
+          log_stream_name: cleanup
+          retention_in_days: 30
+        - file_path: /var/log/rundeck/rundeck.executions.log
+          log_group_name: rundeck
+          log_stream_name: executions
+          retention_in_days: 30
+        - file_path: /var/log/rundeck/rundeck.jobs.log
+          log_group_name: rundeck
+          log_stream_name: jobs
+          retention_in_days: 30
+        - file_path: /var/log/rundeck/rundeck.options.log
+          log_group_name: rundeck
+          log_stream_name: options
+          retention_in_days: 30
+        - file_path: /var/log/rundeck/rundeck.project.log
+          log_group_name: rundeck
+          log_stream_name: project
+          retention_in_days: 30
+        - file_path: /var/log/rundeck/rundeck.storage.log
+          log_group_name: rundeck
+          log_stream_name: storage
+          retention_in_days: 30
+        - file_path: /var/log/rundeck/rundeck.webhooks.log
+          log_group_name: rundeck
+          log_stream_name: webhooks
           retention_in_days: 30
