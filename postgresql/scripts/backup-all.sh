@@ -22,7 +22,7 @@ TEMP_DIR="/opt/postgresql/temp"
 ASSUME_ROLE="ALPRSEBSManagerRole"
 VOLUME_NAME="PostgreSQL Temp"
 
- LOG_FILE="/opt/postgresql/$CRONJOB_NAME.log"
+ LOG_FILE="$PG_HOME/jobs/$CRONJOB_NAME.log"
 LOCK_FILE="/var/lock/$CRONJOB_NAME.lock"
 
 # don't run another job if the

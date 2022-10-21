@@ -21,3 +21,15 @@ logs:
           log_group_name: astrometrics
           log_stream_name: postgresql
           retention_in_days: 30
+        - file_path: /opt/postgresql/jobs/backup-all.log
+          log_group_name: astrometrics
+          log_stream_name: pg_backup_all
+          retention_in_days: 90
+        - file_path: /opt/postgresql/jobs/backup-flock.log
+          log_group_name: astrometrics
+          log_stream_name: pg_backup_flock
+          retention_in_days: 90
+        - file_path: /opt/postgresql/jobs/drop-temps.log
+          log_group_name: astrometrics
+          log_stream_name: pg_drop_temps
+          retention_in_days: 90

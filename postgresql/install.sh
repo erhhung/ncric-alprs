@@ -214,8 +214,12 @@ EOF
 }
 
 install_scripts() {
+  mkdir -p scripts
+  cd scripts
   aws s3 sync $S3_URL/postgresql/scripts . --no-progress
   chmod 755 *.sh
+  # create folder for log files
+  mkdir -p /opt/postgresql/jobs
 }
 
 config_cronjobs() (
@@ -224,6 +228,7 @@ config_cronjobs() (
     cat <<EOT
 USER=$1
 HOME=/var/lib/postgresql
+PG_HOME=/opt/postgresql
 PATH=/bin:/usr/bin:/usr/sbin:/usr/local/bin:/snap/bin
 
 # min hr dom mon dow user command
@@ -231,13 +236,13 @@ EOT
     cat
   }
   cat <<EOT | _mkcron postgres > backup_flock
-20 2 * * * postgres bash -c "\$HOME/backup-flock.sh $BACKUP_BUCKET"
+20 2 * * * postgres bash -c "\$HOME/scripts/backup-flock.sh $BACKUP_BUCKET"
 EOT
   cat <<EOT | _mkcron root > backup_all.disabled
-20 6 * * * root bash -c "\$HOME/backup-all.sh $BACKUP_BUCKET"
+20 6 * * * root bash -c "\$HOME/scripts/backup-all.sh $BACKUP_BUCKET"
 EOT
   cat <<EOF | _mkcron postgres > drop_temps
-20 4 * * * postgres bash -c "\$HOME/drop-temps.sh"
+20 4 * * * postgres bash -c "\$HOME/scripts/drop-temps.sh"
 EOF
   chmod 644 *
   service cron reload
