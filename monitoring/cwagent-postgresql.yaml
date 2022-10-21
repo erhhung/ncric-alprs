@@ -7,11 +7,11 @@ metrics:
         - /
         - /opt/postgresql
         - /opt/postgresql/temp
-    diskio:
-      resources:
-        - nvme0n1p1
-        - nvme1n1
-        - nvme2n1
+#    diskio:
+#      resources:
+#        - nvme0n1p1
+#        - nvme1n1
+#        - nvme2n1
 
 logs:
   logs_collected:

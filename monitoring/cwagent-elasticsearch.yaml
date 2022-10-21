@@ -6,10 +6,10 @@ metrics:
       resources:
         - /
         - /opt/elasticsearch
-    diskio:
-      resources:
-        - nvme0n1p1
-        - nvme1n1
+#    diskio:
+#      resources:
+#        - nvme0n1p1
+#        - nvme1n1
 
 logs:
   logs_collected:

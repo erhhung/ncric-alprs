@@ -1,10 +1,10 @@
 # this file will be merged with "cwagent-main.yaml"
 
 metrics:
-  metrics_collected:
-    net:
-      resources:
-        - eth0
+  metrics_collected: {}
+#    net:
+#      resources:
+#        - eth0
 
 logs:
   logs_collected:

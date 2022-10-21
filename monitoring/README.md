@@ -56,3 +56,6 @@ aws s3 cp s3://$(hostname | sed -En 's|^alprs([^-]+)-(.+)$|alprs-infra-\1/userda
 $CWAGENT_HOME/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -s -c file:$CWAGENT_HOME/etc/amazon-cloudwatch-agent.json
 logout
 ```
+
+_A convenience script "`upcwa.sh`" is also available that updates
+CloudWatch Agent configurations on **ALL instances** via SSH._
