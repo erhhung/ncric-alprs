@@ -36,8 +36,14 @@ diff2  = diff  HEAD~2
 diff20 = diff2 HEAD~0
 diff3  = diff  HEAD~3
 diff30 = diff3 HEAD~0
+# list files committed
+ls0 = diff-tree --no-commit-id --name-only -m -r HEAD~0
+ls1 = diff-tree --no-commit-id --name-only -m -r HEAD~1
+ls2 = diff-tree --no-commit-id --name-only -m -r HEAD~2
+ls3 = diff-tree --no-commit-id --name-only -m -r HEAD~3
+wc = whatchanged
 # show commit history
-hist = log --graph --date=short --pretty=format:\"%>|(6)%C(white)┃ %C(yellow)%h %C(brightcyan)%ad %C(white)┃ %Creset%s%C(brightred bold)%d %C(blue italic)[%an]\"
+hist = log --graph --date=short --pretty=format:\"%>|(6)%C(white)┃ %C(yellow)%h %C(brightcyan)%ad %C(white)┃ %Creset%s%C(brightred bold)%d %C(blue italic)[%ae]\"
 # edit commit history
 ehist = "!f() { \
   git rebase -i ${1:-HEAD~1}; \
