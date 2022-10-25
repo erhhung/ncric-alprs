@@ -207,7 +207,9 @@ deploy_webapp() {
   # don't upload "favicon_v2.png" because
   # new version has already been uploaded
   rm -f $build/favicon_v2.png
-  aws s3 sync $build s3://$WEBAPP_BUCKET --no-progress
+  # delete app.XXX.js as hash has probably changed
+  aws s3 rm --recursive s3://$WEBAPP_BUCKET/static/
+  aws s3 sync $build    s3://$WEBAPP_BUCKET --no-progress
 }
 
 archive_build() {
