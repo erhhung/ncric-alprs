@@ -1,4 +1,6 @@
-timeToLive: 300000
+# 10-hour TTL (same as JWT) in milliseconds
+# of pre-signed URL of license plate images
+timeToLive: 36000000
 bucketName: ${MEDIA_BUCKET}
 regionName: ${AWS_REGION}
 # IAM user access key and secret to read/write media bucket
