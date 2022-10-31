@@ -39,7 +39,8 @@ cd ..
 sed -Ei "s#https://(api|integration)(\.\w+)?\.openlattice\.com/?#$API_URL/#" \
   ./api/src/main/java/com/openlattice/client/RetrofitFactory.java
 
-./gradlew clean :$PROJECT:distTar -x test
+CONDUCTOR_XMS="-Xms512m" CONDUCTOR_XMX="-Xmx1g" \
+  ./gradlew clean :$PROJECT:distTar -x test
 
 dest=/opt/openlattice/$PROJECT
 if [ -d "$dest" ]; then

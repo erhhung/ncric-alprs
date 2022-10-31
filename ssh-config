@@ -11,6 +11,7 @@ Host *
   GSSAPIAuthentication no
   IgnoreUnknown UseKeychain
   UseKeychain yes
+  LogLevel error
 
 # defined first because SSH only uses the
 # first value specified for each property

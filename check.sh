@@ -144,10 +144,12 @@ funcs=$(cat <<EOF
 EOF
 )
 
- BLUE='\033[0;34m'
-GREEN='\033[0;32m'
-  RED='\033[0;31m'
-NOCLR='\033[0m'
+  BLUE='\033[0;34m'
+ GREEN='\033[0;32m'
+   RED='\033[0;31m'
+ NOCLR='\033[0m'
+THMSUP='\xf0\x9f\x91\x8d'
+THMSDN='\xf0\x9f\x91\x8e'
 
 for host in ${HOSTS[@]}; do
   abbrev=$(host_abbrev     $host)
@@ -158,5 +160,7 @@ for host in ${HOSTS[@]}; do
 
   [ $? -ne 0 ] && result="FAILED!" && break
 done
-[ "$result" ] && color=$RED || color=$GREEN
-echo -e $color"\nCheck ${result:-successful.}"$NOCLR && [ ! "$result" ]
+[ ! "$result" ] && color="$THMSUP $GREEN" \
+                || color="$THMSDN $RED"
+echo -e "\n${color}Check ${result:-successful.}${NOCLR}"
+[ ! "$result" ]

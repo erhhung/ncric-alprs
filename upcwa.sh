@@ -42,12 +42,22 @@ update_cwagent() {
 # skip the function declaration on first line
 script=$(declare -f update_cwagent | tail +2)
 
+  BLUE='\033[0;34m'
+ GREEN='\033[0;32m'
+   RED='\033[0;31m'
+ NOCLR='\033[0m'
+THMSUP='\xf0\x9f\x91\x8d'
+THMSDN='\xf0\x9f\x91\x8e'
+
 for host in ${HOSTS[@]}; do
   abbrev=$(host_abbrev $host)
 
-  echo -e "\nUpdating CloudWatch Agent on host \"$host\"..."
+  echo -e "\nUpdating CloudWatch Agent on host \"${BLUE}${host}${NOCLR}\"..."
   ssh "alprs${env}${abbrev}" -- sudo su -lc "${script@Q}"
 
   [ $? -ne 0 ] && result="FAILED!" && break
 done
-echo -e "\nUpdate ${result:-successful.}" && [ ! "$result" ]
+[ ! "$result" ] && color="$THMSUP $GREEN" \
+                || color="$THMSDN $RED"
+echo -e "\n${color}Update ${result:-successful.}${NOCLR}"
+[ ! "$result" ]

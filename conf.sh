@@ -27,6 +27,8 @@ fi
 
 action=$1 env=$2
 
+THMSUP='\xf0\x9f\x91\x8d'
+
 env_via_ls() {
   local tfvars=($(ls -1 {dev,prod}.tfvars 2> /dev/null))
   [ ${#tfvars[@]} -eq 1 ] || return $?
@@ -87,7 +89,7 @@ diff() {
   if (($?)); then
     delta -s $temp_remote $conf_local && exit 1
   else
-    echo -e "\xf0\x9f\x91\x8d No differences found."
+    echo -e "$THMSUP No differences found."
   fi
 }
 
