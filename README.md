@@ -182,7 +182,7 @@ Bootstrapping completed.
 App "shuttle" available.
 App "flapper" available.
 
-Check successful.
+👍 Check successful.
 ```
 
 ## S3 Buckets

@@ -102,26 +102,26 @@ check_elasticsearch() {
 }
 
 check_conductor() {
-  check_bootstrap    || return $?
-  check_running java || return $?
+  check_bootstrap      || return $?
+  check_running   java || return $?
   check_listening 5701
 }
 
 check_datastore() {
-  check_bootstrap    || return $?
-  check_running java || return $?
+  check_bootstrap      || return $?
+  check_running   java || return $?
   check_listening 8080 8443
 }
 
 check_indexer() {
-  check_bootstrap    || return $?
-  check_running java || return $?
+  check_bootstrap      || return $?
+  check_running   java || return $?
   check_listening 8080 8443
 }
 
 check_bastion() {
-  check_bootstrap        || return $?
-  check_running java npm || return $?
+  check_bootstrap          || return $?
+  check_running   java npm || return $?
   check_listening 4440 9000
 }
 
