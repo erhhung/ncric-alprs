@@ -230,8 +230,7 @@
                                 f.image AS "LPRVehiclePlatePhoto",
                                 s.standardized_agency_name
                             FROM {reads_table_name} f
-                            LEFT JOIN standardized_agency_names s
-                            ON f.cameranetworkname = s."ol.name"
+                            LEFT JOIN standardized_agency_names s ON f.cameranetworkname = s."ol.name"
                             WHERE "timestamp" >= '{dt_start}'
                               AND "timestamp" <  '{dt_end}'
                               AND s.standardized_agency_name = '{agency}'
