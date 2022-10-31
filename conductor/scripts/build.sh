@@ -30,7 +30,8 @@ cd rhizome
 git pull origin develop
 cd ..
 
-./gradlew clean :$PROJECT:distTar -x test
+CONDUCTOR_XMS="-Xms512m" CONDUCTOR_XMX="-Xmx1g" \
+  ./gradlew clean :$PROJECT:distTar -x test
 
 dest=/opt/openlattice/$PROJECT
 if [ -d "$dest" ]; then

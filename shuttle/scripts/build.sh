@@ -40,6 +40,8 @@ sed -Ei "s#https://(api|integration)(\.\w+)?\.openlattice\.com/?#$API_URL/#" \
   ./api/src/main/java/com/openlattice/client/RetrofitFactory.java
 
 CONDUCTOR_XMS="-Xms512m" CONDUCTOR_XMX="-Xmx1g" \
+ SOCRATES_XMS="-Xms512m"  SOCRATES_XMX="-Xmx1g" \
+  SHUTTLE_XMS="-Xms512m"   SHUTTLE_XMX="-Xmx1g" \
   ./gradlew clean :$PROJECT:distTar -x test
 
 dest=/opt/openlattice/$PROJECT
