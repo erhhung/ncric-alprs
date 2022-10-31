@@ -40,8 +40,8 @@ deb https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main
 EOF
   apt_update
   # "dev" packages are required to run "pgxn install"
-  eval_with_retry "wait_apt_get && apt-get install -y postgresql-14 postgresql-contrib \
-                     pgxnclient postgresql-server-dev-14 liblz4-dev libreadline-dev"
+  eval_with_retry "wait_apt_get && apt-get install -y postgresql-14 postgresql-contrib-14 \
+                                pgxnclient postgresql-server-dev-14 liblz4-dev libreadline-dev"
 )
 
 install_extensions() {
@@ -102,7 +102,7 @@ EOF
     chown -Rh postgres:postgres .
     su postgres -c 'bin/initdb data'
   fi
-
+  (
   cd conf
   mv postgresql.conf postgresql-default.conf
   aws s3 cp $S3_URL/postgresql/postgresql.conf . --no-progress
@@ -112,7 +112,8 @@ EOF
   aws s3 cp $S3_URL/postgresql/pg_hba.conf . --no-progress
   run generate_cert
   mv /tmp/server.* .
-  chown -h postgres:postgres *
+  )
+  chown -Rh postgres:postgres .
 )
 
 wait_service() {
