@@ -85,20 +85,25 @@ resource "aws_lb_listener" "api_http" {
 
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/route53_record
 resource "aws_route53_record" "api" {
-  provider       = aws.route53
-  zone_id        = local.zone_id
-  name           = local.api_domain
-  type           = "A"
-  set_identifier = "US"
+  provider = aws.route53
+  zone_id  = local.zone_id
+  name     = local.api_domain
+  type     = "A"
 
   alias {
     name                   = aws_lb.api.dns_name
     zone_id                = aws_lb.api.zone_id
     evaluate_target_health = true
   }
-  geolocation_routing_policy {
-    country = "US"
+
+  dynamic "geolocation_routing_policy" {
+    for_each = toset(var.geo_restriction ? [""] : [])
+
+    content {
+      country = "US"
+    }
   }
+  set_identifier = var.geo_restriction ? "US" : null
 }
 
 output "api_elb_domain" {

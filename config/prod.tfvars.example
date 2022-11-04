@@ -56,6 +56,11 @@ instance_types = {
   worker        = "t4g.xlarge"
 }
 
+data_volume_sizes = {
+  postgresql    = 4096
+  elasticsearch = 1024
+}
+
 # host numbers in private subnet
 private_ips = {
   postgresql    = 10
@@ -67,14 +72,15 @@ private_ips = {
   worker        = 70
 }
 
+# prevent unintentional
+# instance terminations
 lock_ami_versions = false
 
-data_volume_sizes = {
-  postgresql    = 4096
-  elasticsearch = 1024
-}
+# restrict access to US
+geo_restriction = false
 
-# account to allow writing ELB logs
+# AWS-owned account that is
+# allowed to write ELB logs
 elb_account_id = "048591011584"
 
 # ssh_keys[0] is used to create the required EC2 key pair

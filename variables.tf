@@ -66,6 +66,14 @@ variable "instance_types" {
   }
 }
 
+variable "data_volume_sizes" {
+  description = "Data volume sizes in GiB"
+  type = object({
+    postgresql    = number
+    elasticsearch = number
+  })
+}
+
 variable "private_ips" {
   description = "Private IP host numbers"
   type = object({
@@ -80,22 +88,20 @@ variable "private_ips" {
 }
 
 variable "lock_ami_versions" {
-  description = "Don't upgrade AMIs if true"
+  description = "Prevent unintentional AMI upgrades"
   type        = bool
   default     = false
 }
 
-variable "data_volume_sizes" {
-  description = "Data volume sizes in GiB"
-  type = object({
-    postgresql    = number
-    elasticsearch = number
-  })
+variable "geo_restriction" {
+  description = "Enable DNS-based geo restrictions"
+  type        = bool
+  default     = false
 }
 
 # https://docs.aws.amazon.com/elasticloadbalancing/latest/classic/enable-access-logs.html
 variable "elb_account_id" {
-  description = "ELB account ID"
+  description = "Account allowed to write ELB logs"
   type        = string
 }
 

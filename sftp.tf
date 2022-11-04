@@ -94,15 +94,19 @@ resource "aws_transfer_ssh_key" "sftp_users" {
 
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/route53_record
 resource "aws_route53_record" "sftp" {
-  provider       = aws.route53
-  zone_id        = local.zone_id
-  name           = local.sftp_domain
-  type           = "A"
-  set_identifier = "US"
-  records        = [aws_eip.sftp.public_ip]
-  ttl            = 60
+  provider = aws.route53
+  zone_id  = local.zone_id
+  name     = local.sftp_domain
+  type     = "A"
+  ttl      = 60
+  records  = [aws_eip.sftp.public_ip]
 
-  geolocation_routing_policy {
-    country = "US"
+  dynamic "geolocation_routing_policy" {
+    for_each = toset(var.geo_restriction ? [""] : [])
+
+    content {
+      country = "US"
+    }
   }
+  set_identifier = var.geo_restriction ? "US" : null
 }
