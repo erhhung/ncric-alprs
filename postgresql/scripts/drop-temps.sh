@@ -45,12 +45,15 @@ echo "[`ts`] Looking for temp tables prior to $cutoff..."
 while read table date; do
   echo "[`ts`] Dropping temp table from $date: $table..."
   psql "DROP TABLE $table CASCADE" || exit $?
+  sleep .5
 done < <(
   psql "SELECT table_name,
-               SUBSTRING(table_name, '^.+_(\d{4}(_\d{1,2}){2})')::date AS table_date
+               SUBSTRING(table_name, '^.+_(\d{4}(_\d{1,2}){2})')::date
+            AS table_date
           FROM information_schema.tables
          WHERE table_schema = 'integrations'
            AND table_name ~ '^.+_\d{4}(_\d{1,2}){5}$'
-           AND SUBSTRING(table_name, '^.+_(\d{4}(_\d{1,2}){2})')::date < '$cutoff'::date
-      ORDER BY table_date, table_name" -qF' '
+           AND SUBSTRING(table_name, '^.+_(\d{4}(_\d{1,2}){2})')::date
+               < '$cutoff'::date" -qF' ' | \
+    sort -k2 -k1V
 )
