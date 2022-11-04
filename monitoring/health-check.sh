@@ -45,12 +45,15 @@ exiting() {
     local count=$(wc -l $FAIL_LIST | awk '{print $1}')
     # only send email if failure has repeated
     # and send just once on prolonged failure
-    [  0$count -eq 2 ] && alert "$(fail_msg)"
-  else
-    [  -e $FAIL_LIST ] && alert "$(pass_msg)"
+    [ 0$count -eq 2 ] && alert "$(fail_msg)"
+
+  elif [ -e $FAIL_LIST ]; then
+    local count=$(wc -l $FAIL_LIST | awk '{print $1}')
+    # don't alert unless failure was alerted
+    [ 0$count -ge 2 ] && alert "$(pass_msg)"
+
     rm -f $FAIL_LIST
   fi
-
   cat $MAIL_BODY >> $LOG_FILE
   rm -f $LOCK_FILE $CURL_BODY $MAIL_BODY
 }
@@ -178,7 +181,8 @@ if [ 0$status -eq 200 ]; then
   jwt=$(jq -r .id_token $CURL_BODY)
 else
   echo "[`ts`] Request FAILED with status $status!"
-  echo "Auth0 response: $(xargs < $CURL_BODY)"
+  [ -f $CURL_BODY ] && \
+    echo "Auth0 response: $(xargs < $CURL_BODY)"
   failed=true
   exit 1
 fi
