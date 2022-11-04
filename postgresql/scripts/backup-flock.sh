@@ -38,7 +38,7 @@ trap exiting EXIT
 # increase multipart_chunksize from 8MB
 # to avoid exceeding the 10K part limit:
 # https://docs.aws.amazon.com/cli/latest/topic/s3-config.html
-aws configure set s3.multipart_chunksize 64MB
+aws configure set s3.multipart_chunksize 128MB
 set -o pipefail
 
 # <sql> [opts]...
@@ -131,9 +131,9 @@ while [ $day -lt -1 ]; do
   printf "[`ts`] Archiving %'d rows from flock_reads_$dow for $date...\n" $rows
   dest="s3://$BACKUP_BUCKET/flock/flock_reads_${date}_${dow}"
 
-  backup $dow $date "${dest}_without_images.csv.bz" "$cols" || exit $?
-  backup $dow $date "${dest}_with_images.csv.bz"            || exit $?
+  backup $dow $date "${dest}_without_images.csv.bz" "$cols"
+  backup $dow $date "${dest}_with_images.csv.bz"
 
   printf "[`ts`] Deleting %'d rows from flock_reads_$dow for $date...\n" $rows
-  psql "DELETE $sql" || exit $?
+  psql "DELETE $sql"
 done
