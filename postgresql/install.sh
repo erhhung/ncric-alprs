@@ -102,17 +102,20 @@ EOF
     chown -Rh postgres:postgres .
     su postgres -c 'bin/initdb data'
   fi
-  (
+  chown -Rh postgres:postgres .
+
   cd conf
   mv postgresql.conf postgresql-default.conf
   aws s3 cp $S3_URL/postgresql/postgresql.conf . --no-progress
   shared_buffers=$(awk '/MemTotal.*kB/ {print int($2 /1024/1024 / 2)+1}' /proc/meminfo)
+  [ $shared_buffers -le 4 ] && ((shared_buffers /= 2)) # adjust for small dev instance
   sed -Ei "s/^shared_buffers.+$/shared_buffers = ${shared_buffers}GB/" postgresql.conf
   mv pg_hba.conf pg_hba-default.conf
   aws s3 cp $S3_URL/postgresql/pg_hba.conf . --no-progress
   run generate_cert
   mv /tmp/server.* .
-  )
+
+  cd /etc/postgresql
   chown -Rh postgres:postgres .
 )
 
