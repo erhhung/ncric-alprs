@@ -1,8 +1,3 @@
-terraform {
-  # https://www.terraform.io/language/expressions/type-constraints#experimental-optional-object-type-attributes
-  experiments = [module_variable_optional_attrs]
-}
-
 variable "bucket" {
   description = "Backend config bucket"
   type        = string
@@ -18,7 +13,6 @@ variable "files" {
     # data: file content string
     file = optional(string)
     data = optional(string)
-    # default type: text/plain
-    type = optional(string)
+    type = optional(string, "text/plain")
   }))
 }

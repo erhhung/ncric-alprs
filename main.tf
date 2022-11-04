@@ -11,10 +11,7 @@ terraform {
       version = "~> 4.2"
     }
   }
-  required_version = ">= 1.1"
-
-  # https://www.terraform.io/language/expressions/type-constraints#experimental-optional-object-type-attributes
-  experiments = [module_variable_optional_attrs]
+  required_version = ">= 1.3"
 }
 
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/caller_identity

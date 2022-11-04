@@ -111,7 +111,7 @@ variable "sftp_users" {
   description = "Public keys and home dirs of SFTP users"
   type = map(object({
     public_key = string
-    home_dir   = optional(string)
+    home_dir   = string
   }))
 }
 

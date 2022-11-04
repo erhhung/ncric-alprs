@@ -1,8 +1,3 @@
-terraform {
-  # https://www.terraform.io/language/expressions/type-constraints#experimental-optional-object-type-attributes
-  experiments = [module_variable_optional_attrs]
-}
-
 variable "name" {
   description = "Security group name"
   type        = string
@@ -25,7 +20,7 @@ variable "rules" {
   type = map(object({
     from_port   = number
     to_port     = optional(number)
-    protocol    = optional(string)
+    protocol    = optional(string, "tcp")
     cidr_blocks = list(string)
   }))
 
