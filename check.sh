@@ -5,6 +5,26 @@
 
 cd "`dirname "$0"`"
 
+env_via_tfvars() {
+  local tfvars=($(cd config; ls -1 {dev,prod}.tfvars 2> /dev/null))
+  [ ${#tfvars[@]} -eq 1 ] || return $?
+  env="${tfvars/.*/}"
+}
+
+env_via_tfstate() {
+  printf "Retrieving Terraform output variables..."
+  env=$(./tf.sh output -raw env 2>&1)
+  if [ $? -ne 0 ]; then
+    echo >&2 -e "\n$env"
+    return 1
+  fi
+  echo "DONE."
+  lf=true
+}
+
+# determine env via .tfvars file or tf state
+env_via_tfvars || env_via_tfstate || exit $?
+
 HOSTS=(
   postgresql
   elasticsearch
@@ -27,10 +47,6 @@ host_abbrev() {
     *)             return 1
   esac
 }
-
-printf 'Retrieving Terraform output variables...'
-env=$(./tf.sh output -raw env)
-echo "DONE."
 
 check_bootstrap() (
   if [ ! -f /bootstrap.log ]; then
@@ -155,10 +171,12 @@ for host in ${HOSTS[@]}; do
   abbrev=$(host_abbrev     $host)
   check=$(declare -f check_$host)
 
-  echo -e "\nChecking host \"${BLUE}${host}${NOCLR}\"..."
+  [ "$lf" ] && echo
+  echo -e "Checking host \"${BLUE}${host}${NOCLR}\"..."
   ssh "alprs${env}${abbrev}" "$funcs; $check; check_$host"
 
   [ $? -ne 0 ] && result="FAILED!" && break
+  lf=true
 done
 [ ! "$result" ] && color="$THMSUP $GREEN" \
                 || color="$THMSDN $RED"

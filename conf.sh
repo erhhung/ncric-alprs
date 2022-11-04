@@ -29,14 +29,14 @@ action=$1 env=$2
 
 THMSUP='\xf0\x9f\x91\x8d'
 
-env_via_ls() {
+env_via_tfvars() {
   local tfvars=($(ls -1 {dev,prod}.tfvars 2> /dev/null))
   [ ${#tfvars[@]} -eq 1 ] || return $?
   env="${tfvars/.*/}"
 }
 
-env_via_tf() {
-  printf 'Retrieving Terraform output variables...'
+env_via_tfstate() {
+  printf "Retrieving Terraform output variables..."
   env=$(../tf.sh output -raw env 2>&1)
   if [ $? -ne 0 ]; then
     echo >&2 -e "\n$env"
@@ -45,8 +45,8 @@ env_via_tf() {
   echo "DONE."
 }
 
-# determine env via $2 or ls or Terraform output
-[ "$env" ] || env_via_ls || env_via_tf || exit $?
+# determine env via $2 or .tfvars file or terraform state
+[ "$env" ] || env_via_tfvars || env_via_tfstate || exit $?
 
 conf_local="$env.tfvars"
 conf_remote="s3://alprs-infra-$env/tfstate/$conf_local"

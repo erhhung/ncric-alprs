@@ -29,12 +29,24 @@ _altcmd() {
   return 1
 }
 
-printf 'Retrieving Terraform output variables...'
-env=$(./tf.sh output -raw env 2>&1)
-if [ $? -ne 0 ]; then
-  echo >&2 -e "\n$env"
-  exit 1
-fi
+env_via_tfvars() {
+  local tfvars=($(cd config; ls -1 {dev,prod}.tfvars 2> /dev/null))
+  [ ${#tfvars[@]} -eq 1 ] || return $?
+  env="${tfvars/.*/}"
+}
+
+env_via_tfstate() {
+  printf "Retrieving Terraform output variables..."
+  env=$(./tf.sh output -raw env 2>&1)
+  if [ $? -ne 0 ]; then
+    echo >&2 -e "\n$env"
+    return 1
+  fi
+  echo "DONE."
+}
+
+# determine env via .tfvars file or tf state
+env_via_tfvars || env_via_tfstate || exit $?
 
  known=".ssh/known_hosts"
 config=".ssh/config"
@@ -50,7 +62,7 @@ old_host_ids() {
   $sed -En "{N;s/^Host +(alprs$env[a-z]+).+HostName +(i-.+)$/\1 \2/p;D}" ~/$config
 }
 
-# remove obsolete host entries from ~/.ssh/known_hosts
+printf 'Removing old hosts from "known_hosts"...'
 while read host id; do
   # save ID to show later
   eval "export $host=$id"

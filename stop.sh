@@ -8,6 +8,22 @@
 
 cd "`dirname "$0"`"
 
+env_via_tfvars() {
+  local tfvars=($(cd config; ls -1 {dev,prod}.tfvars 2> /dev/null))
+  [ ${#tfvars[@]} -eq 1 ] || return $?
+  env="${tfvars/.*/}"
+}
+
+env_via_tfstate() {
+  printf "Retrieving Terraform output variables..."
+  env=$(./tf.sh output -raw env 2>&1)
+  if [ $? -ne 0 ]; then
+    echo >&2 -e "\n$env"
+    return 1
+  fi
+  echo "DONE."
+}
+
 # prompt user for Y/N
 # single-key response
 # <message> [default]
@@ -75,11 +91,10 @@ if [ ${#hosts} -eq 0 ]; then
   echo >&2 "No valid host provided!"
   exit 1
 fi
-ask >&2 "Proceed?" N || exit 0
+ask >&2 "Proceed?" N && echo || exit 0
 
-printf '\nRetrieving Terraform output variables...'
-env=$(./tf.sh output -raw env)
-echo "DONE."
+# determine env via .tfvars file or tf state
+env_via_tfvars || env_via_tfstate || exit $?
 
 stop_bastion() {
   sudo service rundeckd stop
@@ -105,12 +120,15 @@ stop_postgresql() {
   sudo service postgresql stop
 }
 
+ BLUE='\033[0;34m'
+NOCLR='\033[0m'
+
 for host in ${hosts[@]}; do
   abbrev=$(host_abbrev $host)
   script=$(declare -f stop_$host || \
            declare -f stop_service)
 
-  printf "Stopping services on host \"$host\"..."
+  printf "Stopping services on host \"${BLUE}${host}${NOCLR}\"..."
   # skip first line of script, the function declaration
   ssh "alprs${env}${abbrev}" "$(tail +2 <<< "$script")" > /dev/null 2>&1
   echo "DONE."
