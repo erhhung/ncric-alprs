@@ -210,6 +210,13 @@ start_cwagent() (
     -m ec2 -s -c file:etc/amazon-cloudwatch-agent.json
 )
 
+extra_aliases() {
+  echo -e \\n >> .bash_aliases
+  cat <<'EOF' >> .bash_aliases
+alias logs='most +999999 ~/health-check/*.log'
+EOF
+}
+
 if [ ${BASH_VERSINFO[0]}${BASH_VERSINFO[1]} -lt 51 ]; then
   run upgrade_bash; exit
 fi
@@ -237,3 +244,4 @@ run config_tmpfiles
 run install_cwagent
 run config_cwagent
 run start_cwagent
+run extra_aliases $DEFAULT_USER

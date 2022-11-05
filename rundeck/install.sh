@@ -174,8 +174,8 @@ import_ssh_key() {
 }
 
 extra_aliases() {
-  echo -e \\n >> .bash_aliases
   cat <<'EOF' >> .bash_aliases
+
 disable_rundeck_jobs() {
   rd jobs list -f - -F yaml | \
     yq '.[] | ["job=", .id, " scheduled=", .scheduleEnabled]

@@ -212,6 +212,8 @@ psql() {
   [ "$USER" == 'postgres' ] && $(which psql) "$@" || \
     \sudo -E su postgres -c   "$(which psql)  $@"
 }
+
+alias logs='most +999999 $PG_HOME/jobs/*.log'
 EOF
       ;;
   esac
