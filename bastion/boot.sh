@@ -151,7 +151,8 @@ install_scripts() (
   mkdir -p health-check
   cd health-check
   aws s3 cp $S3_URL/bastion/health-check.sh . --no-progress
-  chmod +x health-check.sh
+  # also make ~/ readable so logs can be sent to CloudWatch
+  chmod +rx health-check.sh ~
 )
 
 config_cronjobs() (

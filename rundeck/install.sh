@@ -280,7 +280,8 @@ EOF
     printf "%s" "$value" > /tmp/$path
     eval_with_retry "rd keys delete -p $path" &> /dev/null || true
     eval_with_retry "rd keys create -p $path -t password -f /tmp/$path"
-  done < keys.txt
+  done    < keys.txt
+  chmod 400 keys.txt
   rm -rf /tmp/keys
 }
 
