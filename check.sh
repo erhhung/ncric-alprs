@@ -66,6 +66,31 @@ check_bootstrap() (
   exit 1
 )
 
+# <port...>
+check_listening() (
+  for port in $@; do
+    if nc -z localhost $port; then
+      printf "Port ${GREEN}%4d${NOCLR} listening.\n" $port
+    else
+      echo -e "Port ${RED}${port}${NOCLR} not listening!"
+      exit 1
+    fi
+  done
+)
+
+# <path...>
+check_disk_free() (
+  for path in "$@"; do
+    pcnt=$(df $path | sed -En 's/.+( ([0-9]+))%.+/\2/p')
+    if [ 0$pcnt -le 90 ]; then
+      echo -e "Volume ${GREEN}${path}${NOCLR} ${pcnt}%."
+    else
+      echo -e "Volume ${RED}${path}${NOCLR} over 90%!"
+      exit 1
+    fi
+  done
+)
+
 # <app...>
 check_available() (
   for app in "$@"; do
@@ -75,18 +100,6 @@ check_available() (
       printf "App %-20s available.\n" "$app"
     else
       echo -e "App \"${RED}${app}${NOCLR}\" not available!"
-      exit 1
-    fi
-  done
-)
-
-# <port...>
-check_listening() (
-  for port in $@; do
-    if nc -z localhost $port; then
-      printf "Port ${GREEN}%4d${NOCLR} listening.\n" $port
-    else
-      echo -e "Port ${RED}${port}${NOCLR} not listening!"
       exit 1
     fi
   done
@@ -109,12 +122,14 @@ check_running() (
 check_postgresql() {
   check_bootstrap || return $?
   check_listening 5432
+  check_disk_free /opt/postgresql
 }
 
 check_elasticsearch() {
   check_bootstrap || return $?
   check_listening 9200 9300 5601 \
                   9201 9301 443
+  check_disk_free /opt/elasticsearch
 }
 
 check_conductor() {
@@ -154,8 +169,9 @@ funcs=$(cat <<EOF
   NOCLR='\033[0m'
 
 `declare -f check_bootstrap`
-`declare -f check_available`
 `declare -f check_listening`
+`declare -f check_disk_free`
+`declare -f check_available`
 `declare -f check_running`
 EOF
 )

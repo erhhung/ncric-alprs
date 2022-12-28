@@ -13,7 +13,10 @@ st = status
 # show current branch
 cb = rev-parse --abbrev-ref HEAD
 # show root path of this project
-root = rev-parse --show-toplevel
+root = "!f() { \
+  r=$(git rev-parse --show-superproject-working-tree); \
+  [ "$r" ] && echo $r || git rev-parse --show-toplevel; \
+}; f"
 # show HEAD commit hash
 hash = rev-parse --short HEAD
 # show HEAD commit log
