@@ -105,8 +105,9 @@ class ALPRIntegration(Integration):
             newdict['location_id'] = "-".join([latitude, longitude])
         if pd.notnull(row.eventDate) and pd.notnull(row.eventTime):
             try:
+                # eventDate and eventTime in the raw JSON are in local PST time zone!
                 event_datetime = datetime.strptime(f"{row.eventDate} {row.eventTime}", "%Y-%m-%d %H:%M:%S")
-                newdict['eventDateTime'] = pytz.timezone("UTC").localize(event_datetime)
+                newdict['eventDateTime'] = pytz.timezone("America/Los_Angeles").localize(event_datetime)
             except ValueError as err:
                 print(f"Read data formatted incorrectly as {err}")
                 pass
