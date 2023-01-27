@@ -87,8 +87,8 @@ elapsed() {
   }
 
   local days hours mins secs output=()
-  # add 5 seconds to ensure we round up the minute
-  ((secs  = `date "+%s"` - `date -d "$1" "+%s"` + 5))
+  # add 45 seconds to ensure we round up to 10 minutes
+  ((secs  = `date "+%s"` - `date -d "$1" "+%s"` + 45))
   ((mins  =  secs  / 60))
   ((hours =  mins  / 60))
   ((days  =  hours / 24))
@@ -104,6 +104,7 @@ elapsed() {
 }
 
 fail_msg() {
+  local initial=$(head -1 $FAIL_LIST)
   cat <<EOT
 Subject={
   Charset=UTF-8,
@@ -115,7 +116,8 @@ Body={
     Data="
 <html>
 <body>
-<b>$APP_URL — $auth0_email login failed!</b>
+<b>$APP_URL — $auth0_email login failed!</b><br>
+The initial failure occurred at <b>$initial</b>.
 <pre>$(< $MAIL_BODY)
 </pre>
 </body>
