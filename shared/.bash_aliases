@@ -222,10 +222,10 @@ rmold() {
   fi
 
   if [[ "$conf" == '--confirm' ]]; then
-    find "$@" ! -path . -maxdepth 1 -mtime "+$days" \
+    find -maxdepth 1 "$@" ! -path . -mtime "+$days" \
         -exec rm -rf "{}" \;
   else
-    find "$@" ! -path . -maxdepth 1 -mtime "+$days" \
+    find -maxdepth 1 "$@" ! -path . -mtime "+$days" \
         -printf "%T@ [%TD %TH:%TM] %s %p\n" 2> /dev/null \
       | sort -n | awk '{ hum[1]=" B";
       hum[1024**4]="TB"; hum[1024**3]="GB";

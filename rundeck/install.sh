@@ -136,6 +136,8 @@ import_project() (
   mkdir -p rundeck
   cd rundeck
 
+  ln -s /var/lib/rundeck/logs/rundeck/$proj/job job-logs
+
   if eval_with_retry "rd projects list" | grep -q $proj; then
     # project already exists; backup before overwriting
     echo "Archiving Rundeck project \"$proj\"..."
@@ -184,6 +186,17 @@ disable_rundeck_jobs() {
   local jobs=($(rd jobs list -% %id))
   rd jobs unschedulebulk -i $(IFS=,; echo "${jobs[*]}") -y
 }
+
+# [days=30]
+purge_rundeck_job_logs() (
+  func=$(declare -f rmold)
+  cd $HOME/rundeck/job-logs
+  for dir in $(find -path "*/logs"); do (
+    cd $dir; echo $dir
+    sudo bash -c "$func;
+      rmold --confirm ${1:-30}"
+  ); done
+)
 EOF
 }
 
