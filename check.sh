@@ -48,6 +48,16 @@ host_abbrev() {
   esac
 }
 
+# get max width of args
+max_width() {
+  local str len max=0
+  for str in "$@"; do
+    len=${#str}
+    ((max=len>max?len:max))
+  done
+  echo $max
+}
+
 check_bootstrap() (
   if [ ! -f /bootstrap.log ]; then
     echo -e "${YELLOW}Bootstrapping${NOCLR} not started yet!"
@@ -68,9 +78,11 @@ check_bootstrap() (
 
 # <port...>
 check_listening() (
+  w=$(max_width $@)
   for port in $@; do
     if nc -z localhost $port; then
-      printf "Port ${GREEN}%4d${NOCLR} listening.\n" $port
+      printf -v port "${GREEN}${port}${NOCLR}"
+      printf "Port %$((w+11))s listening.\n" $port
     else
       echo -e "Port ${RED}${port}${NOCLR} not listening!"
       exit 1
@@ -80,10 +92,12 @@ check_listening() (
 
 # <path...>
 check_disk_free() (
+  w=$(max_width "$@")
   for path in "$@"; do
-    pcnt=$(df $path | sed -En 's/.+( ([0-9]+))%.+/\2/p')
+    pcnt=$(df "$path" | sed -En 's/.+( ([0-9]+))%.+/\2/p')
     if [ 0$pcnt -le 90 ]; then
-      echo -e "Volume ${GREEN}${path}${NOCLR} ${pcnt}%."
+      printf -v path "${GREEN}${path}${NOCLR}"
+      printf "Volume %-$((w+11))s ${pcnt}%%.\n" "$path"
     else
       echo -e "Volume ${RED}${path}${NOCLR} over 90%!"
       exit 1
@@ -93,11 +107,11 @@ check_disk_free() (
 
 # <app...>
 check_available() (
+  w=$(max_width "$@")
   for app in "$@"; do
-    if hash $app 2> /dev/null; then
+    if hash "$app" 2> /dev/null; then
       printf -v app "\"${GREEN}${app}${NOCLR}\""
-      # left justify for 7-character app name
-      printf "App %-20s available.\n" "$app"
+      printf "App %-$((w+13))s available.\n" "$app"
     else
       echo -e "App \"${RED}${app}${NOCLR}\" not available!"
       exit 1
@@ -107,11 +121,11 @@ check_available() (
 
 # <process...>
 check_running() (
+  w=$(max_width "$@")
   for proc in "$@"; do
     if pgrep -f "$proc" > /dev/null; then
       printf -v proc "\"${GREEN}${proc}${NOCLR}\""
-      # left justify for 4-character proc name
-      printf "Process %-17s running.\n" "$proc"
+      printf "Process %-$((w+13))s running.\n" "$proc"
     else
       echo -e "Process \"${RED}${proc}${NOCLR}\" not running!"
       exit 1
@@ -122,43 +136,48 @@ check_running() (
 check_postgresql() {
   check_bootstrap || return $?
   check_listening 5432
-  check_disk_free /opt/postgresql
+  check_disk_free $HOME /opt/postgresql
 }
 
 check_elasticsearch() {
   check_bootstrap || return $?
   check_listening 9200 9300 5601 \
                   9201 9301 443
-  check_disk_free /opt/elasticsearch
+  check_disk_free $HOME /opt/elasticsearch
 }
 
 check_conductor() {
   check_bootstrap      || return $?
   check_running   java || return $?
   check_listening 5701
+  check_disk_free $HOME
 }
 
 check_datastore() {
   check_bootstrap      || return $?
   check_running   java || return $?
   check_listening 8080 8443
+  check_disk_free $HOME
 }
 
 check_indexer() {
   check_bootstrap      || return $?
   check_running   java || return $?
   check_listening 8080 8443
+  check_disk_free $HOME
 }
 
 check_bastion() {
   check_bootstrap          || return $?
   check_running   java npm || return $?
   check_listening 4440 9000
+  check_disk_free $HOME
 }
 
 check_worker() {
   check_bootstrap || return $?
   check_available shuttle flapper
+  check_disk_free $HOME
 }
 
 funcs=$(cat <<EOF
@@ -168,6 +187,7 @@ funcs=$(cat <<EOF
   WHITE='\033[1;37m'
   NOCLR='\033[0m'
 
+`declare -f max_width`
 `declare -f check_bootstrap`
 `declare -f check_listening`
 `declare -f check_disk_free`
