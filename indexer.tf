@@ -66,7 +66,7 @@ module "indexer_server" {
   ami_id           = local.applied_amis["ubuntu_20arm"].id
   instance_type    = var.instance_types["indexer"]
   instance_name    = local.hosts["indexer"]
-  root_volume_size = 48
+  root_volume_size = var.root_volume_sizes["indexer"]
   subnet_id        = module.main_vpc.subnet_ids["private1"]
   private_ip       = local.private_ips["indexer"]
   security_groups  = [module.services_sg.id]

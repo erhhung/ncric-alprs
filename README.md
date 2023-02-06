@@ -138,11 +138,11 @@ You can run "`check.sh`" 10 minutes or so after bootstrapping new instances to p
 
 ```bash
 $ ./check.sh
-Retrieving Terraform output variables...DONE.
-
 Checking host "postgresql"...
 Bootstrapping completed.
 Port 5432 listening.
+Volume /home/ubuntu    17%.
+Volume /opt/postgresql 60%.
 
 Checking host "elasticsearch"...
 Bootstrapping completed.
@@ -152,23 +152,28 @@ Port 5601 listening.
 Port 9201 listening.
 Port 9301 listening.
 Port  443 listening.
+Volume /home/ubuntu       21%.
+Volume /opt/elasticsearch 65%.
 
 Checking host "conductor"...
 Bootstrapping completed.
 Process "java" running.
 Port 5701 listening.
+Volume /home/ubuntu 21%.
 
 Checking host "datastore"...
 Bootstrapping completed.
 Process "java" running.
 Port 8080 listening.
 Port 8443 listening.
+Volume /home/ubuntu 20%.
 
 Checking host "indexer"...
 Bootstrapping completed.
 Process "java" running.
 Port 8080 listening.
 Port 8443 listening.
+Volume /home/ubuntu 15%.
 
 Checking host "bastion"...
 Bootstrapping completed.
@@ -176,14 +181,27 @@ Process "java" running.
 Process "npm"  running.
 Port 4440 listening.
 Port 9000 listening.
+Volume /home/ec2-user 65%.
 
 Checking host "worker"...
 Bootstrapping completed.
 App "shuttle" available.
 App "flapper" available.
+Volume /home/ubuntu 40%.
 
 👍 Check successful.
 ```
+
+### Root Volumes
+
+If, for some reason, the **root disk becomes full** and SSH to the instance no longer works,
+first, **increase the EBS volume size** manually, and then follow the steps in this document
+to expand the root partition and then the file system:
+
+* https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/recognize-expanded-volume-linux.html
+
+Also, make sure to update the environment-specific configuration file ("`config/dev.tfvars`"
+or "`config/prod.tfvars`") to reflect the new storage size.
 
 ## S3 Buckets
 

@@ -63,7 +63,7 @@ module "datastore_server" {
   ami_id           = local.applied_amis["ubuntu_20arm"].id
   instance_type    = var.instance_types["datastore"]
   instance_name    = local.hosts["datastore"]
-  root_volume_size = 32
+  root_volume_size = var.root_volume_sizes["datastore"]
   subnet_id        = module.main_vpc.subnet_ids["private1"]
   private_ip       = local.private_ips["datastore"]
   security_groups  = [module.services_sg.id]

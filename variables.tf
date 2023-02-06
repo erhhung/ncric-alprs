@@ -47,12 +47,12 @@ variable "buckets" {
 variable "instance_types" {
   description = "Host instance types"
   type = object({
-    bastion       = string
     postgresql    = string
     elasticsearch = string
     conductor     = string
     datastore     = string
     indexer       = string
+    bastion       = string
     worker        = string
   })
 
@@ -66,6 +66,19 @@ variable "instance_types" {
   }
 }
 
+variable "root_volume_sizes" {
+  description = "Root volume sizes in GiB"
+  type = object({
+    postgresql    = number
+    elasticsearch = number
+    conductor     = number
+    datastore     = number
+    indexer       = number
+    bastion       = number
+    worker        = number
+  })
+}
+
 variable "data_volume_sizes" {
   description = "Data volume sizes in GiB"
   type = object({
@@ -77,12 +90,12 @@ variable "data_volume_sizes" {
 variable "private_ips" {
   description = "Private IP host numbers"
   type = object({
-    bastion       = number
     postgresql    = number
     elasticsearch = number
     conductor     = number
     datastore     = number
     indexer       = number
+    bastion       = number
     worker        = number
   })
 }

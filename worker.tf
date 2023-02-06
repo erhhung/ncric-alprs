@@ -95,7 +95,7 @@ module "worker_node" {
   ami_id           = local.applied_amis["ubuntu_20arm"].id
   instance_type    = var.instance_types["worker"]
   instance_name    = local.hosts["worker"]
-  root_volume_size = 32
+  root_volume_size = var.root_volume_sizes["worker"]
   subnet_id        = module.main_vpc.subnet_ids["private1"]
   private_ip       = local.private_ips["worker"]
   security_groups  = [module.private_ssh_sg.id]

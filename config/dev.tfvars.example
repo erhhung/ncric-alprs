@@ -56,6 +56,16 @@ instance_types = {
   worker        = "t4g.large"
 }
 
+root_volume_sizes = {
+  postgresql    = 32
+  elasticsearch = 32
+  conductor     = 32
+  datastore     = 32
+  indexer       = 32
+  bastion       = 32
+  worker        = 32
+}
+
 data_volume_sizes = {
   postgresql    = 32
   elasticsearch = 16

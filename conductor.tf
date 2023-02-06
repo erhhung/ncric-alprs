@@ -63,7 +63,7 @@ module "conductor_server" {
   ami_id           = local.applied_amis["ubuntu_20arm"].id
   instance_type    = var.instance_types["conductor"]
   instance_name    = local.hosts["conductor"]
-  root_volume_size = 32
+  root_volume_size = var.root_volume_sizes["conductor"]
   subnet_id        = module.main_vpc.subnet_ids["private1"]
   private_ip       = local.private_ips["conductor"]
   security_groups  = [module.services_sg.id]

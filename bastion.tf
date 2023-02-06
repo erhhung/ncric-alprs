@@ -78,7 +78,7 @@ module "bastion_host" {
   ami_id           = local.applied_amis["amazon_linux2"].id
   instance_type    = var.instance_types["bastion"]
   instance_name    = local.hosts["bastion"]
-  root_volume_size = 32
+  root_volume_size = var.root_volume_sizes["bastion"]
   subnet_id        = module.main_vpc.subnet_ids["private1"]
   private_ip       = local.private_ips["bastion"]
   security_groups  = [module.egress_only_sg.id]

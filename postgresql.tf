@@ -116,7 +116,7 @@ module "postgresql_server" {
   ami_id           = local.applied_amis["ubuntu_20arm"].id
   instance_type    = var.instance_types["postgresql"]
   instance_name    = local.hosts["postgresql"]
-  root_volume_size = 32
+  root_volume_size = var.root_volume_sizes["postgresql"]
   subnet_id        = module.main_vpc.subnet_ids["private1"]
   private_ip       = local.private_ips["postgresql"]
   security_groups  = [module.postgresql_sg.id]

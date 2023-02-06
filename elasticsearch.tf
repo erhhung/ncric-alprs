@@ -112,7 +112,7 @@ module "elasticsearch_server" {
   ami_id           = local.applied_amis["ubuntu_20arm"].id
   instance_type    = var.instance_types["elasticsearch"]
   instance_name    = local.hosts["elasticsearch"]
-  root_volume_size = 32
+  root_volume_size = var.root_volume_sizes["elasticsearch"]
   subnet_id        = module.main_vpc.subnet_ids["private1"]
   private_ip       = local.private_ips["elasticsearch"]
   security_groups  = [module.elasticsearch_sg.id]
