@@ -134,49 +134,50 @@ check_running() (
 )
 
 check_postgresql() {
-  check_bootstrap || return $?
-  check_listening 5432
+  check_bootstrap      || return $?
+  check_listening 5432 || return $?
   check_disk_free $HOME /opt/postgresql
 }
 
 check_elasticsearch() {
   check_bootstrap || return $?
   check_listening 9200 9300 5601 \
-                  9201 9301 443
+                  9201 9301 443  || return $?
   check_disk_free $HOME /opt/elasticsearch
 }
 
 check_conductor() {
   check_bootstrap      || return $?
   check_running   java || return $?
-  check_listening 5701
+  check_listening 5701 || return $?
   check_disk_free $HOME
 }
 
 check_datastore() {
-  check_bootstrap      || return $?
-  check_running   java || return $?
-  check_listening 8080 8443
+  check_bootstrap           || return $?
+  check_running   java      || return $?
+  check_listening 8080 8443 || return $?
   check_disk_free $HOME
 }
 
 check_indexer() {
-  check_bootstrap      || return $?
-  check_running   java || return $?
-  check_listening 8080 8443
+  check_bootstrap           || return $?
+  check_running   java      || return $?
+  check_listening 8080 8443 || return $?
   check_disk_free $HOME
 }
 
 check_bastion() {
-  check_bootstrap          || return $?
-  check_running   java npm || return $?
-  check_listening 4440 9000
+  check_bootstrap           || return $?
+  check_running   java npm  || return $?
+  check_listening 4440 9000 || return $?
   check_disk_free $HOME
 }
 
 check_worker() {
   check_bootstrap || return $?
-  check_available shuttle flapper
+  check_available shuttle \
+                  flapper || return $?
   check_disk_free $HOME
 }
 
