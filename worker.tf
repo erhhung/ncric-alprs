@@ -56,7 +56,7 @@ ${templatefile("${path.module}/worker/boot.tftpl", {
     POSTGRESQL_IP = module.postgresql_server.private_ip
     DATASTORE_IP  = module.datastore_server.private_ip
     # public key is created in keys.tf
-    rundeck_key = chomp(tls_private_key.rundeck_worker.public_key_openssh)
+    rundeck_key = "${chomp(tls_private_key.rundeck_worker.public_key_openssh)} rundeck@${local.app_domain}"
   })}
 ${file("${path.module}/shared/boot.sh")}
 ${file("${path.module}/worker/install.sh")}
