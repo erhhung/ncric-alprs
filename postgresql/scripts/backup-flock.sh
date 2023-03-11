@@ -12,7 +12,7 @@ BACKUP_BUCKET=$1
 
 NCRIC_DB="org_1446ff84711242ec828df181f45e4d20"
 # days to keep data in "flock_reads" table
-RETENTION_DAYS=3
+RETENTION_DAYS=2
 
  LOG_FILE="$PG_HOME/jobs/$CRONJOB_NAME.log"
 LOCK_FILE="/var/lock/$CRONJOB_NAME.lock"

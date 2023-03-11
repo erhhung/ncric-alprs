@@ -263,7 +263,7 @@ config_project() {
   set_property $config project.ssh-key-storage-path keys/worker
   set_property $config project.ssh-keypath
   # https://github.com/rundeck-plugins/openssh-node-execution/issues/21
-  set_property $config project.plugin.FileCopier.ssh-copier.ssh_key_passphrase_option disabled
+  # set_property $config project.plugin.FileCopier.ssh-copier.ssh_key_passphrase_option disabled
   rd projects configure set -p $proj -f $config
   cat $config
   rm  $config
