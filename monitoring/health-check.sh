@@ -205,7 +205,7 @@ curl_api() {
   status=$(curl "${args[@]}" 2> /dev/null)
   if [ 0$status -ne 200 ]; then
     echo "[`ts`] Request FAILED with status $status!"
-    failed=true
+    failed=true datastore=true
     return 1
   fi
 }

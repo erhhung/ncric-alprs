@@ -86,7 +86,7 @@ resource "aws_s3_bucket_lifecycle_configuration" "sftp" {
 
   rule {
     id     = "glacier-30-expire-180"
-    status = "Enabled"
+    status = "Disabled"
 
     transition {
       days          = 30
@@ -94,6 +94,14 @@ resource "aws_s3_bucket_lifecycle_configuration" "sftp" {
     }
     expiration {
       days = 180
+    }
+  }
+  rule {
+    id     = "expire-7"
+    status = "Enabled"
+
+    expiration {
+      days = 7
     }
   }
 }
@@ -126,20 +134,21 @@ resource "aws_s3_bucket_lifecycle_configuration" "backup" {
     }
   }
   rule {
-    id     = "postgresql-expire-14"
-    status = "Enabled"
+    id     = "postgresql-expire-7"
+    status = "Disabled"
 
     filter {
       prefix = "postgresql/"
     }
     expiration {
-      days = 14
+      days = 7
     }
   }
   rule {
-    # apply the same rule as the SFTP bucket
+    # apply the same rule as SFTP bucket
+    # can go to Glacier only after 30 days
     id     = "flock-glacier-30-expire-180"
-    status = "Enabled"
+    status = "Disabled"
 
     filter {
       prefix = "flock/"
@@ -150,6 +159,17 @@ resource "aws_s3_bucket_lifecycle_configuration" "backup" {
     }
     expiration {
       days = 180
+    }
+  }
+  rule {
+    id     = "flock-expire-1"
+    status = "Enabled"
+
+    filter {
+      prefix = "flock/"
+    }
+    expiration {
+      days = 1
     }
   }
 }
