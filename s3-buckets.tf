@@ -66,18 +66,16 @@ resource "aws_s3_bucket_ownership_controls" "buckets" {
   bucket     = each.value
 
   rule {
-    object_ownership = "BucketOwnerPreferred"
+    object_ownership = each.key == "audit" ? "BucketOwnerPreferred" : "BucketOwnerEnforced"
   }
 }
 
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket_acl
-resource "aws_s3_bucket_acl" "buckets" {
-  depends_on = [aws_s3_bucket.buckets]
-  for_each   = local.private_buckets
-  bucket     = each.value
+resource "aws_s3_bucket_acl" "audit" {
+  bucket = aws_s3_bucket.buckets["audit"].id
 
   # https://docs.aws.amazon.com/AmazonS3/latest/userguide/acl-overview.html#canned-acl
-  acl = each.key == "audit" ? "log-delivery-write" : "private"
+  acl = "log-delivery-write"
 }
 
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket_lifecycle_configuration
@@ -97,6 +95,7 @@ resource "aws_s3_bucket_lifecycle_configuration" "sftp" {
     }
   }
   rule {
+    # can go to STANDARD_IA only after 30 days
     id     = "expire-7"
     status = "Enabled"
 
@@ -110,6 +109,7 @@ resource "aws_s3_bucket_lifecycle_configuration" "media" {
   bucket = aws_s3_bucket.buckets["media"].id
 
   rule {
+    # can go to STANDARD_IA only after 30 days
     id     = "infrequent-30"
     status = "Enabled"
 
@@ -138,7 +138,8 @@ resource "aws_s3_bucket_lifecycle_configuration" "backup" {
     status = "Disabled"
 
     filter {
-      prefix = "postgresql/"
+      # postgresql1/postgresql2
+      prefix = "postgresql"
     }
     expiration {
       days = 7
@@ -148,7 +149,7 @@ resource "aws_s3_bucket_lifecycle_configuration" "backup" {
     # apply the same rule as SFTP bucket
     # can go to Glacier only after 30 days
     id     = "flock-glacier-30-expire-180"
-    status = "Disabled"
+    status = "Enabled"
 
     filter {
       prefix = "flock/"
@@ -162,8 +163,9 @@ resource "aws_s3_bucket_lifecycle_configuration" "backup" {
     }
   }
   rule {
+    # for deletion of all Flock backups
     id     = "flock-expire-1"
-    status = "Enabled"
+    status = "Disabled"
 
     filter {
       prefix = "flock/"
@@ -178,11 +180,11 @@ resource "aws_s3_bucket_lifecycle_configuration" "audit" {
   bucket = aws_s3_bucket.buckets["audit"].id
 
   rule {
-    id     = "expire-30"
+    id     = "expire-7"
     status = "Enabled"
 
     expiration {
-      days = 30
+      days = 7
     }
   }
 }

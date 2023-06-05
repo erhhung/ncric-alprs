@@ -29,10 +29,13 @@ output "rundeck_admin_pass" {
 
 # bastion_instance_id:          bastion.tf
 # bastion_instance_ami:         bastion.tf
-# postgresql_instance_id:       postgresql.tf
 # postgresql_instance_ami:      postgresql.tf
-# postgresql_private_domain:    postgresql.tf
-# postgresql_private_ip:        postgresql.tf
+# postgresql1_instance_id:      postgresql.tf
+# postgresql2_instance_id:      postgresql.tf
+# postgresql1_private_domain:   postgresql.tf
+# postgresql2_private_domain:   postgresql.tf
+# postgresql1_private_ip:       postgresql.tf
+# postgresql2_private_ip:       postgresql.tf
 # elasticsearch_instance_id:    elasticsearch.tf
 # elasticsearch_instance_ami:   elasticsearch.tf
 # elasticsearch_private_domain: elasticsearch.tf

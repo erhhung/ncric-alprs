@@ -35,12 +35,13 @@ EOF
     data = <<-EOF
 ${file("${path.module}/shared/prolog.sh")}
 ${templatefile("${path.module}/bastion/boot.tftpl", {
-    ENV          = var.env
-    PG_IP        = module.postgresql_server.private_ip
-    ES_IP        = module.elasticsearch_server.private_ip
-    S3_URL       = local.user_data_s3_url
-    ALL_BUCKETS  = local.all_bucket_names
-    DEVOPS_EMAIL = var.ALPRS_DEVOPS_EMAIL
+    ENV              = var.env
+    POSTGRESQL1_IP   = module.postgresql_server[0].private_ip
+    POSTGRESQL2_IP   = module.postgresql_server[1].private_ip
+    ELASTICSEARCH_IP = module.elasticsearch_server.private_ip
+    S3_URL           = local.user_data_s3_url
+    ALL_BUCKETS      = local.all_bucket_names
+    DEVOPS_EMAIL     = var.ALPRS_DEVOPS_EMAIL
 })}
 ${file("${path.module}/bastion/boot.sh")}
 ${local.webapp_bootstrap}

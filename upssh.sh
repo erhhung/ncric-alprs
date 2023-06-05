@@ -59,7 +59,7 @@ mkdir -p /tmp/.ssh && cp -a ~/$config ~/$known /tmp/.ssh/
 sed=$(_altcmd gsed sed)
 
 old_host_ids() {
-  $sed -En "{N;s/^Host +(alprs$env[a-z]+).+HostName +(i-.+)$/\1 \2/p;D}" ~/$config
+  $sed -En "{N;s/^Host +(alprs$env[a-z0-9]+).+HostName +(i-.+)$/\1 \2/p;D}" ~/$config
 }
 
 printf 'Removing old hosts from "known_hosts"...'
@@ -80,7 +80,8 @@ get_outputs() {
 
 host_abbrev() {
   case $1 in
-    postgresql)    echo pg   ;;
+    postgresql1)   echo pg1  ;;
+    postgresql2)   echo pg2  ;;
     elasticsearch) echo es   ;;
     conductor)     echo cond ;;
     datastore)     echo data ;;

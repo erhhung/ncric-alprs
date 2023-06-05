@@ -28,12 +28,12 @@ ${templatefile("${path.module}/conductor/boot.tftpl", {
     SUPPORT_EMAIL = var.ALPRS_SUPPORT_EMAIL
     BACKUP_BUCKET = var.buckets["backup"]
     CONFIG_BUCKET = var.buckets["config"]
-  })}
+})}
 ${file("${path.module}/shared/boot.sh")}
 ${file("${path.module}/shared/install.sh")}
 ${file("${path.module}/shared/epilog.sh")}
 EOF
-}])
+  }])
 }
 
 module "conductor_user_data" {
@@ -84,7 +84,8 @@ module "conductor_config" {
 
   values = merge(local.config_values, {
     CONDUCTOR_HOST     = module.conductor_server.private_domain
-    POSTGRESQL_HOST    = module.postgresql_server.private_domain
+    POSTGRESQL1_HOST   = module.postgresql_server[0].private_domain
+    POSTGRESQL2_HOST   = module.postgresql_server[1].private_domain
     ELASTICSEARCH_HOST = module.elasticsearch_server.private_domain
   })
 }

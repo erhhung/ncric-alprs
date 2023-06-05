@@ -11,7 +11,7 @@ terraform {
       version = "~> 4.2"
     }
   }
-  required_version = ">= 1.3"
+  required_version = ">= 1.4"
 }
 
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/caller_identity
@@ -26,7 +26,8 @@ locals {
   region    = data.aws_region.current.name
 
   hosts = {
-    postgresql    = "PostgreSQL"
+    postgresql1   = "PostgreSQL 1"
+    postgresql2   = "PostgreSQL 2"
     elasticsearch = "Elasticsearch"
     conductor     = "Conductor"
     datastore     = "Datastore"

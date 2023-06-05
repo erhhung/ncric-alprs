@@ -10,6 +10,12 @@
 CRONJOB_NAME=$(basename "$0" .sh)
 BACKUP_BUCKET=$1
 
+# two .csv.bz files are normally created per day: one backup with
+# images and one without (100x smaller); either backup or both can
+# be disabled; if both disabled, database rows are simply deleted
+BACKUP_WITHOUT_IMAGES=true
+BACKUP_WITH_IMAGES=false
+
 NCRIC_DB="org_1446ff84711242ec828df181f45e4d20"
 # days to keep data in "flock_reads" table
 RETENTION_DAYS=2
@@ -128,11 +134,14 @@ while [ $day -lt -1 ]; do
         AND timestamp <  '$date'::date + 1"
   rows=$(psql "SELECT COUNT(*) $sql")
 
-  #printf "[`ts`] Archiving %'d rows from flock_reads_$dow for $date...\n" $rows
-  #dest="s3://$BACKUP_BUCKET/flock/flock_reads_${date}_${dow}"
+  if [[ "$BACKUP_WITHOUT_IMAGES" == true ||
+        "$BACKUP_WITH_IMAGES"    == true ]]; then
+    printf "[`ts`] Archiving %'d rows from flock_reads_$dow for $date...\n" $rows
+    dest="s3://$BACKUP_BUCKET/flock/flock_reads_${date}_${dow}"
+  fi
 
-  #backup $dow $date "${dest}_without_images.csv.bz" "$cols"
-  #backup $dow $date "${dest}_with_images.csv.bz"
+  [ "$BACKUP_WITHOUT_IMAGES" == true ] && backup $dow $date "${dest}_without_images.csv.bz" "$cols"
+  [ "$BACKUP_WITH_IMAGES"    == true ] && backup $dow $date "${dest}_with_images.csv.bz"
 
   printf "[`ts`] Deleting %'d rows from flock_reads_$dow for $date...\n" $rows
   psql "DELETE $sql"

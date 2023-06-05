@@ -103,7 +103,7 @@ authorize_keys() {
   while read key || [ "$key" ]; do
     grep -q "$key" authorized_keys || \
        echo "$key" >> authorized_keys
-  done < <(aws s3 cp $S3_URL/shared/authorized_keys -)
+  done < <(aws s3 cp $S3_URL/shared/authorized_keys - --quiet)
 }
 
 user_dotfiles() {
@@ -124,7 +124,7 @@ EOF
 install_utils() (
   cd /usr/local/bin
   pip3 install pygments --upgrade
-  aws s3 cp $S3_URL/shared/lesspipe.sh .
+  aws s3 cp $S3_URL/shared/lesspipe.sh . --no-progress
   chmod +x ./lesspipe.sh
 )
 
@@ -142,14 +142,14 @@ etc_hosts() (
   printf -v tab "\t"
   cat <<EOF >> hosts
 
-$PG_IP${tab}postgresql
-$ES_IP${tab}elasticsearch
+$POSTGRESQL1_IP${tab}postgresql1
+$POSTGRESQL2_IP${tab}postgresql2
+$ELASTICSEARCH_IP${tab}elasticsearch
 EOF
 )
 
 install_scripts() (
-  mkdir -p health-check
-  cd health-check
+  mkdir -p health-check; cd health-check
   aws s3 cp $S3_URL/bastion/health-check.sh . --no-progress
   # also make ~/ readable so logs can be sent to CloudWatch
   chmod +rx health-check.sh ~
@@ -200,7 +200,7 @@ PATH="$PATH:/opt/aws/amazon-cloudwatch-agent/bin"
 EOF
   chmod +x cwagent_path.sh
   cd /opt/aws/amazon-cloudwatch-agent/etc
-  aws s3 cp $S3_URL/${HOST,,}/cwagent.json amazon-cloudwatch-agent.json
+  aws s3 cp $S3_URL/${HOST,,}/cwagent.json amazon-cloudwatch-agent.json --no-progress
 )
 
 start_cwagent() (

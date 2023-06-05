@@ -31,12 +31,12 @@ ${templatefile("${path.module}/indexer/boot.tftpl", {
     # passwords are created in keys.tf
     auth0_email = var.auth0_user.email
     auth0_pass  = var.auth0_user.password
-  })}
+})}
 ${file("${path.module}/shared/boot.sh")}
 ${file("${path.module}/shared/install.sh")}
 ${file("${path.module}/shared/epilog.sh")}
 EOF
-}])
+  }])
 }
 
 module "indexer_user_data" {
@@ -87,7 +87,8 @@ module "indexer_config" {
 
   values = merge(local.config_values, {
     CONDUCTOR_HOST     = module.conductor_server.private_domain
-    POSTGRESQL_HOST    = module.postgresql_server.private_domain
+    POSTGRESQL1_HOST   = module.postgresql_server[0].private_domain
+    POSTGRESQL2_HOST   = module.postgresql_server[1].private_domain
     ELASTICSEARCH_HOST = module.elasticsearch_server.private_domain
   })
 }

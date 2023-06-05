@@ -63,13 +63,15 @@ HOSTS=(
   datastore
   conductor
   elasticsearch
-  postgresql
+  postgresql2
+  postgresql1
 )
 [ "$1" ] && HOSTS=("$@")
 
 host_abbrev() {
   case $1 in
-    postgresql)    echo pg   ;;
+    postgresql1)   echo pg1  ;;
+    postgresql2)   echo pg2  ;;
     elasticsearch) echo es   ;;
     conductor)     echo cond ;;
     datastore)     echo data ;;
@@ -116,7 +118,10 @@ stop_elasticsearch() {
   sudo service elasticsearch stop
 }
 
-stop_postgresql() {
+stop_postgresql1() {
+  sudo service postgresql stop
+}
+stop_postgresql2() {
   sudo service postgresql stop
 }
 

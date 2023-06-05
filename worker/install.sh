@@ -7,7 +7,8 @@ etc_hosts() (
   printf -v tab "\t"
   cat <<EOF >> hosts
 
-$POSTGRESQL_IP${tab}postgresql
+$POSTGRESQL1_IP${tab}postgresql1
+$POSTGRESQL2_IP${tab}postgresql2
 $DATASTORE_IP${tab}datastore
 EOF
 )
@@ -149,13 +150,15 @@ extra_aliases() {
   echo -e \\n >> .bash_aliases
   cat <<'EOF' >> .bash_aliases
 _alprs_url() {
-  aws s3 cp s3://$CONFIG_BUCKET/shuttle/shuttle.yaml - | \
+  local conf="s3://$CONFIG_BUCKET/shuttle/shuttle.yaml"
+  aws s3 cp $conf - --quiet | \
     yq '.postgres.config |
         (.username + ":" + .password) as $creds | .jdbcUrl |
         sub(".+//([^?]+).*$", "postgresql://" + $creds + "@${1}")'
 }
 _atlas_url() {
-  aws s3 cp s3://$CONFIG_BUCKET/flapper/flapper.yaml - | \
+  local conf="s3://$CONFIG_BUCKET/flapper/flapper.yaml"
+  aws s3 cp $conf - --quiet | \
     yq '.datalakes[] | select(.name == "atlas") |
         (.username + ":" + .password) as $creds | .url |
         sub(".+//(.+)$", "postgresql://" + $creds + "@${1}")'

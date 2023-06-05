@@ -1,5 +1,5 @@
 server:
-  jdbcUrl: jdbc:postgresql://${POSTGRESQL_HOST}:5432
+  jdbcUrl: jdbc:postgresql://${POSTGRESQL2_HOST}:5432
   username: atlas_user
   password: ${ATLAS_PASSWORD}
   maximumPoolSize: 50

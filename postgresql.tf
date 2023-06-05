@@ -68,25 +68,28 @@ locals {
     for path in fileset(local.postgresql_scripts_path, "**") : {
       path = "postgresql/scripts/${path}"
       file = "${local.postgresql_scripts_path}/${path}"
-    }], {
-    path = "postgresql/bootstrap.sh"
-    data = <<-EOF
+    }], [
+    for i in range(1, 3) : {
+      path = "postgresql${i}/bootstrap.sh"
+      data = <<-EOF
 ${file("${path.module}/shared/prolog.sh")}
+export HOST="POSTGRESQL${i}"
 ${templatefile("${path.module}/postgresql/boot.tftpl", {
-    ENV     = var.env
-    S3_URL  = local.user_data_s3_url
-    APP_URL = local.app_url
-    # passwords are created in keys.tf
-    alprs_pass    = local.alprs_pass
-    atlas_pass    = local.atlas_pass
-    rundeck_pass  = local.rundeck_pass
-    BACKUP_BUCKET = var.buckets["backup"]
-  })}
+      ENV     = var.env
+      S3_URL  = local.user_data_s3_url
+      APP_URL = local.app_url
+      # passwords are created in keys.tf
+      alprs_pass    = local.alprs_pass
+      atlas_pass    = local.atlas_pass
+      rundeck_pass  = local.rundeck_pass
+      BACKUP_BUCKET = var.buckets["backup"]
+})}
 ${file("${path.module}/shared/boot.sh")}
 ${file("${path.module}/postgresql/install.sh")}
 ${file("${path.module}/shared/epilog.sh")}
 EOF
-}])
+    }]
+  ])
 }
 
 module "postgresql_user_data" {
@@ -97,17 +100,20 @@ module "postgresql_user_data" {
 }
 
 locals {
-  postgresql_bootstrap = <<-EOT
+  postgresql_bootstrap = [
+    for i in range(1, 3) : <<-EOT
 ${templatefile("${path.module}/shared/boot.tftpl", {
-  BUCKET = local.user_data_bucket
-  HOST   = "postgresql"
+    BUCKET = local.user_data_bucket
+    HOST   = "postgresql${i}"
 })}
 ${file("${path.module}/shared/s3boot.sh")}
 EOT
+  ]
 }
 
 module "postgresql_server" {
   source = "./modules/instance"
+  count  = 2
 
   depends_on = [
     module.shared_user_data,
@@ -115,32 +121,43 @@ module "postgresql_server" {
   ]
   ami_id           = local.applied_amis["ubuntu_20arm"].id
   instance_type    = var.instance_types["postgresql"]
-  instance_name    = local.hosts["postgresql"]
+  instance_name    = local.hosts["postgresql${count.index + 1}"]
   root_volume_size = var.root_volume_sizes["postgresql"]
   subnet_id        = module.main_vpc.subnet_ids["private1"]
-  private_ip       = local.private_ips["postgresql"]
+  private_ip       = local.private_ips["postgresql${count.index + 1}"]
   security_groups  = [module.postgresql_sg.id]
   instance_profile = aws_iam_instance_profile.alprs_service.name
   key_name         = aws_key_pair.admin.key_name
-  user_data        = chomp(local.postgresql_bootstrap)
+  user_data        = chomp(local.postgresql_bootstrap[count.index])
 }
 
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/volume_attachment
 resource "aws_volume_attachment" "postgresql_data" {
-  volume_id   = aws_ebs_volume.postgresql_data.id
-  instance_id = module.postgresql_server.instance_id
+  count = 2
+
+  volume_id   = aws_ebs_volume.postgresql_data[count.index].id
+  instance_id = module.postgresql_server[count.index].instance_id
   device_name = "/dev/xvdb"
 }
 
-output "postgresql_instance_id" {
-  value = module.postgresql_server.instance_id
-}
 output "postgresql_instance_ami" {
-  value = module.postgresql_server.instance_ami
+  value = module.postgresql_server.*.instance_ami
 }
-output "postgresql_private_domain" {
-  value = module.postgresql_server.private_domain
+output "postgresql1_instance_id" {
+  value = module.postgresql_server[0].instance_id
 }
-output "postgresql_private_ip" {
-  value = module.postgresql_server.private_ip
+output "postgresql2_instance_id" {
+  value = module.postgresql_server[1].instance_id
+}
+output "postgresql1_private_domain" {
+  value = module.postgresql_server[0].private_domain
+}
+output "postgresql2_private_domain" {
+  value = module.postgresql_server[1].private_domain
+}
+output "postgresql1_private_ip" {
+  value = module.postgresql_server[0].private_ip
+}
+output "postgresql2_private_ip" {
+  value = module.postgresql_server[1].private_ip
 }

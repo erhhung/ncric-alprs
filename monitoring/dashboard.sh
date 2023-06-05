@@ -60,7 +60,7 @@ EOT
 }
 
 #  <host> <title> <metric> [metric]...
-#   host: postgresql|elasticsearch|conductor|datastore|indexer|bastion|worker
+#   host: postgresqlX|elasticsearch|conductor|datastore|indexer|bastion|worker
 #  title: display name of host
 # metric: user_cpu|memory|root_disk|data_disk
 add_widget() {
@@ -131,7 +131,7 @@ EOT
           - host
           - alprs$ENV-$host
           - path
-          - /opt/$host
+          - /opt/${host/%[0-9]*/}
           - device
           - nvme1n1
           - fstype
@@ -151,13 +151,14 @@ EOT
 #            be synced with those in "cloudwatch.tf"
 y=-3
 { add_header
-  add_widget postgresql    PostgreSQL    user_cpu memory root_disk data_disk
-  add_widget elasticsearch Elasticsearch user_cpu memory root_disk data_disk
-  add_widget conductor     Conductor     user_cpu memory root_disk
-  add_widget datastore     Datastore     user_cpu memory root_disk
-  add_widget indexer       Indexer       user_cpu memory root_disk
-  add_widget bastion      "Bastion Host" user_cpu memory root_disk
-  add_widget worker        Worker        user_cpu memory root_disk
+  add_widget postgresql1   "PostgreSQL 1" user_cpu memory root_disk data_disk
+  add_widget postgresql2   "PostgreSQL 2" user_cpu memory root_disk data_disk
+  add_widget elasticsearch  Elasticsearch user_cpu memory root_disk data_disk
+  add_widget conductor      Conductor     user_cpu memory root_disk
+  add_widget datastore      Datastore     user_cpu memory root_disk
+  add_widget indexer        Indexer       user_cpu memory root_disk
+  add_widget bastion       "Bastion Host" user_cpu memory root_disk
+  add_widget worker         Worker        user_cpu memory root_disk
 } \
   | "$yq" -o json \
   |   jq  '{"json": del(.templates) | tojson}'

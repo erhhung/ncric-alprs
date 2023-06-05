@@ -1,6 +1,9 @@
 # This user data script is a continuation
 # of the shared "boot.sh" script.
 
+[ "${HOST,,}" == postgresql1 ] && export PG_HOST1=true
+[ "${HOST,,}" == postgresql2 ] && export PG_HOST2=true
+
 export NCRIC_DB="org_1446ff84711242ec828df181f45e4d20"
 
 create_xfs_volume() (
@@ -52,10 +55,14 @@ install_extensions() {
       # pgxn install pg_repack
       ;;
     postgres)
+      # after databases have been created
+      [ "$PG_HOST1" ] && local db="alprs"
+      [ "$PG_HOST2" ] && local db="$NCRIC_DB"
+
       wait_service # wait if "database system is starting up"
-      psql -d $NCRIC_DB -tAc "SELECT extname FROM pg_extension" | \
-                     grep -q pg_repack && exit
-      pgxn load -d $NCRIC_DB pg_repack
+      psql -d $db -tAc "SELECT extname FROM pg_extension" | \
+               grep -q pg_repack && exit
+      pgxn load -d $db pg_repack
       ;;
   esac
 }
@@ -154,42 +161,54 @@ start_postgresql() {
 create_databases() (
   cd /opt/postgresql
   [ -d users ] && exit
-  mkdir users
-  cd users
-  for db in alprs atlas rundeck; do
+  mkdir users; cd users
+
+  [ "$PG_HOST1" ] && dbs=(alprs rundeck)
+  [ "$PG_HOST2" ] && dbs=(atlas)
+
+  for db in ${dbs[@]}; do
     user="${db}_user"
     pass="${db}_pass"
-    echo "${!pass}" > $user
+    # alprs_pass/atlas_pass/rundeck_pass
+    # env vars are defined in boot.tftpl
+    echo -n "${!pass}" > $user
     psql <<EOT
 CREATE USER $user WITH PASSWORD '${!pass}';
 EOT
   done
   chmod 400 *
-  for db in alprs rundeck; do
-    user="${db}_user"
-    psql <<EOT
+
+  if [ "$PG_HOST1" ]; then
+    for db in ${dbs[@]}; do
+      user="${db}_user"
+      psql <<EOT
 CREATE DATABASE $db WITH OWNER = $user;
 REVOKE ALL ON DATABASE $db FROM PUBLIC;
-GRANT  ALL ON DATABASE $db   TO $user;
+GRANT  ALL ON DATABASE $db   TO  $user;
 EOT
-  done
-  psql <<'EOT'
+    done
+  elif [ "$PG_HOST2" ]; then
+    psql <<'EOT'
 ALTER USER atlas_user CREATEDB CREATEROLE;
 EOT
+  fi
 )
 
 config_databases() (
   cd /opt/postgresql
   [ -d init ] && exit
-  mkdir init
-  cd init
-  aws s3 cp $S3_URL/postgresql/alprs.sql.gz . --no-progress
-  gunzip -f alprs.sql.gz
-  sed -Ei "s|https://astrometrics\\.us|$APP_URL|" alprs.sql
-  psql alprs < alprs.sql
-  aws s3 cp $S3_URL/postgresql/ncric.sql.gz . --no-progress
-  gunzip -f ncric.sql.gz
-  psql < ncric.sql
+  mkdir init; cd init
+
+  if [ "$PG_HOST1" ]; then
+    aws s3 cp $S3_URL/postgresql/alprs.sql.gz . --no-progress
+    gunzip -f alprs.sql.gz
+    sed -Ei "s|https://astrometrics\\.us|$APP_URL|" alprs.sql
+    psql alprs < alprs.sql
+  elif [ "$PG_HOST2" ]; then
+    aws s3 cp $S3_URL/postgresql/ncric.sql.gz . --no-progress
+    gunzip -f ncric.sql.gz
+    psql < ncric.sql
+  fi
 )
 
 user_dotfiles() {
@@ -209,8 +228,8 @@ EOF
 alias pg='\sudo -u postgres -i bash'
 
 psql() {
-  [ "$USER" == 'postgres' ] && $(which psql) "$@" || \
-    \sudo -E su postgres -c   "$(which psql)  $@"
+  [ "$USER" == postgres ] && $(which psql) "$@" || \
+    \sudo -E su postgres -c "$(which psql)  $@"
 }
 
 alias logs='most +999999 $PG_HOME/jobs/*.log'
@@ -220,9 +239,13 @@ EOF
 }
 
 install_scripts() {
-  mkdir -p scripts
-  cd scripts
-  aws s3 sync $S3_URL/postgresql/scripts . --no-progress
+  scripts=(backup-all)
+  [ "$PG_HOST2" ] && scripts+=(backup-flock drop-temps)
+  mkdir -p scripts; cd scripts
+
+  for script in ${scripts[@]}; do
+    aws s3 cp $S3_URL/postgresql/scripts/${script}.sh . --no-progress
+  done
   chmod 755 *.sh
   # create folder for log files
   mkdir -p /opt/postgresql/jobs
@@ -239,17 +262,20 @@ PATH=/bin:/usr/bin:/usr/sbin:/usr/local/bin:/snap/bin
 
 # min hr dom mon dow user command
 EOT
-    cat
+    cat # append stdin
   }
-  cat <<EOT | _mkcron postgres > backup_flock
-20 2 * * * postgres bash -c "\$HOME/scripts/backup-flock.sh $BACKUP_BUCKET"
-EOT
+  # disable backup-all by using illegal filename
   cat <<EOT | _mkcron root > backup_all.disabled
 20 6 * * * root bash -c "\$HOME/scripts/backup-all.sh $BACKUP_BUCKET"
 EOT
-  cat <<EOF | _mkcron postgres > drop_temps
-20 4 * * * postgres bash -c "\$HOME/scripts/drop-temps.sh"
-EOF
+  if [ "$PG_HOST2" ]; then
+    cat <<EOT | _mkcron postgres > backup_flock
+20 2 * * * postgres bash -c "\$HOME/scripts/backup-flock.sh $BACKUP_BUCKET"
+EOT
+    cat <<'EOT' | _mkcron postgres > drop_temps
+20 4 * * * postgres bash -c "$HOME/scripts/drop-temps.sh"
+EOT
+  fi
   chmod 644 *
   service cron reload
 )

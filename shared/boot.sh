@@ -87,7 +87,7 @@ authorize_keys() {
   while read key || [ "$key" ]; do
     grep -q "$key" authorized_keys || \
        echo "$key" >> authorized_keys
-  done < <(aws s3 cp $S3_URL/shared/authorized_keys -)
+  done < <(aws s3 cp $S3_URL/shared/authorized_keys - --quiet)
 }
 
 user_dotfiles() {
@@ -109,7 +109,7 @@ root_dotfiles() (
 install_utils() (
   cd /usr/local/bin
   pip3 install pygments --upgrade
-  aws s3 cp $S3_URL/shared/lesspipe.sh .
+  aws s3 cp $S3_URL/shared/lesspipe.sh . --no-progress
   chmod +x ./lesspipe.sh
 )
 
@@ -166,7 +166,8 @@ PATH="$PATH:/opt/aws/amazon-cloudwatch-agent/bin"
 EOF
   chmod +x cwagent_path.sh
   cd /opt/aws/amazon-cloudwatch-agent/etc
-  aws s3 cp $S3_URL/${HOST,,}/cwagent.json amazon-cloudwatch-agent.json
+  host=${HOST/%[0-9]*/} host=${host,,}
+  aws s3 cp $S3_URL/$host/cwagent.json amazon-cloudwatch-agent.json --no-progress
 )
 
 start_cwagent() (

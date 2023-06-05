@@ -32,7 +32,7 @@ postgres:
   initialize-tables: true
   citus: false
   hikari:
-    jdbcUrl: jdbc:postgresql://${POSTGRESQL_HOST}:5432/alprs?sslmode=require
+    jdbcUrl: jdbc:postgresql://${POSTGRESQL1_HOST}:5432/alprs?sslmode=require
     username: alprs_user
     password: ${ALPRS_PASSWORD}
     maximumPoolSize: 100

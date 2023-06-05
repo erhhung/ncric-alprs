@@ -27,7 +27,8 @@ env_via_tfstate() {
 env_via_tfvars || env_via_tfstate || exit $?
 
 HOSTS=(
-  postgresql
+  postgresql1
+  postgresql2
   elasticsearch
   conductor
   datastore
@@ -38,7 +39,8 @@ HOSTS=(
 
 host_abbrev() {
   case $1 in
-    postgresql)    echo pg   ;;
+    postgresql1)   echo pg1  ;;
+    postgresql2)   echo pg2  ;;
     elasticsearch) echo es   ;;
     conductor)     echo cond ;;
     datastore)     echo data ;;
@@ -50,8 +52,9 @@ host_abbrev() {
 }
 
 update_cwagent() {
-  CWAGENT_HOME=/opt/aws/amazon-cloudwatch-agent
-  aws s3 cp s3://$(hostname | sed -En 's|^alprs([^-]+)-(.+)$|alprs-infra-\1/userdata/\2|p')/cwagent.json $CWAGENT_HOME/etc/amazon-cloudwatch-agent.json
+  local CWAGENT_HOME="/opt/aws/amazon-cloudwatch-agent"
+  local conf_s3_dir=$(hostname | sed -En 's|^alprs([^-]+)-([^0-9]+).*$|alprs-infra-\1/userdata/\2|p')
+  aws s3 cp s3://$conf_s3_dir/cwagent.json $CWAGENT_HOME/etc/amazon-cloudwatch-agent.json --no-progress
   $CWAGENT_HOME/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -s -c file:$CWAGENT_HOME/etc/amazon-cloudwatch-agent.json
 }
 

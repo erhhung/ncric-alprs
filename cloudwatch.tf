@@ -71,7 +71,7 @@ resource "aws_cloudwatch_metric_alarm" "data_disk" {
 
       dimensions = {
         host   = "alprs${var.env}-${each.key}"
-        path   = "/opt/${each.key}"
+        path   = "/opt/${replace(each.key, "/\\d+$/", "")}"
         device = "nvme1n1"
         fstype = "xfs"
       }

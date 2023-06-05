@@ -1,3 +1,24 @@
+# Rundeck Notes
+
+## Server Portal
+
+First, obtain the auto-generated admin password _(command will take a few seconds, but only needs to be  
+run once unless the stack or "`keys.tf`" is recreated)_ and establish an SSH tunnel on `localhost:4440`:
+
+```bash
+$ ./tf.sh output rundeck_admin_pass
+"foobarbaz"
+
+$ ./upssh.sh
+...
+$ ssh alprsdevbasttun
+```
+
+Navigate to [http://localhost:4440/](http://localhost:4440/) and
+log in as user "`devadmin`" using the password obtained above  
+_(log in as "`prodadmin`" on `alprsprodbasttun` so the browser
+can save separate passwords)_.
+
 ## Job Definitions
 
 Job definition files under "[`project/rundeck-AstroMetrics/jobs`

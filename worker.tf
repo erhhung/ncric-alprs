@@ -45,24 +45,25 @@ locals {
     data = <<-EOF
 ${file("${path.module}/shared/prolog.sh")}
 ${templatefile("${path.module}/worker/boot.tftpl", {
-    ENV           = var.env
-    S3_URL        = local.user_data_s3_url
-    API_URL       = local.api_url
-    GH_TOKEN      = var.GITHUB_ACCESS_TOKEN
-    SFTP_BUCKET   = var.buckets["sftp"]
-    MEDIA_BUCKET  = var.buckets["media"]
-    BACKUP_BUCKET = var.buckets["backup"]
-    CONFIG_BUCKET = var.buckets["config"]
-    POSTGRESQL_IP = module.postgresql_server.private_ip
-    DATASTORE_IP  = module.datastore_server.private_ip
+    ENV            = var.env
+    S3_URL         = local.user_data_s3_url
+    API_URL        = local.api_url
+    GH_TOKEN       = var.GITHUB_ACCESS_TOKEN
+    SFTP_BUCKET    = var.buckets["sftp"]
+    MEDIA_BUCKET   = var.buckets["media"]
+    BACKUP_BUCKET  = var.buckets["backup"]
+    CONFIG_BUCKET  = var.buckets["config"]
+    POSTGRESQL1_IP = module.postgresql_server[0].private_ip
+    POSTGRESQL2_IP = module.postgresql_server[1].private_ip
+    DATASTORE_IP   = module.datastore_server.private_ip
     # public key is created in keys.tf
     rundeck_key = "${chomp(tls_private_key.rundeck_worker.public_key_openssh)} rundeck@${local.app_domain}"
-  })}
+})}
 ${file("${path.module}/shared/boot.sh")}
 ${file("${path.module}/worker/install.sh")}
 ${file("${path.module}/shared/epilog.sh")}
 EOF
-}])
+  }])
 }
 
 module "worker_user_data" {
@@ -116,7 +117,8 @@ module "shuttle_config" {
   bucket  = aws_s3_bucket.buckets["config"].id
 
   values = merge(local.config_values, {
-    POSTGRESQL_HOST    = module.postgresql_server.private_domain
+    POSTGRESQL1_HOST   = module.postgresql_server[0].private_domain
+    POSTGRESQL2_HOST   = module.postgresql_server[1].private_domain
     ELASTICSEARCH_HOST = module.elasticsearch_server.private_domain
   })
 }
@@ -131,7 +133,7 @@ module "flapper_config" {
   values = merge(local.config_values, {
     FLOCK_USER      = var.flock_user.email
     FLOCK_PASSWORD  = var.flock_user.password
-    POSTGRESQL_HOST = module.postgresql_server.private_domain
+    POSTGRESQL_HOST = module.postgresql_server[1].private_domain
   })
 }
 

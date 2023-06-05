@@ -9,10 +9,10 @@
   the existing PostgreSQL data volume while creating a new, smaller volume
   to migrate to):
   ```bash
-  $ ./tf.sh state rm aws_volume_attachment.postgresql_data \
-                     aws_ebs_volume.postgresql_data
+  $ ./tf.sh state rm aws_volume_attachment.postgresql_data[0] \
+                            aws_ebs_volume.postgresql_data[0]
 
-  Removed aws_volume_attachment.postgresql_data
-  Removed aws_ebs_volume.postgresql_data
+  Removed aws_volume_attachment.postgresql_data[0]
+  Removed aws_ebs_volume.postgresql_data[0]
   Successfully removed 2 resource instance(s).
   ```

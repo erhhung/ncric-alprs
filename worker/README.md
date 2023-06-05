@@ -1,4 +1,6 @@
-## Important!
+# Worker Notes
+
+## IMPORTANT
 
 * Do NOT change hardcoded strings "`http://datastore:8080`"
   (often as the default value of the `base_url` function argument)
@@ -34,6 +36,7 @@ _Enter the `pgcli` prompt by running either `alprs` or `atlas`
 which database you'd like to connect to._
 
 Show number of Flock reads per day:
+
 ```sql
 SELECT DISTINCT(timestamp::date) AS date,
   COUNT(*) OVER (PARTITION BY timestamp::date) AS count
@@ -46,4 +49,20 @@ FROM (
   SELECT timestamp FROM integrations.flock_reads_fri UNION
   SELECT timestamp FROM integrations.flock_reads_sat) AS _table
 ORDER BY timestamp::date;
+```
+
+Show number of Flock reads per agency:
+
+```sql
+SELECT COUNT(*) AS num_reads,
+  cameranetworkname AS agency
+FROM flock_reads_fri
+GROUP BY DISTINCT(cameranetworkname)
+ORDER BY agency;
+
+SELECT COUNT(*) AS num_reads,
+  cameranetworkname AS agency
+FROM flock_reads_fri
+GROUP BY DISTINCT(cameranetworkname)
+ORDER BY num_reads DESC;
 ```

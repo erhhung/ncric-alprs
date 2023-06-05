@@ -179,7 +179,7 @@ config_orgapp() {
 
 change_logo() (
   cd node_modules/lattice-auth/build
-  logo=$(aws s3 cp s3://$WEBAPP_BUCKET/$1-logo.png - | base64 -w0)
+  logo=$(aws s3 cp s3://$WEBAPP_BUCKET/$1-logo.png - --quiet | base64 -w0)
   # newer versions of lattice-auth use the exports syntax, so search both patterns
   sed -Ei 's|logo:"data:[^"]+"|logo:"data:image/png;base64,'$logo'"|'       index.js
   sed -Ei 's|exports="data:[^"]+"|exports="data:image/png;base64,'$logo'"|' index.js

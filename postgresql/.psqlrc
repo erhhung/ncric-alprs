@@ -1,4 +1,6 @@
 -- https://wiki.postgresql.org/wiki/Psqlrc
+-- https://www.postgresql.org/docs/current/app-psql.html
+
 \set QUIET 1
 -- prompts with color
 -- \set PROMPT1 '%n%[%033[1;31m@%[%033[1;32m%/%[%033[1;31m%R%#%[%033[1;34m%x%[%033[0m '
@@ -13,12 +15,15 @@
 -- \timing
 \x auto
 
--- start in Atlas DB if exists and accessible
-SELECT current_user = 'atlas_user' AND EXISTS (
+-- switch to Atlas DB (on postgresql2) if accessible;
+-- otherwise, switch to ALPRS DB (if on postgresql1)
+SELECT EXISTS (
   SELECT FROM pg_database WHERE datname = 'org_1446ff84711242ec828df181f45e4d20'
 ) AS change_db \gset
 \if :change_db
   \c org_1446ff84711242ec828df181f45e4d20
   SET search_path = "$user", public, postgis, integrations,
         openlattice, entitysets, transporter, staging;
+\else
+  \c alprs
 \endif

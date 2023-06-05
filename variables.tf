@@ -82,7 +82,8 @@ variable "root_volume_sizes" {
 variable "data_volume_sizes" {
   description = "Data volume sizes in GiB"
   type = object({
-    postgresql    = number
+    postgresql1   = number
+    postgresql2   = number
     elasticsearch = number
   })
 }
@@ -90,7 +91,8 @@ variable "data_volume_sizes" {
 variable "private_ips" {
   description = "Private IP host numbers"
   type = object({
-    postgresql    = number
+    postgresql1   = number
+    postgresql2   = number
     elasticsearch = number
     conductor     = number
     datastore     = number

@@ -35,8 +35,10 @@ Host alprsprod*
 
 # the instance IDs of the following hosts can be updated by the
 # "upssh.sh" script when run after those instances get recreated
-Host alprsdevpg*
+Host alprsdevpg1*
   HostName i-0af11cee35be3b40b
+Host alprsdevpg2*
+  HostName i-0f6a48c3bc27af123
 Host alprsdeves*
   HostName i-0863173ea096fda34
 Host alprsdevcond*
@@ -50,8 +52,10 @@ Host alprsdevbast*
 Host alprsdevwork*
   HostName i-062599caf04193f3b
 
-Host alprsprodpg*
+Host alprsprodpg1*
   HostName i-0d5b04d02ae364f18
+Host alprsprodpg2*
+  HostName i-03e7b83d2a09cc33d
 Host alprsprodes*
   HostName i-093d921a52278ae5e
 Host alprsprodcond*
@@ -83,7 +87,7 @@ Host alprs*tun
   RemoteCommand none
   RequestTTY no
 
-Host alprs*pgtun
+Host alprs*pg?tun
   LocalForward 5433 localhost:5432
 Host alprs*estun
   # Elasticsearch REST and Kibana

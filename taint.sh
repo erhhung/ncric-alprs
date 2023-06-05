@@ -4,10 +4,11 @@
 # expanding recognized names into their full addresses
 
 #   usage: taint.sh <alias_or_address|all> ...
-# example: taint.sh bastion postgresql
+# example: taint.sh bastion postgresql1
 
 [ "${1,,}" == all ] && set -- \
-  postgresql \
+  postgresql1 \
+  postgresql2 \
   elasticsearch \
   conductor \
   datastore \
@@ -36,7 +37,11 @@ full_addr() {
     bastion)
       echo "module.$1_host.aws_instance.host"
       ;;
-    postgresql| \
+    postgresql1| \
+    postgresql2)
+      local a=($(sed -E 's/([0-9]+)/ \1/' <<< $1))
+      echo "module.${a[0]}_server[$((a[1]-1))].aws_instance.host"
+      ;;
     elasticsearch| \
     conductor| \
     datastore| \

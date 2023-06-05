@@ -1,6 +1,7 @@
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_object
 resource "aws_s3_object" "files" {
-  for_each = { for file in var.files : replace(file.path, "/^\\w+\\//", "") => file }
+  # form resource key by removing leading path component because it's usually included in module name
+  for_each = { for file in var.files : replace(file.path, "/^\\w+?(\\d*)\\/(.+)$/", "$2$1") => file }
 
   bucket       = var.bucket
   key          = "userdata/${each.value.path}"

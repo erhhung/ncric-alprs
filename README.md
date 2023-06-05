@@ -103,9 +103,10 @@ until after apply, the `-target` option must be used to create those dependent r
 
 ## EC2 Instances
 
-Seven EC2 instances are provisioned by Terraform:
+Eight EC2 instances are provisioned by Terraform:
 
-* **PostgreSQL** — Primary "alprs" (a.k.a. "Black Panther") database; staging (a.k.a. "Atlas") database for NCRIC org; Rundeck datastore
+* **PostgreSQL 1** — Primary "alprs" (a.k.a. "Black Panther") database; Rundeck datastore
+* **PostgreSQL 2** — Staging (a.k.a. "Atlas") database for NCRIC org; Flock raw data
 * **Elasticsearch** — Exposes ports for both HTTP and transport; Kibana on HTTPS
 * **Conductor** — Catalogs ingested ALPR reads in database; triggers indexing
 * **Datastore** — REST API server; manages storage of ingested ALPR images
@@ -138,11 +139,17 @@ You can run "`check.sh`" 10 minutes or so after bootstrapping new instances to p
 
 ```bash
 $ ./check.sh
-Checking host "postgresql"...
+Checking host "postgresql1"...
+Bootstrapping completed.
+Port 5432 listening.
+Volume /home/ubuntu    21%.
+Volume /opt/postgresql 25%.
+
+Checking host "postgresql2"...
 Bootstrapping completed.
 Port 5432 listening.
 Volume /home/ubuntu    17%.
-Volume /opt/postgresql 60%.
+Volume /opt/postgresql 65%.
 
 Checking host "elasticsearch"...
 Bootstrapping completed.
@@ -198,7 +205,8 @@ If, for some reason, the **root disk becomes full** and SSH to the instance no l
 first, **increase the EBS volume size** manually, and then follow the steps in this document
 to expand the root partition and then the file system:
 
-* https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/recognize-expanded-volume-linux.html
+* [Extend a Linux file system after resizing a volume](
+  https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/recognize-expanded-volume-linux.html)
 
 Also, make sure to update the environment-specific configuration file ("`config/dev.tfvars`"
 or "`config/prod.tfvars`") to reflect the new storage size.

@@ -3,14 +3,16 @@
 
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/ebs_volume
 resource "aws_ebs_volume" "postgresql_data" {
+  count = 2
+
   type              = "gp3"
-  size              = var.data_volume_sizes["postgresql"]
+  size              = var.data_volume_sizes["postgresql${count.index + 1}"]
   availability_zone = "${local.region}a" # private1 subnet
   throughput        = 500
   encrypted         = true
 
   tags = {
-    Name   = "PostgreSQL Data"
+    Name   = "PostgreSQL ${count.index + 1} Data"
     Backup = "true"
   }
 }

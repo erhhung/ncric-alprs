@@ -26,7 +26,8 @@ env_via_tfstate() {
 env_via_tfvars || env_via_tfstate || exit $?
 
 HOSTS=(
-  postgresql
+  postgresql1
+  postgresql2
   elasticsearch
   conductor
   datastore
@@ -37,7 +38,8 @@ HOSTS=(
 
 host_abbrev() {
   case $1 in
-    postgresql)    echo pg   ;;
+    postgresql1)   echo pg1  ;;
+    postgresql2)   echo pg2  ;;
     elasticsearch) echo es   ;;
     conductor)     echo cond ;;
     datastore)     echo data ;;
@@ -133,7 +135,12 @@ check_running() (
   done
 )
 
-check_postgresql() {
+check_postgresql1() {
+  check_bootstrap      || return $?
+  check_listening 5432 || return $?
+  check_disk_free $HOME /opt/postgresql
+}
+check_postgresql2() {
   check_bootstrap      || return $?
   check_listening 5432 || return $?
   check_disk_free $HOME /opt/postgresql

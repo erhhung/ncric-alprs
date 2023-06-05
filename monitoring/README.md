@@ -1,4 +1,4 @@
-## ALPRS Monitoring
+# ALPRS Monitoring
 
 A custom CloudWatch Agent configuration is installed on each EC2 instance
 to forward selected metrics and relevant application logs to CloudWatch.
@@ -52,7 +52,8 @@ the following command via SSH:
 ```bash
 sudo su -l
 CWAGENT_HOME=/opt/aws/amazon-cloudwatch-agent
-aws s3 cp s3://$(hostname | sed -En 's|^alprs([^-]+)-(.+)$|alprs-infra-\1/userdata/\2|p')/cwagent.json $CWAGENT_HOME/etc/amazon-cloudwatch-agent.json
+conf_s3_dir=$(hostname | sed -En 's|^alprs([^-]+)-([^0-9]+).*$|alprs-infra-\1/userdata/\2|p')
+aws s3 cp s3://$conf_s3_dir/cwagent.json $CWAGENT_HOME/etc/amazon-cloudwatch-agent.json --no-progress
 $CWAGENT_HOME/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -s -c file:$CWAGENT_HOME/etc/amazon-cloudwatch-agent.json
 logout
 ```
