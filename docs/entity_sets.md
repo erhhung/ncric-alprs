@@ -389,8 +389,8 @@ _**NOTE**: These entity sets are already reflected in the PostgreSQL init script
   },
   {
     "entityTypeId": "3c6dad54-c4b4-4dfb-bd8b-d8dd56e342ec",
-    "name": "NCRICVehicleRecordsKaiserPermanenteVallejo",
-    "title": "Kaiser Permanente Vallejo",
+    "name": "NCRICVehicleRecordsKaiserPermanente",
+    "title": "Kaiser Permanente",
     "organizationId": "1446ff84-7112-42ec-828d-f181f45e4d20",
     "contacts": [
       "devops@astrometrics.us"
