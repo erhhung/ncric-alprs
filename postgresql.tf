@@ -73,8 +73,8 @@ locals {
       path = "postgresql${i}/bootstrap.sh"
       data = <<-EOF
 ${file("${path.module}/shared/prolog.sh")}
-export HOST="POSTGRESQL${i}"
 ${templatefile("${path.module}/postgresql/boot.tftpl", {
+      HOST    = "POSTGRESQL${i}"
       ENV     = var.env
       S3_URL  = local.user_data_s3_url
       APP_URL = local.app_url

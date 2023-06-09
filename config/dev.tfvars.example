@@ -67,13 +67,15 @@ root_volume_sizes = {
 }
 
 data_volume_sizes = {
-  postgresql    = 32
+  postgresql1   = 32
+  postgresql2   = 32
   elasticsearch = 16
 }
 
 # host numbers in private subnet
 private_ips = {
-  postgresql    = 10
+  postgresql1   = 11
+  postgresql2   = 12
   elasticsearch = 20
   conductor     = 30
   datastore     = 40
