@@ -1,5 +1,4 @@
-App Settings
-------------
+# App Settings
 
 ## Command
 
@@ -58,11 +57,14 @@ To delete existing entities from the `6d17e1c0-d61b-4ec8-80ce-1e82b4a64166`
 (`app.settings`) entity set, invoke the following APIs:
 
 1. Get entities:
-  ```
+
+  ```text
   GET https://api.dev.astrometrics.us/datastore/data/set/6d17e1c0-d61b-4ec8-80ce-1e82b4a64166
   ```
+
 2. Delete entities:
-  ```
+
+  ```text
   # delete ALL entities in an entity set
   DELETE https://api.dev.astrometrics.us/datastore/data/set/6d17e1c0-d61b-4ec8-80ce-1e82b4a64166/all?type=Hard
 
@@ -85,6 +87,7 @@ SELECT CONCAT(' "', id, '": "', title, '",') FROM entity_sets WHERE name LIKE 'N
 ```
 
 _Run the below code snippet from Node.js:_
+
 ```js
 /*
  * These entity set IDs are environment-specific!

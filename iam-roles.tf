@@ -8,6 +8,18 @@ locals {
 }
 
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document
+data "aws_iam_policy_document" "account_trust" {
+  statement {
+    effect  = "Allow"
+    actions = ["sts:AssumeRole"]
+
+    principals {
+      type        = "AWS"
+      identifiers = [local.account]
+    }
+  }
+}
+
 data "aws_iam_policy_document" "ec2_trust" {
   statement {
     effect  = "Allow"
@@ -255,7 +267,7 @@ resource "aws_iam_role_policy_attachment" "aws_backup" {
 
 #################### SFTP ####################
 
-data "aws_iam_policy_document" "sftp_transfer" {
+data "aws_iam_policy_document" "sftp_trust" {
   statement {
     effect  = "Allow"
     actions = ["sts:AssumeRole"]
@@ -269,7 +281,7 @@ data "aws_iam_policy_document" "sftp_transfer" {
 
 resource "aws_iam_role" "sftp_transfer" {
   name               = "AmazonSFTPTransferRole"
-  assume_role_policy = data.aws_iam_policy_document.sftp_transfer.json
+  assume_role_policy = data.aws_iam_policy_document.sftp_trust.json
 }
 
 data "aws_iam_policy_document" "sftp_bucket1" {
@@ -455,4 +467,25 @@ resource "aws_iam_role_policy" "sftp_lambda" {
   name   = "sftp-buckets-access-policy"
   role   = aws_iam_role.sftp_lambda[""].id
   policy = data.aws_iam_policy_document.sftp_lambda[""].json
+}
+
+#################### EKS ####################
+
+resource "aws_iam_role" "eks_admin" {
+  name               = "ALPRSEKSAdminRole"
+  assume_role_policy = data.aws_iam_policy_document.account_trust.json
+}
+
+data "aws_iam_policy_document" "eks_admin" {
+  statement {
+    effect    = "Allow"
+    actions   = ["eks:*"]
+    resources = ["*"]
+  }
+}
+
+resource "aws_iam_role_policy" "eks_admin" {
+  name   = "eks-admin-access-policy"
+  role   = aws_iam_role.eks_admin.id
+  policy = data.aws_iam_policy_document.eks_admin.json
 }
