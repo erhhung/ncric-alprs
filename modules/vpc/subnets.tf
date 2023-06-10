@@ -5,10 +5,12 @@ locals {
       type = type
       cidr = cidr
       zone = "${local.region}${element(local.zones, i)}"
+      # https://docs.aws.amazon.com/eks/latest/userguide/alb-ingress.html
+      k8s_tag = "kubernetes.io/role/${type == "public" ? "elb" : "internal-elb"}"
     }]
   ])
   subnet_names    = [for subnet in local.subnets : subnet.name]
-  public_subnets  = [for i, _ in var.subnet_cidrs.public : "public${i + 1}"]
+  public_subnets  = [for i, _ in var.subnet_cidrs.public  :  "public${i + 1}"]
   private_subnets = [for i, _ in var.subnet_cidrs.private : "private${i + 1}"]
 }
 
@@ -26,6 +28,8 @@ resource "aws_subnet" "subnets" {
 
   tags = {
     Name = "${var.vpc_name} ${each.key} subnet"
+    # https://docs.aws.amazon.com/eks/latest/userguide/alb-ingress.html
+    "${each.value.k8s_tag}" = "1"
   }
 }
 

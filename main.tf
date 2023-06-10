@@ -35,4 +35,10 @@ locals {
     bastion       = "Bastion Host"
     worker        = "Worker"
   }
+
+  default_tags = {
+    Environment = var.env
+    Owner       = "MaiVERIC"
+    Project     = "ALPRS"
+  }
 }
