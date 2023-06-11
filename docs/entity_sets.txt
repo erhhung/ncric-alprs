@@ -1,0 +1,123 @@
+NCRICAgencies
+NCRICCollectedBy
+NCRICImageSources
+NCRICRecordedBy
+NCRICStandardizedAgencies
+standardized_agency_names
+
+flock_reads_sun
+flock_reads_mon
+flock_reads_tue
+flock_reads_wed
+flock_reads_thu
+flock_reads_fri
+flock_reads_sat
+
+Agencies (astrometrics_1446ff84-7112-42ec-828d-f181f45e4d20)
+App Settings (astrometrics_1446ff84-7112-42ec-828d-f181f45e4d20)
+Camera (astrometrics_1446ff84-7112-42ec-828d-f181f45e4d20)
+Collected By (astrometrics_1446ff84-7112-42ec-828d-f181f45e4d20)
+Confidence Metrics (astrometrics_1446ff84-7112-42ec-828d-f181f45e4d20)
+Has (astrometrics_1446ff84-7112-42ec-828d-f181f45e4d20)
+Hotlist Reads (astrometrics_1446ff84-7112-42ec-828d-f181f45e4d20)
+Hotlist Vehicle List (astrometrics_1446ff84-7112-42ec-828d-f181f45e4d20)
+Includes (astrometrics_1446ff84-7112-42ec-828d-f181f45e4d20)
+Infractions (astrometrics_1446ff84-7112-42ec-828d-f181f45e4d20)
+Located At (astrometrics_1446ff84-7112-42ec-828d-f181f45e4d20)
+Location (astrometrics_1446ff84-7112-42ec-828d-f181f45e4d20)
+Recorded By (astrometrics_1446ff84-7112-42ec-828d-f181f45e4d20)
+Registered For (astrometrics_1446ff84-7112-42ec-828d-f181f45e4d20)
+Report (astrometrics_1446ff84-7112-42ec-828d-f181f45e4d20)
+Results In (astrometrics_1446ff84-7112-42ec-828d-f181f45e4d20)
+Saved Maps (astrometrics_1446ff84-7112-42ec-828d-f181f45e4d20)
+Search (astrometrics_1446ff84-7112-42ec-828d-f181f45e4d20)
+Search Alert (astrometrics_1446ff84-7112-42ec-828d-f181f45e4d20)
+Searched By (astrometrics_1446ff84-7112-42ec-828d-f181f45e4d20)
+Staff (astrometrics_1446ff84-7112-42ec-828d-f181f45e4d20)
+Standardized Agencies (astrometrics_1446ff84-7112-42ec-828d-f181f45e4d20)
+Temporary Data Sources Enum (astrometrics_1446ff84-7112-42ec-828d-f181f45e4d20)
+Vehicle (astrometrics_1446ff84-7112-42ec-828d-f181f45e4d20)
+Vehicle Record (astrometrics_1446ff84-7112-42ec-828d-f181f45e4d20)
+
+Alameda County SO
+American Canyon PD
+Anderson City PD
+Atherton PD
+Bay Area Rapid Transit
+Benicia PD
+Beverly Hills PD
+Brisbane PD
+Burlingame PD
+CHP
+Campbell PD
+Central Marin PA
+Ceres PD
+Chico PD
+Colma PD
+Concord PD
+Contra Costa SO
+Daly City PD
+Danville PD
+Dixon PD
+Fairfield PD
+Fremont PD
+GGB Vista Point
+Gilroy PD
+HIDTA
+HPD
+Hayward PD
+Hercules PD
+Hillsborough PD
+Humboldt County
+Kaiser Permanente
+La Habra PD
+Lakeport PD
+Livermore PD
+Los Alamitos PD
+Los Altos PD
+Manual Entries
+Marin CC
+Menlo Park PD
+Millbrae PD
+Milpitas PD
+Modesto PD
+Morgan Hill PD
+NCRIC
+NPD
+Napa PD
+Newark PD
+Novato PD
+Oakley PD
+Ontario PD
+Orinda PD
+Palo Alto PD
+Piedmont PD
+Pleasanton PD
+Presidio Trust PD
+Rio Vista PD
+Rocklin PD
+SFO Airport Police
+Salinas PD
+San Bruno PD
+San Francisco PD
+San Joaquin County SO
+San Leandro PD
+San Mateo County SO
+San Mateo PD
+San Mateo VTTF
+San Ramon PD
+Santa Clara County SO
+Santa Clara PD
+Santa Clara Sheriff
+Seal Beach PD
+Shasta County SO
+Solano County SO
+South San Francisco PD
+Suisun PD
+Sunnyvale DPS
+Sunnyvale PD
+Tracy PD
+V5Sys
+Vacaville PD
+Vallejo PD
+Yosemite National Park

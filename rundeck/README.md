@@ -33,6 +33,22 @@ a `.jar` archive.
 Nevertheless, please keep both formats in sync when making job
 modifications.
 
+### Agency Names
+
+Use the command below to generate an updated list of agency
+names with which to update the `agencies[]`  
+array in various job definitions (change "`FLOCK`" to "`BOSS4`"
+as appropriate).
+
+```bash
+# npm i -g csvtojson
+
+csvtojson ../docs/standardized_agency_names.csv | \
+  jq -r '[.[] | select(.ol.datasource == "FLOCK") |
+          .standardized_agency_name] | unique[] |
+          "\"\(.)\","'
+```
+
 ## Update Jobs
 
 To update Rundeck job definitions from the Bastion host after

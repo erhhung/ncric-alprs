@@ -326,7 +326,7 @@ data "aws_iam_policy_document" "sftp_user" {
 
 resource "aws_iam_role" "sftp_logger" {
   name               = "AmazonSFTPLoggerRole"
-  assume_role_policy = data.aws_iam_policy_document.sftp_transfer.json
+  assume_role_policy = data.aws_iam_policy_document.sftp_trust.json
 }
 
 data "aws_iam_policy_document" "cloudwatch_logger" {

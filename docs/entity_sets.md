@@ -28,17 +28,22 @@ cat <<'EOF' | curl -s -d @- -H "Authorization: Bearer $jwt" \
 __SEE_PAYLOAD_SECTION__
 EOF
 
+# same as above but using payload file
+curl -s -d @missing_entity_sets.json \
+  -H "Authorization: Bearer $jwt" \
+  -H "Content-Type: application/json" \
+  https://api.dev.astrometrics.us/datastore/entity-sets | jq
+
 # trigger indexing of all EDM objects
 curl -s -H "Authorization: Bearer $jwt" \
         -o /dev/null -w '%{http_code}\n' \
-  http://datastore:8080/datastore/search/edm/index
+  https://api.dev.astrometrics.us/datastore/search/edm/index
 ```
 
 ## Permissions
 
-It is imperative that all entity sets (at current count there should be 108) are granted
-proper permissions using the **Lattice Orgs** webapp (http://localhost:9001/ after SSH
-tunneling into the **bastion host**):
+It is imperative that all entity sets (at current count there should be **120**) are granted proper permissions
+using the **Lattice Orgs** webapp (http://localhost:9001/ after SSH tunneling into the **bastion host**):
 
 1. Log into Lattice Orgs as **ol@dev.astrometrics.us**
 2. Select the **NCRIC organization**
@@ -49,18 +54,19 @@ tunneling into the **bastion host**):
     * Owner users: brodrigues@ncric.ca.gov, agent.blue@maiveric.com
         * Grant `owner`, `read`, `write`
 5. Go back to the NCRIC organization view and select **People** at the top
-6. Grant the same set of admin users **all 4 roles** and the owners all roles except "`NCRIC - ADMIN`"
+6. Grant the same set of admin users (with an email address) **all 4 roles** and the owners all roles except "`NCRIC - ADMIN`"
     * All roles: "`NCRIC - ADMIN`", "`AstroMetrics - OWNER`", "`AstroMetrics - READ`", "`AstroMetrics - WRITE`"
-7. Repeat for **each admin user** (excluding owner users):
+7. Repeat for **each admin user**:
     1. Select the user to show user view
-    2. Under **Data Sets**, there are 10 entity sets listed "per page", and there are currently 108
+    2. Under **Data Sets**, there are 10 entity sets listed "per page", and there are currently **120** _(see "`entity_sets.txt`")_
     3. If new entity sets have been added, click on the **Add data set** button and select those new entity sets (search might help)
     4. On the **Assign Permissions To Data Sets** page of the dialog, select all 6 permissions and click **Continue**
     5. Retry the process if, for some reason, the dialog shows that an error has occurred
-8. Go back to the NCRIC organization view and select **Roles** at the top
-9. Repeat for **each role**:
+8. Repeat step 7 for **each owner user**, except assign only 3 permissions
+9. Go back to the NCRIC organization view and select **Roles** at the top
+10. Repeat for **each role**:
     1. Select the role to show role view
-    2. Under **Data Sets**, there are 10 entity sets listed "per page", and there are currently 108
+    2. Under **Data Sets**, there are 10 entity sets listed "per page", and there are currently **120** _(see "`entity_sets.txt`")_
     3. If new entity sets have been added, click on the **Add data set** button and select those new entity sets (search might help)
     4. On the **Assign Permissions To Data Sets** page of the dialog, select the permissions relevant to the role and click **Continue**
         * "**`NCRIC - ADMIN`**": `owner`, `read`, `write`, `integrate`, `link`, `materialize`
@@ -68,7 +74,7 @@ tunneling into the **bastion host**):
         * "**`AstroMetrics - READ`**": `read`
         * "**`AstroMetrics - WRITE`**": `write`
     5. Retry the process if, for some reason, the dialog shows that an error has occurred
-10. Go back to the NCRIC organization view and verify that **all (currently 108) entity sets appear** on the **Data Sets** tab
+11. Go back to the NCRIC organization view and verify that **all (currently 120) entity sets appear** on the **Data Sets** tab
 
 ## Payload
 
@@ -83,7 +89,7 @@ gunzip -c ../postgresql/alprs.sql.gz > $alprs_sql
 
 while read es_id es_name; do
   if egrep -q "\b$es_id\b" $alprs_sql; then
-    echo >&2 "$es_id already exists."
+    echo >&2 "$es_id exists."
   else
     jo entityTypeId='3c6dad54-c4b4-4dfb-bd8b-d8dd56e342ec' \
        name="$es_id" \

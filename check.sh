@@ -2,6 +2,8 @@
 
 # ensure all servers have completed bootstrapping
 # and critical services are running on each server
+#
+# USAGE: check.sh [hosts...]
 
 cd "`dirname "$0"`"
 
@@ -25,16 +27,15 @@ env_via_tfstate() {
 # determine env via .tfvars file or tf state
 env_via_tfvars || env_via_tfstate || exit $?
 
-HOSTS=(
-  postgresql1
-  postgresql2
-  elasticsearch
-  conductor
-  datastore
-  indexer
-  bastion
+[ "$1" ] || set -- \
+  postgresql1 \
+  postgresql2 \
+  elasticsearch \
+  conductor \
+  datastore \
+  indexer \
+  bastion \
   worker
-)
 
 host_abbrev() {
   case $1 in
@@ -211,15 +212,23 @@ EOF
 THMSUP='\xf0\x9f\x91\x8d'
 THMSDN='\xf0\x9f\x91\x8e'
 
-for host in ${HOSTS[@]}; do
-  abbrev=$(host_abbrev     $host)
+for host in "$@"; do
+  abbrev=$(host_abbrev $host)
+  if [ $? -ne 0 ]; then
+    [ "$lf" ] && echo >&2
+    echo >&2 -e "${RED}Invalid host \"$host\"!${NOCLR}"
+    result="FAILED!"
+    break
+  fi
   check=$(declare -f check_$host)
 
   [ "$lf" ] && echo
   echo -e "Checking host \"${BLUE}${host}${NOCLR}\"..."
   ssh "alprs${env}${abbrev}" "$funcs; $check; check_$host"
-
-  [ $? -ne 0 ] && result="FAILED!" && break
+  if [ $? -ne 0 ]; then
+    result="FAILED!"
+    break
+  fi
   lf=true
 done
 [ ! "$result" ] && color="$THMSUP $GREEN" \

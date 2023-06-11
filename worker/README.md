@@ -11,6 +11,201 @@
   `region_name` parameter) as they will also be replaced with the
   appropriate region by the `mkwhl.sh` script.
 
+## pyntegrationsncric
+
+### NCRIC Flights
+
+Generate missing NCRIC flight and images flight YAML files:
+
+_**Run in "`pyntegrationsncric/pyntegrationsncric/pyntegrations/ca_ncric/ncric_flights`"**)_:
+
+```bash
+# npm i -g csvtojson
+
+while read es_id; do
+  file="ncric_${es_id}_flight.yaml"
+  if [ -f "$file" ]; then
+    echo >&2 "$file exists."
+  else
+    cat <<EOF > $file
+organizationId: 1446ff84-7112-42ec-828d-f181f45e4d20
+
+entityDefinitions:
+  vehiclerecords:
+    fqn: "ol.vehicle"
+    entitySetName: "NCRICVehicleRecords${es_id}"
+    propertyDefinitions:
+      ol.id:
+        type: "ol.id"
+        column: "vehicle_record_id"
+      vehicle.licensenumber:
+        type: "vehicle.licensenumber"
+        column: "VehicleLicensePlateID"
+      ol.datelogged:
+        type: "ol.datelogged"
+        column: "eventDateTime"
+      ol.locationcoordinates:
+        type: "ol.locationcoordinates"
+        column: "latlon"
+      publicsafety.agencyname:
+        type: "publicsafety.agencyname"
+        column: "standardized_agency_name"
+      ol.agencyname:
+        type: "ol.agencyname"
+        column: "agencyName"
+      vehicle.model:
+        type: "vehicle.model"
+        column: "model"
+      ol.resourceid:
+        type: "ol.resourceid"
+        column: "camera_id"
+      ol.datasource:
+        type: "ol.datasource"
+        column: "datasource"
+    name: "vehiclerecords"
+
+  imagesources:
+    fqn: "ol.imagesource"
+    entitySetName: "NCRICImageSources"
+    propertyDefinitions:
+      ol.id:
+        type: "ol.id"
+        column: "camera_id"
+    name: "imagesources"
+    associateOnly: true
+
+  agencies:
+    fqn: "ol.agency"
+    entitySetName: "NCRICAgencies"
+    propertyDefinitions:
+      ol.id:
+        type: "ol.id"
+        column: "agency_id"
+    name: "agencies"
+    associateOnly: true
+
+  agencies2:
+    fqn: "ol.agency"
+    entitySetName: "NCRICStandardizedAgencies"
+    propertyDefinitions:
+      ol.id:
+        type: "ol.id"
+        column: "standardized_agency_name"
+    name: "agencies2"
+    associateOnly: true
+
+associationDefinitions:
+  recordedby1:
+    fqn: "ol.recordedby"
+    entitySetName: "NCRICRecordedBy"
+    src: "vehiclerecords"
+    dst: "imagesources"
+    propertyDefinitions:
+      ol.datelogged:
+        type: "ol.datelogged"
+        column: "eventDateTime"
+      general.stringid:
+        type: "general.stringid"
+        column: "recordedby1_id"
+    name: "recordedby1"
+
+  recordedby2:
+    fqn: "ol.recordedby"
+    entitySetName: "NCRICRecordedBy"
+    src: "vehiclerecords"
+    dst: "agencies"
+    propertyDefinitions:
+      ol.datelogged:
+        type: "ol.datelogged"
+        column: "eventDateTime"
+      general.stringid:
+        type: "general.stringid"
+        column: "recordedby2_id"
+    name: "recordedby2"
+
+  recordedby3:
+    fqn: "ol.recordedby"
+    entitySetName: "NCRICRecordedBy"
+    src: "vehiclerecords"
+    dst: "agencies2"
+    propertyDefinitions:
+      ol.datelogged:
+        type: "ol.datelogged"
+        column: "eventDateTime"
+      general.stringid:
+        type: "general.stringid"
+        column: "recordedby3_id"
+    name: "recordedby3"
+
+  collectedby:
+    fqn: "ol.collectedby"
+    entitySetName: "NCRICCollectedBy"
+    src: "imagesources"
+    dst: "agencies"
+    propertyDefinitions:
+      general.id:
+        type: "general.id"
+        column: "collectedby_id"
+    name: "collectedby"
+
+  collectedby2:
+    fqn: "ol.collectedby"
+    entitySetName: "NCRICCollectedBy"
+    src: "imagesources"
+    dst: "agencies2"
+    propertyDefinitions:
+      general.id:
+        type: "general.id"
+        column: "collectedby2_id"
+    name: "collectedby2"
+EOF
+    echo "Created $file"
+  fi
+done < <(
+  csvtojson ../../../../../../docs/standardized_agency_names.csv | \
+    jq -r '[.[].standardized_agency_name] | unique[] | "\(gsub(" ";""))"'
+)
+```
+
+_**Run in "`pyntegrationsncric/pyntegrationsncric/pyntegrations/ca_ncric/ncric_image_flights`"**)_:
+
+```bash
+# npm i -g csvtojson
+
+while read es_id; do
+  file="ncric_${es_id}_images_flight.yaml"
+  if [ -f "$file" ]; then
+    echo >&2 "$file exists."
+  else
+    cat <<EOF > $file
+organizationId: 1446ff84-7112-42ec-828d-f181f45e4d20
+
+entityDefinitions:
+  vehiclerecords:
+    fqn: "ol.vehicle"
+    entitySetName: "NCRICVehicleRecords${es_id}"
+    propertyDefinitions:
+      ol.id:
+        type: "ol.id"
+        column: "vehicle_record_id"
+      ol.licenseplateimage:
+        type: "ol.licenseplateimage"
+        column: "LPRVehiclePlatePhoto"
+      ol.vehicleimage:
+        type: "ol.vehicleimage"
+        column: "LPRAdditionalPhoto"
+    name: "vehiclerecords"
+
+associationDefinitions: {}
+EOF
+    echo "Created $file"
+  fi
+done < <(
+  csvtojson ../../../../../../docs/standardized_agency_names.csv | \
+    jq -r '[.[].standardized_agency_name] | unique[] | "\(gsub(" ";""))"'
+)
+```
+
 ## Update Packages
 
 To update `olpy` and `pyntegrationsncric` packages on the Worker

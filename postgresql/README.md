@@ -163,7 +163,6 @@ To export an updated "`alprs.sql.gz`", perform the following steps:
       * conductor
     Proceed? [y/N] y
 
-    Retrieving Terraform output variables...DONE.
     Stopping services on host "bastion"...DONE.
     Stopping services on host "worker"...DONE.
     Stopping services on host "indexer"...DONE.
@@ -211,8 +210,9 @@ To export an updated "`ncric.sql.gz`", perform the following steps:
 
 2. Edit "`ncric.sql`" and **sort the lines** containing
    data for the `standardized_agency_names` table.
-3. Manually merge "`ncric2.sql`" into "`ncric.sql`".
-4. Run the following commands:
+3. Manually sort "`flock_reads_*`" table schemas in "`ncric2.sql`" from "`_sun`" to "`_sat`".
+4. Manually merge "`ncric2.sql`" into "`ncric.sql`".
+5. Run the following commands:
 
     ```bash
       ubuntu@alprsdev-postgresql2:~$ gzip -k9 ncric.sql
