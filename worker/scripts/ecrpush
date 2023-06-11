@@ -1,0 +1,89 @@
+#!/usr/bin/env bash
+#
+# Push a locally built Docker image to ECR
+# with the option to apply additional tags
+#
+#   Usage: ecrpush <repo>[:tag] [tags ...]
+# Example: ecrpush python:3.11.1-slim latest
+#
+# Author: Erhhung Yuan <eyuan@maiveric.com>
+#
+# https://docs.aws.amazon.com/AmazonECR/latest/userguide/docker-push-ecr-image.html
+# https://docs.aws.amazon.com/AmazonECR/latest/userguide/Registries.html
+
+image="$1"
+if [ -z "$image" ]; then
+  echo "    Usage: ecrpush <repo>[:tag] [tags ...]"
+  echo "  Example: ecrpush python:3.11.1-slim latest"
+  exit
+fi
+repo="${image/:*/}"
+
+# require given commands
+# to be $PATH accessible
+function _require() {
+  for bin in "$@"; do
+    if ! hash $bin 2> /dev/null; then
+      echo >&2 "Please install \"$_\" first!"
+      return 1
+    fi
+  done
+}
+_require jq aws docker || exit 1
+
+repoUri=$(aws ecr describe-repositories | \
+  jq -r --arg repo $repo '.repositories[] |
+    select(.repositoryName==$repo).repositoryUri')
+
+if [ ! "$repoUri" ]; then
+  repoUri=$(aws ecr create-repository \
+          --repository-name $repo | \
+    jq -r '.repository.repositoryUri')
+  [ "$repoUri" ] || exit 1
+fi
+
+# `docker login` into ECR
+registry="${repoUri/\/*/}"
+ecrTag="$registry/$image"
+
+login=$(aws ecr get-login-password | \
+  docker login $registry \
+    --username AWS \
+    --password-stdin)
+[[ "$login" =~ Succeeded ]] || exit 1
+
+while true; do
+  docker tag   "$image" "$ecrTag"
+  docker push "$ecrTag"
+  docker rmi  "$ecrTag"
+
+  shift
+  [ ! "$1" ] && break
+  # apply additional tag
+  ecrTag="$repoUri:$1"
+done
+
+images=$(aws ecr describe-images \
+    --repository-name $repo \
+    --query 'imageDetails[?@.imageTags == null]' | \
+  jq -r '.[] | "[\(.imagePushedAt)] \(.imageDigest) (\(.imageSizeInBytes) bytes)"')
+digests=($(awk '{if ($2) print "imageDigest="$2}' <<< "${images}"))
+
+if [ ${#digests[@]} -eq 0 ]; then
+  echo "Found no images to purge."
+  exit
+fi
+echo "${images}"
+
+errors=$(aws ecr batch-delete-image \
+    --repository-name $repo \
+    --image-ids "${digests[@]}" \
+    --query failures[] \
+    --output text)  || exit $?
+
+if [ "${errors}" ]; then
+  echo -e "\n${errors}"
+  exit 1
+else
+  echo "DONE."
+fi

@@ -43,6 +43,12 @@ install_delta() (
   rm git-delta*
 )
 
+install_docker() (
+  hash docker 2> /dev/null && exit
+  eval_with_retry "wait_apt_get && apt-get install -y docker.io"
+  usermod -aG docker $DEFAULT_USER
+)
+
 install_pgcli() {
   pip3 install pgcli
   mkdir -p .config/pgcli
@@ -62,6 +68,7 @@ EOF
 init_destdir() {
   mkdir -p /opt/openlattice
   chown -Rh $DEFAULT_USER:$DEFAULT_USER /opt/openlattice
+  chmod go+w /usr/local/bin
 }
 
 config_sshd() (
@@ -79,17 +86,22 @@ auth_ssh_key() {
      echo "$rundeck_key" >> authorized_keys
 }
 
-copy_scripts() {
+copy_scripts() (
   aws s3 sync $S3_URL/worker/scripts scripts --no-progress
   find scripts -type f -name '*.sh' -exec chmod +x {} \;
-}
+
+  ecrpush="scripts/ecrpush"
+  [ -f $ecrpush ] && \
+    chmod +x $ecrpush && \
+    mv $ecrpush /usr/local/bin
+)
 
 git_clone() {
   local url=$1 dest=$2
   # supply token if cloning MaiVERIC private repo
   if [[ "$url" == *//github.com/maiveric/* ]]; then
     # https://github.blog/2012-09-21-easier-builds-and-deployments-using-git-over-https-and-oauth/
-    url=${url/\/\/github.com\//\/\/$GH_TOKEN:x-oauth-basic@github.com\/}
+    url=${url/\/\/github.com\//\/\/oauth2:$GITHUB_TOKEN@github.com\/}
   fi
   git clone $url $dest
 }
@@ -127,6 +139,10 @@ install_pylibs() (
 )
 
 user_dotfiles() (
+  cat <<EOF > .git-credentials
+https://oauth2:$GITHUB_TOKEN@github.com
+https://oauth2:$GITLAB_TOKEN@gitlab.com
+EOF
   aws s3 sync $S3_URL/postgresql . --exclude '*' --include '.*' --no-progress
   cat <<EOF >> .bashrc
 export CONFIG_BUCKET="$CONFIG_BUCKET"
@@ -175,6 +191,14 @@ alprs() {
 atlas() {
   pgcli $(_atlas_url) "$@"
 }
+
+drmc() {
+  docker rm $(docker ps -qa --no-trunc --filter "status=exited") 2> /dev/null
+}
+drmi() {
+  docker rmi $(docker images --filter "dangling=true" -q --no-trunc) 2> /dev/null
+  docker rmi $(docker images | grep "none" | awk '/ / { print $3 }') 2> /dev/null
+}
 EOF
 }
 
@@ -210,6 +234,7 @@ run apt_install
 run upgrade_pip    $DEFAULT_USER
 run install_java
 run install_delta
+run install_docker
 run install_pgcli  $DEFAULT_USER
 run install_psql
 run init_destdir

@@ -81,7 +81,7 @@ git_clone() {
   # supply token if cloning MaiVERIC private repo
   if [[ "$url" == *//github.com/maiveric/* ]]; then
     # https://github.blog/2012-09-21-easier-builds-and-deployments-using-git-over-https-and-oauth/
-    url=${url/\/\/github.com\//\/\/$GH_TOKEN:x-oauth-basic@github.com\/}
+    url=${url/\/\/github.com\//\/\/oauth2:$GITHUB_TOKEN@github.com\/}
   fi
   git clone $url $dest
 }

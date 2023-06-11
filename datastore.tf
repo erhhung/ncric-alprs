@@ -23,7 +23,7 @@ ${file("${path.module}/shared/prolog.sh")}
 ${templatefile("${path.module}/datastore/boot.tftpl", {
     ENV           = var.env
     S3_URL        = local.user_data_s3_url
-    GH_TOKEN      = var.GITHUB_ACCESS_TOKEN
+    GITHUB_TOKEN  = var.GITHUB_ACCESS_TOKEN
     FROM_EMAIL    = local.alprs_sender_email
     BACKUP_BUCKET = var.buckets["backup"]
     CONFIG_BUCKET = var.buckets["config"]

@@ -4,6 +4,8 @@ locals {
     "olpy",
   ]
   worker_scripts_paths = [{
+    path = "${path.module}/worker/scripts"
+    }, {
     path = "${path.module}/shuttle/scripts"
     dest = "shuttle/"
     }, {
@@ -48,7 +50,8 @@ ${templatefile("${path.module}/worker/boot.tftpl", {
     ENV            = var.env
     S3_URL         = local.user_data_s3_url
     API_URL        = local.api_url
-    GH_TOKEN       = var.GITHUB_ACCESS_TOKEN
+    GITHUB_TOKEN   = var.GITHUB_ACCESS_TOKEN
+    GITLAB_TOKEN   = var.GITLAB_ACCESS_TOKEN
     SFTP_BUCKET    = var.buckets["sftp"]
     MEDIA_BUCKET   = var.buckets["media"]
     BACKUP_BUCKET  = var.buckets["backup"]

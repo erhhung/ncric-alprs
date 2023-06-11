@@ -100,9 +100,14 @@ smudge = git-lfs smudge -- %f
 process = git-lfs filter-process
 
 [url "https://"]
-  insteadOf = git://
+insteadOf = git://
 [url "https://github.com/"]
-  insteadOf = git@github.com:
+insteadOf = git@github.com:
+[url "https://gitlab.com/"]
+insteadOf = git@gitlab.com:
+
+[credential]
+helper = store
 
 [pager]
 diff = delta

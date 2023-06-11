@@ -388,6 +388,35 @@ data "aws_iam_policy_document" "ingest_buckets" {
   }
 }
 
+data "aws_iam_policy_document" "ecr_repos" {
+  statement {
+    effect    = "Allow"
+    actions   = [
+      "ecr:GetAuthorizationToken",
+      "ecr:CreateRepository",
+      "ecr:BatchImportUpstreamImage"
+    ]
+    resources = ["*"]
+  }
+  statement {
+    effect = "Allow"
+    actions = [
+      "ecr:DescribeRepositories",
+      "ecr:ListImages",
+      "ecr:DescribeImages",
+      "ecr:BatchCheckLayerAvailability",
+      "ecr:GetDownloadUrlForLayer",
+      "ecr:BatchGetImage",
+      "ecr:BatchDeleteImage",
+      "ecr:InitiateLayerUpload",
+      "ecr:CompleteLayerUpload",
+      "ecr:UploadLayerPart",
+      "ecr:PutImage"
+    ]
+    resources = ["arn:${local.partition}:ecr:${local.region}:${local.account}:repository/*"]
+  }
+}
+
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy
 resource "aws_iam_role_policy" "alprs_worker_user_data_bucket" {
   name   = "userdata-bucket-access-policy"
@@ -408,6 +437,11 @@ resource "aws_iam_role_policy" "alprs_worker_config_bucket" {
   name   = "config-bucket-access-policy"
   role   = aws_iam_role.alprs_worker.id
   policy = data.aws_iam_policy_document.config_bucket.json
+}
+resource "aws_iam_role_policy" "alprs_worker_ecr_repos" {
+  name   = "ecr-repos-access-policy"
+  role   = aws_iam_role.alprs_worker.id
+  policy = data.aws_iam_policy_document.ecr_repos.json
 }
 
 resource "aws_iam_instance_profile" "alprs_worker" {
