@@ -8,6 +8,11 @@ variable "env" {
   }
 }
 
+variable domain {
+  description = "Hosted zone domain"
+  type        = string
+}
+
 variable "accounts" {
   description = "AWS account info"
   type = object({
