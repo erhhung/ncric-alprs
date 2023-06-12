@@ -39,6 +39,9 @@ locals {
         path = "worker/scripts/${lookup(scripts, "dest", "")}${path}"
         file = "${scripts.path}/${path}"
     }]], {
+      path = "worker/.bash_aliases"
+      file = "${path.module}/worker/.bash_aliases"
+    }, {
     path = "worker/cwagent.json"
     data = data.external.worker_cwagent_json.result.json
     type = "application/json"
@@ -59,6 +62,7 @@ ${templatefile("${path.module}/worker/boot.tftpl", {
     POSTGRESQL1_IP = module.postgresql_server[0].private_ip
     POSTGRESQL2_IP = module.postgresql_server[1].private_ip
     DATASTORE_IP   = module.datastore_server.private_ip
+    EKS_ROLE_ARN   = aws_iam_role.eks_admin.arn
     # public key is created in keys.tf
     rundeck_key = "${chomp(tls_private_key.rundeck_worker.public_key_openssh)} rundeck@${local.app_domain}"
 })}

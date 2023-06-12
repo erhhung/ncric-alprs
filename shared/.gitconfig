@@ -106,6 +106,10 @@ insteadOf = git@github.com:
 [url "https://gitlab.com/"]
 insteadOf = git@gitlab.com:
 
+[user]
+email = devops@maiveric.com
+name = MaiVERIC DevOps
+
 [credential]
 helper = store
 

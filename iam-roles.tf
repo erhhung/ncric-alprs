@@ -8,7 +8,7 @@ locals {
 }
 
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document
-data "aws_iam_policy_document" "account_trust" {
+data "aws_iam_policy_document" "ec2_trust" {
   statement {
     effect  = "Allow"
     actions = ["sts:AssumeRole"]
@@ -17,14 +17,6 @@ data "aws_iam_policy_document" "account_trust" {
       type        = "AWS"
       identifiers = [local.account]
     }
-  }
-}
-
-data "aws_iam_policy_document" "ec2_trust" {
-  statement {
-    effect  = "Allow"
-    actions = ["sts:AssumeRole"]
-
     principals {
       type        = "Service"
       identifiers = ["ec2.amazonaws.com"]
@@ -388,10 +380,18 @@ data "aws_iam_policy_document" "ingest_buckets" {
   }
 }
 
-data "aws_iam_policy_document" "ecr_repos" {
+data "aws_iam_policy_document" "eks_cluster" {
   statement {
     effect    = "Allow"
-    actions   = [
+    actions   = ["eks:DescribeCluster"]
+    resources = ["arn:${local.partition}:eks:${local.region}:${local.account}:cluster/alprs"]
+  }
+}
+
+data "aws_iam_policy_document" "ecr_repos" {
+  statement {
+    effect = "Allow"
+    actions = [
       "ecr:GetAuthorizationToken",
       "ecr:CreateRepository",
       "ecr:BatchImportUpstreamImage"
@@ -437,6 +437,11 @@ resource "aws_iam_role_policy" "alprs_worker_config_bucket" {
   name   = "config-bucket-access-policy"
   role   = aws_iam_role.alprs_worker.id
   policy = data.aws_iam_policy_document.config_bucket.json
+}
+resource "aws_iam_role_policy" "alprs_worker_eks_cluster" {
+  name   = "eks-cluster-access-policy"
+  role   = aws_iam_role.alprs_worker.id
+  policy = data.aws_iam_policy_document.eks_cluster.json
 }
 resource "aws_iam_role_policy" "alprs_worker_ecr_repos" {
   name   = "ecr-repos-access-policy"
@@ -505,9 +510,24 @@ resource "aws_iam_role_policy" "sftp_lambda" {
 
 #################### EKS ####################
 
+data "aws_iam_policy_document" "eks_trust" {
+  statement {
+    effect  = "Allow"
+    actions = ["sts:AssumeRole"]
+
+    principals {
+      type = "AWS"
+      identifiers = [
+        local.account,
+        aws_iam_role.alprs_worker.arn
+      ]
+    }
+  }
+}
+
 resource "aws_iam_role" "eks_admin" {
   name               = "ALPRSEKSAdminRole"
-  assume_role_policy = data.aws_iam_policy_document.account_trust.json
+  assume_role_policy = data.aws_iam_policy_document.eks_trust.json
 }
 
 data "aws_iam_policy_document" "eks_admin" {

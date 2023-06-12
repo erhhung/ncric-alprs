@@ -49,6 +49,30 @@ install_docker() (
   usermod -aG docker $DEFAULT_USER
 )
 
+install_kube() (
+  case `whoami` in
+    root)
+      cd /usr/local/bin
+      K8S_VER=$(curl -Ls https://dl.k8s.io/release/stable.txt)
+      wget -q https://dl.k8s.io/release/$K8S_VER/bin/linux/arm64/kubectl
+      chmod +x kubectl
+      ;;
+    $DEFAULT_USER)
+      aws eks update-kubeconfig \
+        --name alprs \
+        --role-arn $EKS_ROLE_ARN
+      context=$(kubectl config current-context)
+      kubectl config rename-context $context alprs
+      ;;
+  esac
+)
+
+install_helm() (
+  curl -sSL https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash -
+  helm plugin install https://github.com/databus23/helm-diff
+  #helm plugin install https://github.com/erhhung/helm-ssm
+)
+
 install_pgcli() {
   pip3 install pgcli
   mkdir -p .config/pgcli
@@ -164,42 +188,7 @@ EOF
 
 extra_aliases() {
   echo -e \\n >> .bash_aliases
-  cat <<'EOF' >> .bash_aliases
-_alprs_url() {
-  local conf="s3://$CONFIG_BUCKET/shuttle/shuttle.yaml"
-  aws s3 cp $conf - --quiet | \
-    yq '.postgres.config |
-        (.username + ":" + .password) as $creds | .jdbcUrl |
-        sub(".+//([^?]+).*$", "postgresql://" + $creds + "@${1}")'
-}
-_atlas_url() {
-  local conf="s3://$CONFIG_BUCKET/flapper/flapper.yaml"
-  aws s3 cp $conf - --quiet | \
-    yq '.datalakes[] | select(.name == "atlas") |
-        (.username + ":" + .password) as $creds | .url |
-        sub(".+//(.+)$", "postgresql://" + $creds + "@${1}")'
-}
-_alprs() {
-  psql $(_alprs_url) "$@"
-}
-_atlas() {
-  psql $(_atlas_url) "$@"
-}
-alprs() {
-  pgcli $(_alprs_url) "$@"
-}
-atlas() {
-  pgcli $(_atlas_url) "$@"
-}
-
-drmc() {
-  docker rm $(docker ps -qa --no-trunc --filter "status=exited") 2> /dev/null
-}
-drmi() {
-  docker rmi $(docker images --filter "dangling=true" -q --no-trunc) 2> /dev/null
-  docker rmi $(docker images | grep "none" | awk '/ / { print $3 }') 2> /dev/null
-}
-EOF
+  aws s3 cp $S3_URL/worker/.bash_aliases - --no-progress >> .bash_aliases
 }
 
 build_cli_app() (
@@ -235,6 +224,9 @@ run upgrade_pip    $DEFAULT_USER
 run install_java
 run install_delta
 run install_docker
+run install_kube
+run install_kube   $DEFAULT_USER
+run install_helm   $DEFAULT_USER
 run install_pgcli  $DEFAULT_USER
 run install_psql
 run init_destdir
