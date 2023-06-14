@@ -510,7 +510,37 @@ resource "aws_iam_role_policy" "sftp_lambda" {
 
 #################### EKS ####################
 
-data "aws_iam_policy_document" "eks_trust" {
+locals {
+  eks_policy_arns = [
+    "arn:${local.partition}:iam::aws:policy/AmazonEKSClusterPolicy",
+  ]
+}
+
+data "aws_iam_policy_document" "eks_cluster_trust" {
+  statement {
+    effect  = "Allow"
+    actions = ["sts:AssumeRole"]
+
+    principals {
+      type        = "Service"
+      identifiers = ["eks.amazonaws.com"]
+    }
+  }
+}
+
+resource "aws_iam_role" "eks_cluster" {
+  name               = "ALPRSEKSClusterRole"
+  assume_role_policy = data.aws_iam_policy_document.eks_cluster_trust.json
+}
+
+resource "aws_iam_role_policy_attachment" "eks_cluster" {
+  for_each = { for arn in local.eks_policy_arns : basename(arn) => arn }
+
+  role       = aws_iam_role.eks_cluster.name
+  policy_arn = each.value
+}
+
+data "aws_iam_policy_document" "eks_admin_trust" {
   statement {
     effect  = "Allow"
     actions = ["sts:AssumeRole"]
@@ -518,8 +548,10 @@ data "aws_iam_policy_document" "eks_trust" {
     principals {
       type = "AWS"
       identifiers = [
+        # allow user to Switch Role from AWS Console
         local.account,
-        aws_iam_role.alprs_worker.arn
+        # allow kubectl access from Worker instance
+        aws_iam_role.alprs_worker.arn,
       ]
     }
   }
@@ -527,7 +559,7 @@ data "aws_iam_policy_document" "eks_trust" {
 
 resource "aws_iam_role" "eks_admin" {
   name               = "ALPRSEKSAdminRole"
-  assume_role_policy = data.aws_iam_policy_document.eks_trust.json
+  assume_role_policy = data.aws_iam_policy_document.eks_admin_trust.json
 }
 
 data "aws_iam_policy_document" "eks_admin" {
