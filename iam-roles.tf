@@ -14,10 +14,6 @@ data "aws_iam_policy_document" "ec2_trust" {
     actions = ["sts:AssumeRole"]
 
     principals {
-      type        = "AWS"
-      identifiers = [local.account]
-    }
-    principals {
       type        = "Service"
       identifiers = ["ec2.amazonaws.com"]
     }
@@ -511,12 +507,17 @@ resource "aws_iam_role_policy" "sftp_lambda" {
 #################### EKS ####################
 
 locals {
-  eks_policy_arns = [
+  eks_cluster_policy_arns = [
     "arn:${local.partition}:iam::aws:policy/AmazonEKSClusterPolicy",
+  ]
+  eks_node_policy_arns = [
+    "arn:${local.partition}:iam::aws:policy/AmazonEKSWorkerNodePolicy",
+    "arn:${local.partition}:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly",
+    "arn:${local.partition}:iam::aws:policy/AmazonEKS_CNI_Policy",
   ]
 }
 
-data "aws_iam_policy_document" "eks_cluster_trust" {
+data "aws_iam_policy_document" "eks_trust" {
   statement {
     effect  = "Allow"
     actions = ["sts:AssumeRole"]
@@ -529,14 +530,26 @@ data "aws_iam_policy_document" "eks_cluster_trust" {
 }
 
 resource "aws_iam_role" "eks_cluster" {
-  name               = "ALPRSEKSClusterRole"
-  assume_role_policy = data.aws_iam_policy_document.eks_cluster_trust.json
+  name               = "AmazonEKSClusterRole"
+  assume_role_policy = data.aws_iam_policy_document.eks_trust.json
 }
 
 resource "aws_iam_role_policy_attachment" "eks_cluster" {
-  for_each = { for arn in local.eks_policy_arns : basename(arn) => arn }
+  for_each = { for arn in local.eks_cluster_policy_arns : basename(arn) => arn }
 
   role       = aws_iam_role.eks_cluster.name
+  policy_arn = each.value
+}
+
+resource "aws_iam_role" "eks_node" {
+  name               = "AmazonEKSNodeRole"
+  assume_role_policy = data.aws_iam_policy_document.ec2_trust.json
+}
+
+resource "aws_iam_role_policy_attachment" "eks_node" {
+  for_each = { for arn in local.eks_node_policy_arns : basename(arn) => arn }
+
+  role       = aws_iam_role.eks_node.name
   policy_arn = each.value
 }
 
