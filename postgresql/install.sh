@@ -204,10 +204,14 @@ config_databases() (
     gunzip -f alprs.sql.gz
     sed -Ei "s|https://astrometrics\\.us|$APP_URL|" alprs.sql
     psql alprs < alprs.sql
+
   elif [ "$PG_HOST2" ]; then
     aws s3 cp $S3_URL/postgresql/ncric.sql.gz . --no-progress
     gunzip -f ncric.sql.gz
     psql < ncric.sql
+    aws s3 cp $S3_URL/postgresql/flock.sql.gz . --no-progress
+    gunzip -f flock.sql.gz
+    psql < flock.sql
   fi
 )
 

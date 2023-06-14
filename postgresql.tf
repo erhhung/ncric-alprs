@@ -64,6 +64,12 @@ locals {
     path = "postgresql/ncric.sql.gz"
     file = "${path.module}/postgresql/ncric.sql.gz"
     type = "application/gzip"
+    }, {
+    # "flock.sql.gz" contains "network(_audit)" & "camera(_audit)" tables
+    # in the Atlas database required by the Flock webhook
+    path = "postgresql/flock.sql.gz"
+    file = "${path.module}/postgresql/flock.sql.gz"
+    type = "application/gzip"
     }, [
     for path in fileset(local.postgresql_scripts_path, "**") : {
       path = "postgresql/scripts/${path}"
