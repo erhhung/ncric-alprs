@@ -53,9 +53,16 @@ install_kube() (
   case `whoami` in
     root)
       cd /usr/local/bin
-      K8S_VER=$(curl -Ls https://dl.k8s.io/release/stable.txt)
+      K8S_VER=$(curl -sL https://dl.k8s.io/release/stable.txt)
       wget -q https://dl.k8s.io/release/$K8S_VER/bin/linux/arm64/kubectl
       chmod +x kubectl
+
+      KCLR_URL="https://github.com/kubecolor/kubecolor/releases"
+      KCLR_VER=$(curl -sL $KCLR_URL/latest | \
+         sed -En "0,/.+\/tag\/v[0-9.]+.+/ s|.+/tag/(v[0-9.]+).+|\1|p")
+      KCLR_TGZ="$KCLR_VER/kubecolor_${KCLR_VER/v/}_Linux_arm64.tar.gz"
+      curl -sL $KCLR_URL/download/$KCLR_TGZ | tar -xz
+      chown root:root kubecolor
       ;;
     $DEFAULT_USER)
       aws eks update-kubeconfig \

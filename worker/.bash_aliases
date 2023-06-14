@@ -13,7 +13,7 @@ ecrdomain() {
 
 alias d='docker '
 alias di='d images'
-alias k='kubectl '
+alias k='kubecolor '
 alias h='helm '
 
 drmc() {

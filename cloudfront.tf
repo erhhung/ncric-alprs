@@ -17,7 +17,7 @@ locals {
 
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudfront_distribution
 resource "aws_cloudfront_distribution" "app" {
-  depends_on = [aws_acm_certificate_validation.app]
+  depends_on = [module.app_cert]
   provider   = aws.cloudfront
 
   enabled             = true
@@ -80,7 +80,7 @@ resource "aws_cloudfront_distribution" "app" {
   }
 
   viewer_certificate {
-    acm_certificate_arn      = aws_acm_certificate.app.arn
+    acm_certificate_arn      = module.app_cert.arn
     minimum_protocol_version = "TLSv1.2_2018"
     ssl_support_method       = "sni-only"
   }
