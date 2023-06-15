@@ -46,6 +46,10 @@ aws s3api put-public-access-block \
 aws s3api put-bucket-encryption \
   --bucket $BUCKET \
   --server-side-encryption-configuration '{"Rules":[{"ApplyServerSideEncryptionByDefault":{"SSEAlgorithm":"AES256"}}]}'
+
+aws s3api put-bucket-policy \
+  --bucket $BUCKET \
+  --policy '{"Version":"2012-10-17","Statement":[{"Sid":"OnlyAllowAccessViaTLS","Effect":"Deny","Principal":"*","Action":"s3:*","Resource":["arn:aws:s3:::alprs-infra-dev/*","arn:aws:s3:::alprs-infra-dev"],"Condition":{"Bool":{"aws:SecureTransport":"false"}}}]}'
 ```
 
 ### `conf.sh` — Config Tool

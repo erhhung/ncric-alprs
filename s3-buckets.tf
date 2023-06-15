@@ -39,24 +39,24 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "buckets" {
 }
 
 locals {
-  private_buckets = {
+  private_buckets = [
     # allow webapp bucket in GovCloud to be public so CloudFront can
     # access the custom origin using secret token in Referer header:
     # https://aws.amazon.com/premiumsupport/knowledge-center/cloudfront-serve-static-website/
-    for key, name in var.buckets : key => name if var.env != "prod" || key != "webapp"
-  }
+    for key, _ in var.buckets : key if var.env != "prod" || key != "webapp"
+  ]
 }
 
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket_public_access_block
 resource "aws_s3_bucket_public_access_block" "buckets" {
   depends_on = [aws_s3_bucket.buckets]
-  for_each   = local.private_buckets
+  for_each   = var.buckets
   bucket     = each.value
 
   block_public_acls       = true
-  block_public_policy     = true
   ignore_public_acls      = true
-  restrict_public_buckets = true
+  block_public_policy     = contains(local.private_buckets, each.key)
+  restrict_public_buckets = contains(local.private_buckets, each.key)
 }
 
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket_ownership_controls
@@ -72,7 +72,8 @@ resource "aws_s3_bucket_ownership_controls" "buckets" {
 
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket_acl
 resource "aws_s3_bucket_acl" "audit" {
-  bucket = aws_s3_bucket.buckets["audit"].id
+  depends_on = [aws_s3_bucket_ownership_controls.buckets]
+  bucket     = aws_s3_bucket.buckets["audit"].id
 
   # https://docs.aws.amazon.com/AmazonS3/latest/userguide/acl-overview.html#canned-acl
   acl = "log-delivery-write"

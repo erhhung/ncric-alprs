@@ -140,7 +140,7 @@ locals {
 
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket_policy
 resource "aws_s3_bucket_policy" "buckets" {
-  depends_on = [aws_s3_bucket.buckets]
+  depends_on = [aws_s3_bucket_public_access_block.buckets]
   for_each   = var.buckets
   bucket     = each.value
 

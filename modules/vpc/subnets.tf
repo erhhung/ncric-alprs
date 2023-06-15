@@ -37,8 +37,7 @@ resource "aws_subnet" "subnets" {
 resource "aws_eip" "nats" {
   for_each   = toset(local.private_subnets)
   depends_on = [aws_internet_gateway.main]
-
-  vpc = true
+  domain     = "vpc"
 }
 
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/nat_gateway

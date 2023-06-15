@@ -507,9 +507,11 @@ resource "aws_iam_role_policy" "sftp_lambda" {
 #################### EKS ####################
 
 locals {
+  # https://docs.aws.amazon.com/eks/latest/userguide/service_IAM_role.html
   eks_cluster_policy_arns = [
     "arn:${local.partition}:iam::aws:policy/AmazonEKSClusterPolicy",
   ]
+  # https://docs.aws.amazon.com/eks/latest/userguide/create-node-role.html
   eks_node_policy_arns = [
     "arn:${local.partition}:iam::aws:policy/AmazonEKSWorkerNodePolicy",
     "arn:${local.partition}:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly",

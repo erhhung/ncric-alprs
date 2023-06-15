@@ -22,7 +22,7 @@ module "sftp_sg" {
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/eip
 resource "aws_eip" "sftp" {
   depends_on = [module.main_vpc]
-  vpc        = true
+  domain     = "vpc"
 }
 
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/transfer_server
