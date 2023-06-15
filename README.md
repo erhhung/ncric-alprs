@@ -14,6 +14,7 @@ The following tools should be installed _(assumes macOS environment using Homebr
 * **`aws`**    — `brew install awscli`
 * **`jq`**     — `brew install jq`
 * **`pee`**    — `brew install moreutils`
+* **`gsed`**   — `brew install gnu-sed`
 * **`delta`**  — `brew install git-delta`
 
 ## AWS Environment

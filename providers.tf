@@ -1,3 +1,4 @@
+# https://registry.terraform.io/providers/hashicorp/aws/latest/docs
 provider "aws" {
   region  = var.aws_provider.region
   profile = var.aws_provider.profile
@@ -9,6 +10,8 @@ provider "aws" {
   }
 }
 
+# CloudFront is unavailable
+# in AWS GovCloud accounts
 provider "aws" {
   alias   = "cloudfront"
   region  = "us-east-1"
@@ -19,11 +22,27 @@ provider "aws" {
   }
 }
 
+# both dev and prod zones
+# are in the dev account
 provider "aws" {
   alias   = "route53"
-  region  = "us-west-2"
   profile = "alprscom"
 
+  default_tags {
+    tags = local.default_tags
+  }
+}
+
+# assumes ALPRSEKSAdminRole
+# for EKS cluster creation
+provider "aws" {
+  alias   = "eks"
+  region  = var.aws_provider.region
+  profile = var.aws_provider.profile
+
+  assume_role {
+    role_arn = aws_iam_role.eks_admin.arn
+  }
   default_tags {
     tags = local.default_tags
   }

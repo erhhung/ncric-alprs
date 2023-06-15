@@ -65,9 +65,15 @@ install_kube() (
       chown root:root kubecolor
       ;;
     $DEFAULT_USER)
-      aws eks update-kubeconfig \
-        --name alprs \
-        --role-arn $EKS_ROLE_ARN
+      cluster=$(aws eks list-clusters \
+                  --query 'clusters[?@==`alprs`]' \
+                  --output text)
+      # skip if no EKS cluster
+      [ "$cluster" ] || exit 0
+
+      aws eks wait cluster-active --name alprs
+      aws eks  update-kubeconfig  --name alprs \
+        --role-arn $EKS_ROLE_ARN || exit $?
       context=$(kubectl config current-context)
       kubectl config rename-context $context alprs
       ;;
@@ -232,7 +238,6 @@ run install_java
 run install_delta
 run install_docker
 run install_kube
-run install_kube   $DEFAULT_USER
 run install_helm   $DEFAULT_USER
 run install_pgcli  $DEFAULT_USER
 run install_psql
@@ -247,3 +252,4 @@ run extra_aliases  $DEFAULT_USER
 run build_cli_app  $DEFAULT_USER shuttle
 run build_cli_app  $DEFAULT_USER flapper
 run config_flapper $DEFAULT_USER
+run install_kube   $DEFAULT_USER

@@ -86,9 +86,29 @@ private_ips = {
   worker        = 70
 }
 
+eks_version = 1.27
+
+eks_public_cidrs = [
+  "192.55.54.32/27",
+  "192.55.55.32/27"
+]
+
+# must be Graviton types
+eks_node_types = [
+  "t4g.large",
+  "t4g.xlarge"
+]
+
+# currently 1 node group
+eks_node_count = {
+  desired = 1
+  minimum = 1
+  maximum = 2
+}
+
 # prevent unintentional
 # instance terminations
-lock_ami_versions = false
+lock_ami_versions = true
 
 # restrict access to US
 geo_restriction = false

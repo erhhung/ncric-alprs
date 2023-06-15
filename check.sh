@@ -61,6 +61,12 @@ max_width() {
   echo $max
 }
 
+# pgrep only ignores its own process,
+# whereas we also need to ignore bash
+proc_grep() {
+  [ "`ps auxw | grep "$1" | grep -v grep | grep -v 'bash -c'`" ]
+}
+
 check_bootstrap() (
   if [ ! -f /bootstrap.log ]; then
     echo -e "${YELLOW}Bootstrapping${NOCLR} not started yet!"
@@ -70,7 +76,7 @@ check_bootstrap() (
     echo -e "${GREEN}Bootstrapping${NOCLR} completed."
     exit 0
   fi
-  if pgrep -f bootstrap.sh > /dev/null; then
+  if proc_grep bootstrap.sh; then
     echo -e "${YELLOW}/bootstrap.sh${NOCLR} still running."
     exit 2
   fi
@@ -126,7 +132,7 @@ check_available() (
 check_running() (
   w=$(max_width "$@")
   for proc in "$@"; do
-    if pgrep -f "$proc" > /dev/null; then
+    if proc_grep "$proc"; then
       printf -v proc "\"${GREEN}${proc}${NOCLR}\""
       printf "Process %-$((w+13))s running.\n" "$proc"
     else
@@ -197,6 +203,7 @@ funcs=$(cat <<EOF
   NOCLR='\033[0m'
 
 `declare -f max_width`
+`declare -f proc_grep`
 `declare -f check_bootstrap`
 `declare -f check_listening`
 `declare -f check_disk_free`

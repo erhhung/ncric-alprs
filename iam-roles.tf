@@ -378,9 +378,12 @@ data "aws_iam_policy_document" "ingest_buckets" {
 
 data "aws_iam_policy_document" "eks_cluster" {
   statement {
-    effect    = "Allow"
-    actions   = ["eks:DescribeCluster"]
-    resources = ["arn:${local.partition}:eks:${local.region}:${local.account}:cluster/alprs"]
+    effect = "Allow"
+    actions = [
+      "eks:ListClusters",
+      "eks:DescribeCluster",
+    ]
+    resources = ["arn:${local.partition}:eks:${local.region}:${local.account}:cluster/*"]
   }
 }
 
@@ -510,6 +513,7 @@ locals {
   # https://docs.aws.amazon.com/eks/latest/userguide/service_IAM_role.html
   eks_cluster_policy_arns = [
     "arn:${local.partition}:iam::aws:policy/AmazonEKSClusterPolicy",
+    "arn:${local.partition}:iam::aws:policy/AmazonEKSVPCResourceController",
   ]
   # https://docs.aws.amazon.com/eks/latest/userguide/create-node-role.html
   eks_node_policy_arns = [
@@ -579,10 +583,23 @@ resource "aws_iam_role" "eks_admin" {
 
 data "aws_iam_policy_document" "eks_admin" {
   statement {
-    effect    = "Allow"
-    actions   = ["eks:*"]
+    effect = "Allow"
+    actions = [
+      "eks:*",
+      "iam:PassRole",
+    ]
     resources = ["*"]
   }
+}
+
+# this policy is necessary during EKS cluster creation because
+# the EKS admin role will pass the cluster role to EKS service
+# but the cluster role has more permissions than the EKS admin
+# access policy defined above, and would be restricted without
+# the role passer having at least the same level of access
+resource "aws_iam_role_policy_attachment" "eks_admin" {
+  role       = aws_iam_role.eks_admin.name
+  policy_arn = "arn:${local.partition}:iam::aws:policy/AdministratorAccess"
 }
 
 resource "aws_iam_role_policy" "eks_admin" {

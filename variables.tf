@@ -8,7 +8,7 @@ variable "env" {
   }
 }
 
-variable domain {
+variable "domain" {
   description = "Hosted zone domain"
   type        = string
 }
@@ -105,6 +105,57 @@ variable "private_ips" {
     bastion       = number
     worker        = number
   })
+}
+
+variable "eks_version" {
+  description = "EKS cluster Kubernetes version"
+  type        = number
+  default     = null # latest
+}
+
+variable "eks_public_cidrs" {
+  description = "CIDR blocks to allow EKS access"
+  type        = list(string)
+  default     = null # 0.0.0.0/0
+
+  validation {
+    condition = (var.eks_public_cidrs == null || alltrue([
+      for cidr in var.eks_public_cidrs :
+      length(regexall("^([0-9]+\\.){3}[0-9]+/[0-9]+$", cidr)) > 0
+    ]))
+    error_message = "Invalid CIDR block notation."
+  }
+}
+
+variable "eks_node_types" {
+  description = "EKS node group ARM instance types"
+  type        = list(string)
+
+  validation {
+    condition = alltrue([
+      for type in var.eks_node_types :
+      length(regexall("^.+g\\.", type)) > 0
+    ])
+    error_message = "EKS worker nodes must use ARM-based CPUs."
+  }
+}
+
+variable "eks_node_count" {
+  description = "EKS node group size and limits"
+  type = object({
+    desired = number
+    minimum = number
+    maximum = number
+  })
+
+  validation {
+    condition = (
+      var.eks_node_count.minimum >= 1 &&
+      var.eks_node_count.desired >= var.eks_node_count.minimum &&
+      var.eks_node_count.desired <= var.eks_node_count.maximum &&
+    var.eks_node_count.maximum <= 10)
+    error_message = "Node group size must be between 1 and 10."
+  }
 }
 
 variable "lock_ami_versions" {
