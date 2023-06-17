@@ -5,8 +5,8 @@
 # for Terraform's "external" data source
 # https://docs.aws.amazon.com/eks/latest/userguide/aws-load-balancer-controller.html
 
-#   usage: lbctrl.sh <region>
-# example: lbctrl.sh us-west-2
+#   usage: lbctrl.sh <region> <github-token>
+# example: lbctrl.sh us-west-2 github_pat_XX
 #  output: {"json":"{...}"}
 
 _reqcmds() {
@@ -29,8 +29,15 @@ else
   exit 1
 fi
 
+if [[ "$2" != github_pat_* ]]; then
+  echo >&2 "GitHub token required."
+  exit 1
+fi
+GITHUB_TOKEN=$2
+
 REPO="kubernetes-sigs/aws-load-balancer-controller"
-version=$(curl -s https://api.github.com/repos/$REPO/releases/latest | \
+version=$(curl -sH "Authorization: Bearer $GITHUB_TOKEN" \
+  https://api.github.com/repos/$REPO/releases/latest | \
   jq -r .tag_name)
 curl -s https://raw.githubusercontent.com/$REPO/$version/docs/install/$file | \
   jq -sR '{json:.}'

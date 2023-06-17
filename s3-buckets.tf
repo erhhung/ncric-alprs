@@ -1,4 +1,4 @@
-# https://registry.terraform.io/providers/hashicorp/external/latest/docs/data-sources/data_source
+# https://registry.terraform.io/providers/hashicorp/external/latest/docs/data-sources/external
 data "external" "backend_config" {
   program = [
     "${path.module}/shared/tfvars.sh",

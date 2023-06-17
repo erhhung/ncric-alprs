@@ -14,7 +14,7 @@ locals {
   }]
 }
 
-# https://registry.terraform.io/providers/hashicorp/external/latest/docs/data-sources/data_source
+# https://registry.terraform.io/providers/hashicorp/external/latest/docs/data-sources/external
 data "external" "worker_cwagent_json" {
   program = ["${path.module}/monitoring/cwagent.sh"]
 }

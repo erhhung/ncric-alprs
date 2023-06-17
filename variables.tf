@@ -228,16 +228,16 @@ variable "FONTAWESOME_NPM_TOKEN" {
   description = "Font Awesome NPM auth token"
   type        = string
 }
+variable "MAPBOX_PUBLIC_TOKEN" {
+  description = "Mapbox public token"
+  type        = string
+}
 variable "GITHUB_ACCESS_TOKEN" {
   description = "GitHub personal access token"
   type        = string
 }
 variable "GITLAB_ACCESS_TOKEN" {
   description = "GitLab personal access token"
-  type        = string
-}
-variable "MAPBOX_PUBLIC_TOKEN" {
-  description = "Mapbox public token"
   type        = string
 }
 variable "ALPRS_DEVOPS_EMAIL" {

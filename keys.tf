@@ -13,7 +13,7 @@ locals {
   authorized_keys = join("\n", [for i, key in var.ssh_keys : key.public_key if i > 0])
 }
 
-# https://registry.terraform.io/providers/hashicorp/external/latest/docs/data-sources/data_source
+# https://registry.terraform.io/providers/hashicorp/external/latest/docs/data-sources/external
 data "external" "rhizome_jks" {
   program = [
     "${path.module}/shared/upcert.sh",

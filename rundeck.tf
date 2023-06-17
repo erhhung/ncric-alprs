@@ -1,4 +1,4 @@
-# https://registry.terraform.io/providers/hashicorp/external/latest/docs/data-sources/data_source
+# https://registry.terraform.io/providers/hashicorp/external/latest/docs/data-sources/external
 data "external" "rdproject_jar" {
   program = [
     "${path.module}/rundeck/mkjar.sh",

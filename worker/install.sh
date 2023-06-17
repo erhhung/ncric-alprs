@@ -58,7 +58,9 @@ install_kube() (
       chmod +x kubectl
 
       KCLR_REPO="kubecolor/kubecolor"
-      KCLR_VER=$(curl -s https://api.github.com/repos/$KCLR_REPO/releases/latest | jq -r .tag_name)
+      KCLR_VER=$(curl -sH "Authorization: Bearer $GITHUB_TOKEN" \
+        https://api.github.com/repos/$KCLR_REPO/releases/latest | \
+        jq -r .tag_name)
       KCLR_TGZ="$KCLR_VER/kubecolor_${KCLR_VER/v/}_Linux_arm64.tar.gz"
       curl -sL https://github.com/$KCLR_REPO/releases/download/$KCLR_TGZ | tar -xz
       chown root:root kubecolor

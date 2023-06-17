@@ -124,11 +124,11 @@ resource "kubernetes_storage_class_v1" "gp3" {
 # install AWS Load Balancer Controller (a.k.a. AWS ALB Ingress Controller) add-on:
 # https://docs.aws.amazon.com/eks/latest/userguide/aws-load-balancer-controller.html
 
-# https://registry.terraform.io/providers/hashicorp/external/latest/docs/data-sources/data_source
+# https://registry.terraform.io/providers/hashicorp/external/latest/docs/data-sources/external
 data "external" "lb_controller_policy_json" {
   program = [
     "${path.module}/eks/lbctrl.sh",
-    local.region,
+    local.region, var.GITHUB_ACCESS_TOKEN,
   ]
 }
 

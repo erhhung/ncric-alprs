@@ -2,7 +2,7 @@
 # frontend to the webapp bucket during bootstrapping
 # and runs the lattice-org webapp and Rundeck server
 
-# https://registry.terraform.io/providers/hashicorp/external/latest/docs/data-sources/data_source
+# https://registry.terraform.io/providers/hashicorp/external/latest/docs/data-sources/external
 data "external" "bastion_cwagent_json" {
   program = [
     "${path.module}/monitoring/cwagent.sh",

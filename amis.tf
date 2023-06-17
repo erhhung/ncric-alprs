@@ -29,7 +29,7 @@ data "aws_ami" "latest_amis" {
   }
 }
 
-# https://registry.terraform.io/providers/hashicorp/external/latest/docs/data-sources/data_source
+# https://registry.terraform.io/providers/hashicorp/external/latest/docs/data-sources/external
 data "external" "current_amis" {
   # must convert nested object JSON to object
   # containing only string values per protocol
