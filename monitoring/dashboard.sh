@@ -161,4 +161,4 @@ y=-3
   add_widget worker         Worker        user_cpu memory root_disk
 } \
   | "$yq" -o json \
-  |   jq  '{"json": del(.templates) | tojson}'
+  |   jq   '{json: del(.templates) | tojson}'

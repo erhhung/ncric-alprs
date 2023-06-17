@@ -1,5 +1,5 @@
 module "elasticsearch_sg" {
-  source = "./modules/secgroup"
+  source = "./modules/security-group"
 
   name        = "elasticsearch-sg"
   description = "Allow Elasticsearch/Kibana traffic"
@@ -86,7 +86,7 @@ EOF
 }
 
 module "elasticsearch_user_data" {
-  source = "./modules/userdata"
+  source = "./modules/user-data"
 
   bucket = data.aws_s3_bucket.user_data.id
   files  = local.elasticsearch_user_data
@@ -103,7 +103,7 @@ EOT
 }
 
 module "elasticsearch_server" {
-  source = "./modules/instance"
+  source = "./modules/ec2-instance"
 
   depends_on = [
     module.shared_user_data,

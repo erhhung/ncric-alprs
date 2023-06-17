@@ -38,7 +38,7 @@ EOT
 }
 
 module "rundeck_user_data" {
-  source = "./modules/userdata"
+  source = "./modules/user-data"
 
   depends_on = [
     data.external.rdproject_jar,
@@ -48,7 +48,7 @@ module "rundeck_user_data" {
 }
 
 module "rundeck_config" {
-  source = "./modules/config"
+  source = "./modules/service-config"
 
   service = "rundeck"
   path    = "${path.module}/rundeck/config"

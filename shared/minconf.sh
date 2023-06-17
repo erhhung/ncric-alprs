@@ -27,4 +27,4 @@ done
 # unless at least one VAR=value was provided
 sed -E '/^[[:blank:]]*(#|$)/d; s/[[:blank:]]*#.*//' "$file" | \
   ([ "$dosub" ] && envsubst || cat) | \
-  jq -sR '{"text": .|rtrimstr("\n")}'
+  jq -sR '{text: .|rtrimstr("\n")}'

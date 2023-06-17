@@ -55,6 +55,7 @@ docker_run() {
     -h infra \
     -v $(pwd):/infra \
     -v $HOME/.aws:/root/.aws \
+    -v $HOME/.kube:/root/.kube \
     -v $HOME/.ssh:/root/.ssh \
     --name $name \
     $tag "$@" 2>&1 | _log

@@ -74,7 +74,7 @@ EOF
 }
 
 module "worker_user_data" {
-  source = "./modules/userdata"
+  source = "./modules/user-data"
 
   depends_on = [
     data.external.python_wheels,
@@ -94,7 +94,7 @@ EOT
 }
 
 module "worker_node" {
-  source = "./modules/instance"
+  source = "./modules/ec2-instance"
 
   depends_on = [
     module.shared_user_data,
@@ -117,7 +117,7 @@ locals {
 }
 
 module "shuttle_config" {
-  source = "./modules/config"
+  source = "./modules/service-config"
 
   service = "shuttle"
   path    = "${path.module}/shuttle/config"
@@ -131,7 +131,7 @@ module "shuttle_config" {
 }
 
 module "flapper_config" {
-  source = "./modules/config"
+  source = "./modules/service-config"
 
   service = "flapper"
   path    = "${path.module}/flapper/config"

@@ -1,5 +1,5 @@
-Submodule "`userdata`"
-----------------------
+Submodule "`user-data`"
+-----------------------
 
 Uploads user data files to S3 for instance bootstrapping.
 

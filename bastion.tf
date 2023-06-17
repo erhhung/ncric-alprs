@@ -52,7 +52,7 @@ EOF
 }
 
 module "bastion_user_data" {
-  source = "./modules/userdata"
+  source = "./modules/user-data"
 
   bucket = data.aws_s3_bucket.user_data.id
   files  = local.bastion_user_data
@@ -69,7 +69,7 @@ EOT
 }
 
 module "bastion_host" {
-  source = "./modules/instance"
+  source = "./modules/ec2-instance"
 
   depends_on = [
     module.shared_user_data,

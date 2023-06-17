@@ -1,5 +1,5 @@
-Submodule "`secgroup`"
-----------------------
+Submodule "`security-group`"
+----------------------------
 
 Provisions a network security group in the VPC.
 

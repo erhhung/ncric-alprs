@@ -1,5 +1,5 @@
 module "app_cert" {
-  source = "./modules/cert"
+  source = "./modules/acm-certificate"
 
   # https://developer.hashicorp.com/terraform/language/providers/configuration
   providers = {
@@ -11,7 +11,7 @@ module "app_cert" {
 }
 
 module "api_cert" {
-  source = "./modules/cert"
+  source = "./modules/acm-certificate"
 
   providers = {
     aws.route53 = aws.route53
@@ -21,7 +21,7 @@ module "api_cert" {
 }
 
 module "webhook_cert" {
-  source = "./modules/cert"
+  source = "./modules/acm-certificate"
 
   providers = {
     aws.route53 = aws.route53

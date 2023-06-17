@@ -48,4 +48,4 @@ else
   "$yq" -o json cwagent-main.yaml
 fi | \
   # envsubst concatenated YAML
-  envsubst | jq -sR '{"json":.}'
+  envsubst | jq -sR '{json:.}'

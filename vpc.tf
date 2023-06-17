@@ -11,7 +11,7 @@ locals {
 }
 
 module "main_vpc" {
-  source = "./modules/vpc"
+  source = "./modules/vpc-network"
 
   subnet_cidrs = local.subnet_cidrs
 }
@@ -30,7 +30,7 @@ locals {
 }
 
 module "egress_only_sg" {
-  source = "./modules/secgroup"
+  source = "./modules/security-group"
 
   name        = "egress-only-sg"
   description = "Allow only outbound traffic"
@@ -38,7 +38,7 @@ module "egress_only_sg" {
 }
 
 module "private_ssh_sg" {
-  source = "./modules/secgroup"
+  source = "./modules/security-group"
 
   name        = "private-ssh-sg"
   description = "Allow SSH from instances"

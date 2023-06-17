@@ -121,7 +121,7 @@ variable "eks_public_cidrs" {
   validation {
     condition = (var.eks_public_cidrs == null || alltrue([
       for cidr in var.eks_public_cidrs :
-      length(regexall("^([0-9]+\\.){3}[0-9]+/[0-9]+$", cidr)) > 0
+      length(regexall("^(\\d+\\.){3}\\d+/\\d+$", cidr)) > 0
     ]))
     error_message = "Invalid CIDR block notation."
   }

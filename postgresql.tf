@@ -1,5 +1,5 @@
 module "postgresql_sg" {
-  source = "./modules/secgroup"
+  source = "./modules/security-group"
 
   name        = "postgresql-sg"
   description = "Allow PostgreSQL traffic"
@@ -99,7 +99,7 @@ EOF
 }
 
 module "postgresql_user_data" {
-  source = "./modules/userdata"
+  source = "./modules/user-data"
 
   bucket = data.aws_s3_bucket.user_data.id
   files  = local.postgresql_user_data
@@ -118,7 +118,7 @@ EOT
 }
 
 module "postgresql_server" {
-  source = "./modules/instance"
+  source = "./modules/ec2-instance"
   count  = 2
 
   depends_on = [

@@ -1,5 +1,5 @@
-Submodule "`vpc`"
------------------
+Submodule "`vpc-network`"
+-------------------------
 
 Provisions a VPC network with public and private subnets.
 

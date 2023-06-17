@@ -37,7 +37,7 @@ EOF
 }
 
 module "datastore_user_data" {
-  source = "./modules/userdata"
+  source = "./modules/user-data"
 
   bucket = data.aws_s3_bucket.user_data.id
   files  = local.datastore_user_data
@@ -54,7 +54,7 @@ EOT
 }
 
 module "datastore_server" {
-  source = "./modules/instance"
+  source = "./modules/ec2-instance"
 
   depends_on = [
     module.shared_user_data,
@@ -73,7 +73,7 @@ module "datastore_server" {
 }
 
 module "datastore_config" {
-  source = "./modules/config"
+  source = "./modules/service-config"
 
   depends_on = [
     data.external.rhizome_jks,

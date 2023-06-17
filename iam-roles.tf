@@ -30,14 +30,14 @@ resource "aws_iam_role" "ssm_instance" {
 resource "aws_iam_role_policy_attachment" "ssm_instance" {
   for_each = { for arn in local.base_policy_arns : basename(arn) => arn }
 
-  role       = aws_iam_role.ssm_instance.name
+  role       = aws_iam_role.ssm_instance.id
   policy_arn = each.value
 }
 
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_instance_profile
 resource "aws_iam_instance_profile" "ssm_instance" {
   name = "AmazonSSMInstanceProfile"
-  role = aws_iam_role.ssm_instance.name
+  role = aws_iam_role.ssm_instance.id
 }
 
 data "aws_iam_policy_document" "user_data_bucket" {
@@ -77,7 +77,7 @@ resource "aws_iam_role" "alprs_bastion" {
 resource "aws_iam_role_policy_attachment" "alprs_bastion" {
   for_each = { for arn in local.base_policy_arns : basename(arn) => arn }
 
-  role       = aws_iam_role.alprs_bastion.name
+  role       = aws_iam_role.alprs_bastion.id
   policy_arn = each.value
 }
 
@@ -117,7 +117,7 @@ resource "aws_iam_role_policy" "alprs_bastion_email_sender" {
 
 resource "aws_iam_instance_profile" "alprs_bastion" {
   name = "ALPRSBastionInstanceProfile"
-  role = aws_iam_role.alprs_bastion.name
+  role = aws_iam_role.alprs_bastion.id
 }
 
 #################### Service ####################
@@ -130,7 +130,7 @@ resource "aws_iam_role" "alprs_service" {
 resource "aws_iam_role_policy_attachment" "alprs_service" {
   for_each = { for arn in local.base_policy_arns : basename(arn) => arn }
 
-  role       = aws_iam_role.alprs_service.name
+  role       = aws_iam_role.alprs_service.id
   policy_arn = each.value
 }
 
@@ -179,7 +179,7 @@ resource "aws_iam_role_policy" "alprs_service_config_bucket" {
 
 resource "aws_iam_instance_profile" "alprs_service" {
   name = "ALPRSServiceInstanceProfile"
-  role = aws_iam_role.alprs_service.name
+  role = aws_iam_role.alprs_service.id
 }
 
 #################### EBS ####################
@@ -249,7 +249,7 @@ resource "aws_iam_role" "aws_backup" {
 
 # https://docs.aws.amazon.com/aws-backup/latest/devguide/security-iam-awsmanpol.html
 resource "aws_iam_role_policy_attachment" "aws_backup" {
-  role       = aws_iam_role.aws_backup.name
+  role       = aws_iam_role.aws_backup.id
   policy_arn = "arn:${local.partition}:iam::aws:policy/service-role/AWSBackupServiceRolePolicyForBackup"
 }
 
@@ -346,7 +346,7 @@ resource "aws_iam_role" "alprs_worker" {
 resource "aws_iam_role_policy_attachment" "alprs_worker" {
   for_each = { for arn in local.base_policy_arns : basename(arn) => arn }
 
-  role       = aws_iam_role.alprs_worker.name
+  role       = aws_iam_role.alprs_worker.id
   policy_arn = each.value
 }
 
@@ -450,7 +450,7 @@ resource "aws_iam_role_policy" "alprs_worker_ecr_repos" {
 
 resource "aws_iam_instance_profile" "alprs_worker" {
   name = "ALPRSWorkerInstanceProfile"
-  role = aws_iam_role.alprs_worker.name
+  role = aws_iam_role.alprs_worker.id
 }
 
 #################### LAMBDA ####################
@@ -519,7 +519,6 @@ locals {
   eks_node_policy_arns = [
     "arn:${local.partition}:iam::aws:policy/AmazonEKSWorkerNodePolicy",
     "arn:${local.partition}:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly",
-    "arn:${local.partition}:iam::aws:policy/AmazonEKS_CNI_Policy",
   ]
 }
 
@@ -543,7 +542,7 @@ resource "aws_iam_role" "eks_cluster" {
 resource "aws_iam_role_policy_attachment" "eks_cluster" {
   for_each = { for arn in local.eks_cluster_policy_arns : basename(arn) => arn }
 
-  role       = aws_iam_role.eks_cluster.name
+  role       = aws_iam_role.eks_cluster.id
   policy_arn = each.value
 }
 
@@ -555,7 +554,7 @@ resource "aws_iam_role" "eks_node" {
 resource "aws_iam_role_policy_attachment" "eks_node" {
   for_each = { for arn in local.eks_node_policy_arns : basename(arn) => arn }
 
-  role       = aws_iam_role.eks_node.name
+  role       = aws_iam_role.eks_node.id
   policy_arn = each.value
 }
 
@@ -598,7 +597,7 @@ data "aws_iam_policy_document" "eks_admin" {
 # access policy defined above, and would be restricted without
 # the role passer having at least the same level of access
 resource "aws_iam_role_policy_attachment" "eks_admin" {
-  role       = aws_iam_role.eks_admin.name
+  role       = aws_iam_role.eks_admin.id
   policy_arn = "arn:${local.partition}:iam::aws:policy/AdministratorAccess"
 }
 

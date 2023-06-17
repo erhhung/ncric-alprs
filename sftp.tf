@@ -5,7 +5,7 @@
 # reference implementation: https://github.com/PatientPing/terraform-aws-transfer-sftp
 
 module "sftp_sg" {
-  source = "./modules/secgroup"
+  source = "./modules/security-group"
 
   name        = "sftp-sg"
   description = "Allow SSH traffic"

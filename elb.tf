@@ -1,5 +1,5 @@
 module "elb_http_sg" {
-  source = "./modules/secgroup"
+  source = "./modules/security-group"
 
   name        = "elb-http-sg"
   description = "Allow HTTP/S inbound traffic"
@@ -59,7 +59,7 @@ resource "aws_lb_listener" "api_https" {
   load_balancer_arn = aws_lb.api.arn
   port              = 443
   protocol          = "HTTPS"
-  ssl_policy        = "ELBSecurityPolicy-2016-08"
+  ssl_policy        = "ELBSecurityPolicy-TLS-1-2-Ext-2018-06"
   certificate_arn   = module.api_cert.arn
 
   default_action {

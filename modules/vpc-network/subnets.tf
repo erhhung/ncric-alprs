@@ -10,7 +10,7 @@ locals {
     }]
   ])
   subnet_names    = [for subnet in local.subnets : subnet.name]
-  public_subnets  = [for i, _ in var.subnet_cidrs.public  :  "public${i + 1}"]
+  public_subnets  = [for i, _ in var.subnet_cidrs.public : "public${i + 1}"]
   private_subnets = [for i, _ in var.subnet_cidrs.private : "private${i + 1}"]
 }
 

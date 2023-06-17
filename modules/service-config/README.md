@@ -1,5 +1,5 @@
-Submodule "`config`"
---------------------
+Submodule "`service-config`"
+----------------------------
 
 Uploads config files to S3, optionally rendering templated YAML/properties files.
 

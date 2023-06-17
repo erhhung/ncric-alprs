@@ -1,5 +1,5 @@
 module "services_sg" {
-  source = "./modules/secgroup"
+  source = "./modules/security-group"
 
   name        = "services-sg"
   description = "Allow Hazelcast/Jetty traffic"
@@ -52,7 +52,7 @@ EOF
 }
 
 module "shared_user_data" {
-  source = "./modules/userdata"
+  source = "./modules/user-data"
 
   bucket = data.aws_s3_bucket.user_data.id
   files  = local.shared_user_data

@@ -27,6 +27,10 @@ output "rundeck_admin_pass" {
   sensitive = true
 }
 
+output "eks_admin_role_arn" {
+  value = aws_iam_role.eks_admin.arn
+}
+
 # bastion_instance_id:          bastion.tf
 # bastion_instance_ami:         bastion.tf
 # postgresql_instance_ami:      postgresql.tf

@@ -40,7 +40,7 @@ EOF
 }
 
 module "indexer_user_data" {
-  source = "./modules/userdata"
+  source = "./modules/user-data"
 
   bucket = data.aws_s3_bucket.user_data.id
   files  = local.indexer_user_data
@@ -57,7 +57,7 @@ EOT
 }
 
 module "indexer_server" {
-  source = "./modules/instance"
+  source = "./modules/ec2-instance"
 
   depends_on = [
     module.shared_user_data,
@@ -76,7 +76,7 @@ module "indexer_server" {
 }
 
 module "indexer_config" {
-  source = "./modules/config"
+  source = "./modules/service-config"
 
   depends_on = [
     data.external.rhizome_jks,

@@ -6,7 +6,7 @@ variable "data_volume_name" {
 variable "data_volume_type" {
   description = "Data volume type"
   type        = string
-  default     = "gp2"
+  default     = "gp3"
 
   validation {
     condition     = contains(["gp2", "gp3"], var.data_volume_type)
