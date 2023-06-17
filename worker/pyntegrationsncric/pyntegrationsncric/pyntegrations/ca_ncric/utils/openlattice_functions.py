@@ -1,14 +1,14 @@
-from auth0.v3.authentication import GetToken
-from auth0.v3.exceptions import RateLimitError
-from datetime import datetime
-import openlattice
 import os
 import re
 import sys
 import time
-import random
-import base64
 import json
+import base64
+import random
+import openlattice
+from datetime import datetime
+from auth0.authentication import GetToken
+from auth0.exceptions import RateLimitError
 
 
 def get_jwt(client_id=None,
@@ -60,7 +60,9 @@ def get_jwt(client_id=None,
     if not (env['user'] and env['password'] and env['client_id']):
         raise ValueError("Not all necessary variables for authentication are present!")
 
-    get_token = GetToken(domain)
+    # https://pypi.org/project/auth0-python/
+    get_token = GetToken(domain, env['client_id'])
+
     # Allow retries with exponential backoff (5, 10, 20, 40 +/- 2 secs)
     # to accommodate errors such as API rate limits and network timeouts
     tries = 0
@@ -69,8 +71,8 @@ def get_jwt(client_id=None,
     while not token:
         try:
             token = get_token.login(
-                client_id=env['client_id'],
-                client_secret="",
+                #client_id=env['client_id'],
+                #client_secret="",
                 username=env['user'],
                 password=env['password'],
                 scope=scope,

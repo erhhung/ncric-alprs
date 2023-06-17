@@ -1,14 +1,13 @@
-from pytz import timezone
-import sqlalchemy as sq
-import pandas as pd
-import openlattice
-import datetime
-import urllib
+import re
 import yaml
 import olpy
-import re
-import os
+import urllib
+import datetime
+import openlattice
+import pandas as pd
+import sqlalchemy as sq
 from geoalchemy2 import Geometry, WKTElement
+from pytz import timezone
 
 
 def get_temp_table_name(table_name, dt=datetime.datetime.now(timezone("US/Pacific"))):

@@ -57,11 +57,10 @@ install_kube() (
       wget -q https://dl.k8s.io/release/$K8S_VER/bin/linux/arm64/kubectl
       chmod +x kubectl
 
-      KCLR_URL="https://github.com/kubecolor/kubecolor/releases"
-      KCLR_VER=$(curl -sL $KCLR_URL/latest | \
-         sed -En "0,/.+\/tag\/v[0-9.]+.+/ s|.+/tag/(v[0-9.]+).+|\1|p")
+      KCLR_REPO="kubecolor/kubecolor"
+      KCLR_VER=$(curl -s https://api.github.com/repos/$KCLR_REPO/releases/latest | jq -r .tag_name)
       KCLR_TGZ="$KCLR_VER/kubecolor_${KCLR_VER/v/}_Linux_arm64.tar.gz"
-      curl -sL $KCLR_URL/download/$KCLR_TGZ | tar -xz
+      curl -sL https://github.com/$KCLR_REPO/releases/download/$KCLR_TGZ | tar -xz
       chown root:root kubecolor
       ;;
     $DEFAULT_USER)
@@ -160,7 +159,7 @@ install_pylibs() (
   pip3 freeze | grep -q $wheels && exit
   # install required packages: see appendix 2, "Setting
   # up ETL Environment", in the "Data Integration Guide"
-  pip3 install boto3 psycopg2 sqlalchemy pandas pandarallel dask auth0-python geopy testresources
+  pip3 install boto3 psycopg2 'sqlalchemy<2' pandas pandarallel dask auth0-python geopy testresources
   cd clients/python
   pip3 install .
 

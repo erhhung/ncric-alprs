@@ -1,12 +1,12 @@
-from auth0.v3.authentication import GetToken
-from auth0.v3.exceptions import RateLimitError
-import openlattice
-import requests
-import json
 import os
 import sys
 import time
+import json
 import random
+import requests
+import openlattice
+from auth0.authentication import GetToken
+from auth0.exceptions import RateLimitError
 
 
 def post_jira(username, password, summary, description="", project=None, assignee=None,
@@ -87,7 +87,9 @@ def get_jwt(username=None, password=None, client_id=None, base_url='http://datas
     if not (env['user'] and env['password'] and env['client_id']):
         raise ValueError("Not all necessary variables for authentication are present!")
 
-    get_token = GetToken(domain)
+    # https://pypi.org/project/auth0-python/
+    get_token = GetToken(domain, env['client_id'])
+
     # Allow retries with exponential backoff (5, 10, 20,
     # 40 +/- 2 seconds) to accommodate rate limit errors
     tries = 0
@@ -96,8 +98,8 @@ def get_jwt(username=None, password=None, client_id=None, base_url='http://datas
     while not token:
         try:
             token = get_token.login(
-                client_id=env['client_id'],
-                client_secret="",
+                #client_id=env['client_id'],
+                #client_secret="",
                 username=env['user'],
                 password=env['password'],
                 scope=scope,

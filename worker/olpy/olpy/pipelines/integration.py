@@ -1,15 +1,14 @@
-import olpy
-import importlib
-import pandas as pd
+import os
+import re
 import uuid
 import yaml
-import re
+import olpy
+import traceback
 import subprocess
-import sqlalchemy
-import os
+import pandas as pd
+import sqlalchemy as sq
 from urllib.parse import unquote
 from pkg_resources import resource_filename
-import traceback
 
 
 class Integration(object):
@@ -179,7 +178,7 @@ class Integration(object):
                     clean_table_name,
                     connection,
                     if_exists='append',
-                    dtype={col: (dtypes[col] if col in dtypes.keys() else sqlalchemy.sql.sqltypes.String) for col in
+                    dtype={col: (dtypes[col] if col in dtypes.keys() else sq.sql.sqltypes.String) for col in
                            cleaned_chunk.columns},
                     index=False,
                     chunksize=1000,
