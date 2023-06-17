@@ -1,3 +1,11 @@
+# NOTE: the creation of this ServiceAccount resource in Kubernetes
+# may fail with error "serviceaccounts 'aws-node' already exists"
+# upon initial cluster creation, so just import it into Terraform:
+#
+# ./tf.sh import -var-file config/dev.tfvars \
+#   module.vpc_cni_sa.kubernetes_service_account_v1.k8s_sa \
+#   kube-system/aws-node
+
 module "vpc_cni_sa" {
   source = "./modules/service-account"
 
@@ -158,6 +166,9 @@ module "lb_controller_sa" {
     "arn:${local.partition}:iam::${local.account}:policy/AmazonEKSLoadBalancerControllerPolicy",
   ]
 }
+
+# NOTE: this Helm install may fail with error "context deadline
+# exceeded" upon lengthy node group creation, so just try again
 
 # https://registry.terraform.io/providers/hashicorp/helm/latest/docs/resources/release
 resource "helm_release" "lb_controller" {

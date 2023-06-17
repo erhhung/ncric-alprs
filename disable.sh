@@ -26,5 +26,6 @@ TF_FILES=(
 [ "$1" ] && TF_FILES=("$@")
 
 for tf in ${TF_FILES[@]}; do
-  [ -f "$tf.tf" ] && mv "$tf.tf" .disabled
+  [ -f "${tf/%.tf/}.tf" ] && \
+    mv "${tf/%.tf/}.tf" .disabled
 done

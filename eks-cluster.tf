@@ -4,7 +4,10 @@ resource "aws_eks_cluster" "alprs" {
     aws_iam_role_policy_attachment.eks_cluster,
     aws_iam_role_policy_attachment.eks_admin,
   ]
-  provider = aws.eks # assumes ALPRSEKSAdminRole
+  # NOTE: there is a chance that the aws.eks provider will assume
+  # the ALPRSEKSAdminRole before iam:PassRole gets attached to the
+  # role, causing cluster creation to fail--just try applying again
+  provider = aws.eks
 
   name     = "alprs"
   version  = var.eks_version

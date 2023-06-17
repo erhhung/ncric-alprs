@@ -26,7 +26,7 @@ variable "ami_id" {
 variable "root_volume_type" {
   description = "Root volume type"
   type        = string
-  default     = "gp2"
+  default     = "gp3"
 
   validation {
     condition     = contains(["gp2", "gp3"], var.root_volume_type)
