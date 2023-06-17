@@ -25,6 +25,15 @@ upgrade_pip() {
   pip3 install -U pyOpenSSL
 }
 
+install_go() (
+  cd /usr/local
+  hash go 2> /dev/null && exit
+  VERSION=1.20.5 ARCH=arm64
+  rm -rf go; curl -sL https://go.dev/dl/go${VERSION}.linux-$ARCH.tar.gz | tar -xz
+  sed -i  's|:/usr/games:/usr/local/games||'       /etc/environment
+  sed -Ei 's|^(PATH=".+)"$|\1:/usr/local/go/bin"|' /etc/environment
+)
+
 install_java() (
   hash java 2> /dev/null && exit
   eval_with_retry "wait_apt_get && apt-get install -y openjdk-11-jdk"
@@ -79,6 +88,15 @@ install_kube() (
       kubectl config rename-context $context alprs
       ;;
   esac
+)
+
+install_k9s() (
+  . /etc/environment
+  hash go 2> /dev/null || exit $?
+  # https://k9scli.io/topics/install/
+  cd /tmp; git clone https://github.com/derailed/k9s.git
+  (cd k9s; make build && mv ./execs/k9s /usr/local/bin)
+  rm -rf k9s
 )
 
 install_helm() (
@@ -235,10 +253,12 @@ export -f git_clone
 run etc_hosts
 run apt_install
 run upgrade_pip    $DEFAULT_USER
+run install_go
 run install_java
 run install_delta
 run install_docker
 run install_kube
+run install_k9s
 run install_helm   $DEFAULT_USER
 run install_pgcli  $DEFAULT_USER
 run install_psql
