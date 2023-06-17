@@ -238,9 +238,9 @@ class Integration(object):
                     print("Clean table already exists. Skipping the cleaning step.")
                     print(f"{clean_table_name}")
                     return clean_table_name
-                if self.if_exists == "replace":
-                    print("Clean table already exists. Replacing...")
-                    connection.execute(f"DROP TABLE {clean_table_name};")
+                # if self.if_exists == "replace":
+                #     print("Clean table already exists. Replacing...")
+                #     connection.execute(f"DROP TABLE {clean_table_name};")
                 if self.if_exists == "fail":
                     raise Exception("Clean table name already in use.")
 
@@ -289,6 +289,7 @@ class Integration(object):
                 )
                 rows_cleaned += len(cleaned_chunk)
                 print(f"Fetched and cleaned {rows_fetched} rows. Uploaded a total of {rows_cleaned} rows.")
+
             if rows_fetched == 0:
                 # meaning original dataset was actually empty
                 print("original dataset was empty")
