@@ -91,8 +91,12 @@ install_kube() (
 )
 
 install_k9s() (
-  . /etc/environment
+  . /etc/environment; export PATH
   hash go 2> /dev/null || exit $?
+  export GOPATH=/usr/local/go
+  export GOCACHE=/tmp/cache/go
+  mkdir -p $GOCACHE
+
   # https://k9scli.io/topics/install/
   cd /tmp; git clone https://github.com/derailed/k9s.git
   (cd k9s; make build && mv ./execs/k9s /usr/local/bin)
