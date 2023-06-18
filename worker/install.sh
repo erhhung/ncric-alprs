@@ -106,7 +106,16 @@ install_k9s() (
 install_helm() (
   curl -sSL https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash -
   helm plugin install https://github.com/databus23/helm-diff
-  #helm plugin install https://github.com/erhhung/helm-ssm
+
+  SSM_REPO="codacy/helm-ssm"
+  SSM_VER=$(curl -sH "Authorization: Bearer $GITHUB_TOKEN" \
+    https://api.github.com/repos/$SSM_REPO/releases/latest | \
+    jq -r .tag_name)
+  # helm plugin install doesn't install binary on linux-arm64
+  helm plugin install https://github.com/$SSM_REPO || exit $?
+  cd ~/.local/share/helm/plugins/helm-ssm
+  SSM_TGZ="$SSM_VER/helm-ssm-linux-arm.tgz"
+  curl -sL https://github.com/$SSM_REPO/releases/download/$SSM_TGZ | tar -xz
 )
 
 install_pgcli() {

@@ -1,9 +1,10 @@
 locals {
   base_policy_arns = [
     "arn:${local.partition}:iam::aws:policy/AmazonSSMManagedInstanceCore",
-    "arn:${local.partition}:iam::aws:policy/CloudWatchAgentServerPolicy",
-    "arn:${local.partition}:iam::aws:policy/CloudWatchReadOnlyAccess",
+    "arn:${local.partition}:iam::aws:policy/AmazonSSMReadOnlyAccess",
     "arn:${local.partition}:iam::aws:policy/AmazonEC2ReadOnlyAccess",
+    "arn:${local.partition}:iam::aws:policy/CloudWatchReadOnlyAccess",
+    "arn:${local.partition}:iam::aws:policy/CloudWatchAgentServerPolicy",
   ]
 }
 
