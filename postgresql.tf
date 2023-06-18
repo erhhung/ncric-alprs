@@ -146,6 +146,19 @@ resource "aws_volume_attachment" "postgresql_data" {
   device_name = "/dev/xvdb"
 }
 
+# https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/ssm_parameter
+resource "aws_ssm_parameter" "alprs_db_host" {
+  name           = "/db/alprs/host"
+  type           = "String"
+  insecure_value = module.postgresql_server[0].private_domain
+}
+
+resource "aws_ssm_parameter" "atlas_db_host" {
+  name           = "/db/atlas/host"
+  type           = "String"
+  insecure_value = module.postgresql_server[1].private_domain
+}
+
 output "postgresql_instance_ami" {
   value = module.postgresql_server.*.instance_ami
 }

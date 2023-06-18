@@ -30,6 +30,13 @@ module "webhook_cert" {
   zone_id = local.zone_id
 }
 
+# https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/ssm_parameter
+resource "aws_ssm_parameter" "webhook_cert_arn" {
+  name           = "/webhook/cert/arn"
+  type           = "String"
+  insecure_value = module.webhook_cert.arn
+}
+
 output "cert_arns" {
   value = {
     app     = module.app_cert.arn

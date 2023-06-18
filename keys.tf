@@ -50,6 +50,19 @@ locals {
   )
 }
 
+# https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/ssm_parameter
+resource "aws_ssm_parameter" "alprs_db_password" {
+  name  = "/db/alprs/password"
+  type  = "SecureString"
+  value = local.alprs_pass
+}
+
+resource "aws_ssm_parameter" "atlas_db_password" {
+  name  = "/db/atlas/password"
+  type  = "SecureString"
+  value = local.atlas_pass
+}
+
 locals {
   # CloudFront custom origin Referer header secret
   # token used only in prod environment where the

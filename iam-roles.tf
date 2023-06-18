@@ -606,3 +606,10 @@ resource "aws_iam_role_policy" "eks_admin" {
   role   = aws_iam_role.eks_admin.id
   policy = data.aws_iam_policy_document.eks_admin.json
 }
+
+# https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/ssm_parameter
+resource "aws_ssm_parameter" "eks_admin_role_arn" {
+  name           = "/eks/admin/role/arn"
+  type           = "String"
+  insecure_value = aws_iam_role.eks_admin.arn
+}

@@ -224,6 +224,14 @@ variable "AUTH0_SPA_CLIENT_SECRET" {
   description = "Auth0 Single-Page App client secret"
   type        = string
 }
+variable "AUTH0_WEBHOOK_CLIENT_ID" {
+  description = "Auth0 Flock webhook client ID"
+  type        = string
+}
+variable "AUTH0_WEBHOOK_CLIENT_SECRET" {
+  description = "Auth0 Flock webhook client secret"
+  type        = string
+}
 variable "FONTAWESOME_NPM_TOKEN" {
   description = "Font Awesome NPM auth token"
   type        = string
