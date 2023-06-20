@@ -188,7 +188,9 @@ _complete_kns() {
 }
 
 eval "$(kubectl completion bash)"
+eval "$(helm    completion bash)"
 complete -o default -F __start_kubectl k
+complete -o default -F __start_helm    h
 
 # ecrpush is script in /usr/local/bin
 complete -F _complete_dimgs ecrpush
