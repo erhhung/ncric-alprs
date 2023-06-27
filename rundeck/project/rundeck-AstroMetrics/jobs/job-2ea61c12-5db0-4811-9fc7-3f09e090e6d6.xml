@@ -8,6 +8,10 @@
         <option name='batch_size' value='1000'>
           <description>Batch size for writes to Atlas</description>
         </option>
+        <option name='camera_chunk_size' secure='true' storagePath='keys/flapper/cc_size' valueExposed='true'>
+          <description>Process only chunk size cameras</description>
+          <hidden>true</hidden>
+        </option>
       </options>
     </context>
     <defaultTab>nodes</defaultTab>
@@ -60,7 +64,7 @@ $FLAPPER_PATH --file $FLAPPER_CONF \
               --batch-size @option.batch_size@ \
               --start $start \
               --hours 24 \
-              --camera-chunk-size 100 \
+              --camera-chunk-size    @option.camera_chunk_size@ \
               --camera-chunk-pointer 4]]></script>
         <scriptargs />
       </command>

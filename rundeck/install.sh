@@ -280,6 +280,7 @@ keys/s3_prefix/boss4   boss4
 keys/s3_prefix/scso    scso
 keys/s3_prefix/flock   flock
 keys/s3_prefix/hotlist hotlist
+keys/flapper/cc_size   160
 keys/shuttle_args      ${SHUTTLE_ARGS/REGION/${az:0:-1}}
 keys/db_host           $PG_HOST
 keys/db_name           $NCRIC_DB

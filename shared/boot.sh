@@ -40,7 +40,8 @@ apt_install() {
   eval_with_retry "wait_apt_get && add-apt-repository -y ppa:git-core/ppa"
   eval_with_retry "wait_apt_get && apt-get dist-upgrade -y"
   eval_with_retry "wait_apt_get && apt-get install -y figlet emacs-nox moreutils most \
-                   jq git unzip pbzip2 net-tools nmap pwgen libxml2-utils python3-pip"
+                   jq git unzip pbzip2 net-tools nmap pwgen libxml2-utils python3-pip \
+                   iotop"
 
   VERSION=v4.27.2 ARCH=linux_arm64
   curl -sLo /usr/bin/yq https://github.com/mikefarah/yq/releases/download/$VERSION/yq_$ARCH

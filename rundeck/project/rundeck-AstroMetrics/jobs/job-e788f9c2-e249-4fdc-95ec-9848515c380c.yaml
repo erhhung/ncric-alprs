@@ -31,6 +31,12 @@
   - description: Batch size for writes to Atlas
     name: batch_size
     value: '1000'
+  - description: Process only chunk size cameras
+    hidden: true
+    name: camera_chunk_size
+    secure: true
+    storagePath: keys/flapper/cc_size
+    valueExposed: true
   plugins:
     ExecutionLifecycle: null
   retry:
@@ -63,7 +69,7 @@
                       --batch-size @option.batch_size@ \
                       --start $start \
                       --hours 24 \
-                      --camera-chunk-size 100 \
+                      --camera-chunk-size    @option.camera_chunk_size@ \
                       --camera-chunk-pointer 1
     keepgoing: false
     strategy: node-first
