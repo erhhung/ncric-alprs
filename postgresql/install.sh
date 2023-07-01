@@ -60,7 +60,8 @@ install_extensions() {
       [ "$PG_HOST2" ] && local db="$NCRIC_DB"
 
       wait_service # wait if "database system is starting up"
-      psql -d $db -tAc "SELECT extname FROM pg_extension" | \
+      psql -d $db -tAc "CREATE EXTENSION IF NOT EXISTS tablefunc;
+                        SELECT extname FROM pg_extension" | \
                grep -q pg_repack && exit
       pgxn load -d $db pg_repack
       ;;

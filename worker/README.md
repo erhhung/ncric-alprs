@@ -246,18 +246,57 @@ FROM (
 ORDER BY timestamp::date;
 ```
 
-Show number of Flock reads per agency:
+Show number of Flock reads (total and top 3 cameras) per agency:
 
 ```sql
-SELECT COUNT(*) AS num_reads,
-  cameranetworkname AS agency
-FROM flock_reads_fri
-GROUP BY DISTINCT(cameranetworkname)
-ORDER BY agency;
-
-SELECT COUNT(*) AS num_reads,
-  cameranetworkname AS agency
-FROM flock_reads_fri
-GROUP BY DISTINCT(cameranetworkname)
-ORDER BY num_reads DESC;
+WITH q1 AS
+(
+  SELECT *
+    -- crosstab() requires "tablefunc" extension
+    FROM crosstab(
+      $$
+      WITH q1 AS
+      (
+        SELECT agency, num_reads::INT,
+               RANK() OVER (PARTITION BY agency
+                                ORDER BY num_reads DESC
+                           ) AS top_n
+          FROM (
+               SELECT DISTINCT(standardized_agency_name) AS agency,
+                      COUNT(*)                           AS num_reads
+                 FROM flock_reads_wed
+            LEFT JOIN standardized_agency_names
+                   ON "ol.name"       = cameranetworkname
+                  AND "ol.datasource" = 'FLOCK'
+             GROUP BY DISTINCT(standardized_agency_name), cameraname
+          ) AS q2
+      )
+        SELECT agency, top_n, num_reads
+          FROM q1
+         WHERE top_n <= 3
+      ORDER BY agency, top_n
+      $$
+    ) AS ct (agency TEXT, reads1 INT, reads2 INT, reads3 INT)
+),
+q2 AS
+(
+     SELECT DISTINCT(standardized_agency_name) AS agency,
+            COUNT(DISTINCT(cameraid))          AS num_cams,
+            COUNT(*)                           AS num_reads
+       FROM flock_reads_wed
+  LEFT JOIN standardized_agency_names
+         ON "ol.name"       = cameranetworkname
+        AND "ol.datasource" = 'FLOCK'
+   GROUP BY DISTINCT(standardized_agency_name)
+)
+    SELECT q1.agency,
+           q2.num_cams  AS num_cameras,
+           q2.num_reads AS tot_reads,
+           q1.reads1    AS top1_reads,
+           q1.reads2    AS top2_reads,
+           q1.reads3    AS top3_reads
+      FROM q1
+INNER JOIN q2
+        ON q1.agency = q2.agency
+  ORDER BY q1.agency;
 ```

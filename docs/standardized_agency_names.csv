@@ -72,6 +72,7 @@ HIDTA,HIDTA,BOSS4
 Hayward CA PD,Hayward PD,FLOCK
 Hercules CA PD,Hercules PD,FLOCK
 Hillsborough CA PD,Hillsborough PD,FLOCK
+Hillsborough CA PD (Flex),Hillsborough PD,FLOCK
 Kaiser Permanente - Vallejo (CA),Kaiser Permanente,FLOCK
 La Habra CA PD,La Habra PD,FLOCK
 Lakeport CA PD,Lakeport PD,FLOCK
@@ -85,6 +86,7 @@ LOS ALTOS,Los Altos PD,BOSS4
 LOS ALTOS POLICE DEPARTMENT,Los Altos PD,BOSS4
 Los Altos,Los Altos PD,BOSS4
 Los Altos PD,Los Altos PD,BOSS4
+Los Altos PD,Los Altos PD,SCSO
 MANUAL ENTRIES,Manual Entries,BOSS4
 Manual Entries,Manual Entries,BOSS4
 MENLO PARK,Menlo Park PD,BOSS4
