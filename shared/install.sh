@@ -18,7 +18,7 @@ EOF
 create_user() (
   cd /home/$DEFAULT_USER
   egrep -q '^openlattice:' /etc/passwd && exit
-  cat <<EOF >> .bashrc
+  cat <<EOF >> .profile
 export CONFIG_BUCKET="$CONFIG_BUCKET"
 EOF
   echo -e \\n >> .bash_aliases
@@ -198,7 +198,7 @@ export ${HOST}_XMS="-Xms${heap_size}g"
 export ${HOST}_XMX="-Xmx${heap_size}g"
 EOT
 )
-  grep -q _XMS .bashrc || echo "$exports" >> .bashrc
+  grep -q _XMS .profile || echo "$exports" >> .profile
   eval "$exports"
   case $HOST in
     DATASTORE) wait_service CONDUCTOR $CONDUCTOR_IP 5701 ;;

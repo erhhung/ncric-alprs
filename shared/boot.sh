@@ -96,7 +96,7 @@ user_dotfiles() {
   mkdir -p .cache && touch .cache/motd.legal-displayed
   touch .sudo_as_admin_successful
   chmod +x .lessfilter
-  cat <<EOF >> .bashrc
+  cat <<EOF >> .profile
 
 export BACKUP_BUCKET="$BACKUP_BUCKET"
 EOF

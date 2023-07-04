@@ -10,5 +10,5 @@ killall java || true
 sleep 2
 
 APP_FLAGS=(aws postgres "$@")
-JAVA_OPTS="${DATASTORE_XMS} ${DATASTORE_XMX}" ./datastore/bin/datastore "${APP_FLAGS[@]}" > /dev/null 2>&1 &
+JAVA_OPTS="\"${DATASTORE_XMS}\" \"${DATASTORE_XMX}\"" ./datastore/bin/datastore "${APP_FLAGS[@]}" > /dev/null 2>&1 &
 echo $! > ./datastore.pid
