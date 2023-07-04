@@ -21,18 +21,19 @@ create_user() (
   cat <<EOF >> .profile
 export CONFIG_BUCKET="$CONFIG_BUCKET"
 EOF
-  echo -e \\n >> .bash_aliases
   cat <<'EOF' >> .bash_aliases
+
 alias psj='ps auxw | grep -v grep | grep java'
 alias mol='most +1000000 /opt/openlattice/logging/*[!0-9].log'
 EOF
   # adduser copies files from /etc/skel
   # into the new user's home directory
-  cp -a .bashrc .bash_aliases .gitconfig .emacs \
-    .screenrc .sudo_as_admin_successful /etc/skel
+  cp -a .profile .bashrc .bash_aliases .emacs \
+    .gitconfig .screenrc .sudo_as_admin_successful /etc/skel
   adduser --disabled-login --gecos "" openlattice
 
   cat <<'EOF' >> .bash_aliases
+
 alias ol='sudo su -l openlattice '
 alias olstart='ol -c scripts/start.sh'
 alias olstop='ol -c "killall java"'
