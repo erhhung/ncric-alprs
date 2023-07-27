@@ -216,6 +216,18 @@ to expand the root partition and then the file system:
 Also, make sure to update the environment-specific configuration file ("`config/dev.tfvars`"
 or "`config/prod.tfvars`") to reflect the new storage size.
 
+## EKS Cluster
+
+A recent addition to the AstroMetrics infrastructure, an EKS cluster is also provisioned by Terraform to support,
+initially, the deployment of the new [Flock webhook](https://gitlab.com/maiveric/astrometrics/flock-webhook)
+ingestion service.
+
+This minimal cluster currently consists of a single node group with **spot instances** that use Graviton instance types.  
+It can be managed locally provided that your computer's public IP address is added to the cluster's
+public CIDR list _(see "`eks_public_cidrs`" setting in "`config/dev.tfvars`")_.  
+Alternatively, the cluster can be managed directly from the **Rundeck Worker** instance using **`kubectl`** and **`k9s`**
+that have already been installed and configured during bootstrapping.
+
 ## S3 Buckets
 
 Seven S3 buckets are used by the stack, six directly provisioned by Terraform:
