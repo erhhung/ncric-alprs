@@ -228,6 +228,27 @@ public CIDR list _(see "`eks_public_cidrs`" setting in "`config/dev.tfvars`")_.
 Alternatively, the cluster can be managed directly from the **Rundeck Worker** instance using **`kubectl`** and **`k9s`**
 that have already been installed and configured during bootstrapping.
 
+### Set up kubeconfig
+
+```bash
+export AWS_PROFILE=alprscom
+
+# get cluster name
+cluster=$(aws eks list-clusters --query "clusters[][@]" --output text)
+
+# get admin role
+role_arn=$(aws iam list-roles --query "Roles[?contains(RoleName,'EKSAdminRole')].Arn" --output text)
+
+# update kubeconfig
+aws eks update-kubeconfig --name ${cluster} --role-arn ${role_arn}
+
+# confirm it works
+kubectl get all
+
+# rename context to friendly name
+kubectl config rename-context `kubectl config current-context` alprsdev
+```
+
 ## S3 Buckets
 
 Seven S3 buckets are used by the stack, six directly provisioned by Terraform:
