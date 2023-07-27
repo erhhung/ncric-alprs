@@ -220,3 +220,12 @@ To export an updated "`ncric.sql.gz`", perform the following steps:
 
     $ scp alprsdevpg2:ncric.sql.gz .
     ```
+
+## "`flock.sql`"
+
+"`flock.sql`" creates several populated tables in the NCRIC "Atlas" database that are used only by the new
+[Flock webhook](https://gitlab.com/maiveric/astrometrics/flock-webhook) ingestion service running on EKS
+to replace the original [Flapper](https://github.com/maiveric/ol-flapper) application run by Rundeck jobs.
+
+The records in the "`integrations.network`" and "`integrations.camera`" tables should be refreshed before
+a new deployment of AstroMetrics _(ask Ashiq \<mashiq@maiveric.com> for how to obtain the latest data)_.
