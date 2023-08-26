@@ -108,7 +108,7 @@ check_disk_free() (
       printf -v path "${GREEN}${path}${NOCLR}"
       printf "Volume %-$((w+11))s ${pcnt}%%.\n" "$path"
     else
-      echo -e "Volume ${RED}${path}${NOCLR} over 90%!"
+      echo -e "Volume ${RED}${path}${NOCLR} over 90% (${RED}${pcnt}%${NOCLR})!"
       exit 1
     fi
   done
