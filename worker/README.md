@@ -264,7 +264,7 @@ WITH q1 AS
           FROM (
                SELECT DISTINCT(standardized_agency_name) AS agency,
                       COUNT(*)                           AS num_reads
-                 FROM flock_reads_wed
+                 FROM flock_reads_tue
             LEFT JOIN standardized_agency_names
                    ON "ol.name"       = cameranetworkname
                   AND "ol.datasource" = 'FLOCK'
@@ -283,7 +283,7 @@ q2 AS
      SELECT DISTINCT(standardized_agency_name) AS agency,
             COUNT(DISTINCT(cameraid))          AS num_cams,
             COUNT(*)                           AS num_reads
-       FROM flock_reads_wed
+       FROM flock_reads_tue
   LEFT JOIN standardized_agency_names
          ON "ol.name"       = cameranetworkname
         AND "ol.datasource" = 'FLOCK'
@@ -299,4 +299,17 @@ q2 AS
 INNER JOIN q2
         ON q1.agency = q2.agency
   ORDER BY q1.agency;
+```
+
+Show number of Flock reads and last timestamp per agency in a day table:
+
+```sql
+
+SELECT                     DISTINCT(cameranetworkname) AS agency,
+  COUNT(*)       OVER (PARTITION BY cameranetworkname) AS reads,
+                                          daily_limit  AS allowed,
+  MAX(timestamp) OVER (PARTITION BY cameranetworkname) AS last_time
+FROM flock_reads_thu
+INNER JOIN network ON cameranetworkname = name
+ORDER BY last_time;
 ```
