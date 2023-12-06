@@ -1,0 +1,53 @@
+> SELECT n.network_id, n.external_id, n.name agency, COUNT(c.*) cameras FROM network n INNER JOIN camera c ON n.network_id = c.network_id GROUP BY n.network_id, n.external_id, n.name ORDER BY n.name;
++------------+--------------------------------------+----------------------------------+---------+
+| network_id | external_id                          | agency                           | cameras |
+|------------+--------------------------------------+----------------------------------+---------|
+| 1506       | 5c94ed20-fcfe-462c-bbca-15a080d312c3 | Anderson City CA PD              | 7       |
+| 1089       | 537b74a0-733f-495a-94f3-da0454f2a1ab | Atherton CA PD                   | 50      |
+| 3372       | e6b5b116-e668-11eb-bfa0-8bb0d16f5498 | Benicia CA PD                    | 45      |
+| 5488       | dbf123ba-06cd-11ed-915b-238af7f5e223 | Brisbane CA PD                   | 14      |
+| 7149       | 196e614a-6136-11ed-a487-4f0356157dc0 | Burlingame CA PD                 | 14      |
+| 5904       | ced1b88e-1fff-11ed-8a69-03d32f5343c5 | Campbell CA PD                   | 21      |
+| 3510       | a4411bb8-fa18-11eb-8e60-6bd2c846f8d0 | City of Fremont                  | 5       |
+| 4387       | 5dfd32de-807f-11ec-bf9b-0f018331783b | City of Millbrae CA              | 23      |
+| 3635       | 7a773042-1016-11ec-af05-4f08fb864bde | Colma CA PD                      | 6       |
+| 7538       | 97761b0a-70cc-11ed-adfc-63d393501a79 | Contra Costa CA SO Alamo P5      | 6       |
+| 1505       | 7b25b683-2124-42dc-85d9-ed506a503c71 | Danville CA PD                   | 37      |
+| 4360       | 4b6a8e62-7ee7-11ec-b110-27b09b858e47 | Dixon CA PD                      | 23      |
+| 2873       | 6112c112-989c-11eb-9552-d30b9d98cd43 | Fairfield CA PD                  | 56      |
+| 3490       | b2ddf8b0-f6cd-11eb-822a-e3c10321f64f | Flock Safety PD                  | 1       |
+| 5365       | ea11152a-f833-11ec-9ece-db7fc6454a77 | Gilroy CA PD                     | 35      |
+| 5529       | 355016e6-0930-11ed-bd42-f3b44896b392 | Hayward CA PD                    | 28      |
+| 1835       | bc7d3290-c5e7-11ea-a65d-47c240cf9597 | Hercules CA PD                   | 25      |
+| 3351       | 904caf0e-e4cf-11eb-a7c4-b7b9205a8052 | Hillsborough CA PD               | 11      |
+| 3369       | 56918e3a-e65d-11eb-acf8-2fdfc5bbd595 | Hillsborough CA PD (Flex)        | 1       |
+| 3102       | 5aae4354-befe-11eb-8814-2fea4b12f91f | Kaiser Permanente - Vallejo (CA) | 13      |
+| 7182       | 4f09c212-6150-11ed-a8eb-e79ef08a3582 | La Habra CA PD                   | 7       |
+| 6143       | 24eda050-3470-11ed-a860-bb9e9b7ac211 | Lakeport CA PD                   | 9       |
+| 672        | 4e794fcc-f9c3-11e9-9b76-03768307fcbd | Livermore CA PD                  | 17      |
+| 4355       | 31f5ffb4-7e0d-11ec-ad16-cfba15114dd4 | Los Alamitos PD CA               | 12      |
+| 1647       | 78637859-08f6-454e-92ac-fd1d748af091 | Milpitas CA PD                   | 35      |
+| 3379       | 7b9c8aa8-e8c5-11eb-8f24-075cd43990f9 | Morgan Hill CA PD                | 50      |
+| 1917       | 81594ad8-dbe4-11ea-829b-5b76e5ad2a79 | NCRIC                            | 16      |
+| 6295       | c37342d2-4426-11ed-941d-87642f7a434a | Newark CA PD                     | 20      |
+| 4153       | cd4cc14c-5c5b-11ec-bd9a-bfd06980d935 | Novato CA PD                     | 4       |
+| 3479       | acfff57a-f613-11eb-8219-7f304f79eb79 | Oakley CA PD                     | 5       |
+| 1293       | d1d27e9a-211d-43fa-afe3-09a372d57a4c | Ontario CA PD                    | 91      |
+| 3344       | d1da08e6-e415-11eb-8cdd-ab4c217c1c7d | Orinda CA PD                     | 6       |
+| 1814       | 223a2ba6-c124-11ea-983c-0b183876b921 | Piedmont CA PD                   | 39      |
+| 5375       | aa7580a6-f8ae-11ec-9f3b-e37c8af214bf | Pleasanton CA PD                 | 4       |
+| 4930       | 568b1918-c4b7-11ec-ace2-578c76208a56 | Salinas CA PD                    | 19      |
+| 2308       | b31928de-22db-11eb-998c-d77603ac702c | San Bruno CA PD                  | 20      |
+| 5512       | ca6a92e0-0860-11ed-a8e1-d3aab21f86df | San Joaquin County CA SO         | 25      |
+| 1672       | c35dce13-e026-42e2-a322-3c1a85e21ae4 | San Mateo CA PD                  | 31      |
+| 2468       | 5aa2595c-3fe4-11eb-b40c-5b7d509e082a | San Mateo County CA SO           | 12      |
+| 1237       | 37969e11-3f1b-4c7e-904a-25bca5738c04 | San Ramon CA PD                  | 46      |
+| 2361       | c1c913da-2a9c-11eb-9c04-a395ca005f1e | Santa Clara CA PD                | 15      |
+| 243        | 4e798ba4-f9c3-11e9-9bb0-7b9434addd4a | Seal Beach CA PD                 | 1       |
+| 6871       | cb8dd60e-5965-11ed-b96a-3b2d2d998175 | The Presidio Trust CA PD         | 4       |
+| 6434       | e8ff734c-49ba-11ed-8719-53c63b506df1 | Tracy CA PD                      | 46      |
+| 1821       | 28368fa6-c16d-11ea-86cc-c70984ae9784 | Vacaville CA PD                  | 137     |
+| 1993       | 9a0423e4-e94c-11ea-b6ed-7fb1c18e84db | Vallejo CA PD                    | 88      |
+| 5613       | 54fa3a60-0ebe-11ed-9bd7-73d61507c093 | Vallejo CA PD (Flex)             | 2       |
++------------+--------------------------------------+----------------------------------+---------+
+SELECT 47

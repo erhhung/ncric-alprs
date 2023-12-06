@@ -1,0 +1,1189 @@
+> SELECT n.name agency, c.name camera FROM network n INNER JOIN camera c ON n.network_id = c.network_id ORDER BY n.name, c.name LIMIT 2000;
++----------------------------------+---------------------------------------------------------------------------------------------------------+
+| agency                           | camera                                                                                                  |
+|----------------------------------+---------------------------------------------------------------------------------------------------------|
+| Anderson City CA PD              | #01 - WB Pleasant Hills at Highway 273                                                                  |
+| Anderson City CA PD              | #02 - Speed Trailer (SB Arby Way)                                                                       |
+| Anderson City CA PD              | 04: North St. SB @ Shasta Dr                                                                            |
+| Anderson City CA PD              | 05: Olinda Rd EB @ W Anderson                                                                           |
+| Anderson City CA PD              | 06: Rupert Rd EB @ Stingy                                                                               |
+| Anderson City CA PD              | 07: Dodson EB @ Balls Ferry                                                                             |
+| Anderson City CA PD              | 08: SB McMurry Drive at Ganyon Drive - Original                                                         |
+| Atherton CA PD                   | #41 Almendral Avenue at El Camino Real (WB)                                                             |
+| Atherton CA PD                   | #46 Alameda De Las Pulgas at Stockbridge Avenue (SB)                                                    |
+| Atherton CA PD                   | 01 Holbrook Palmer Park Entrance                                                                        |
+| Atherton CA PD                   | 02 - Holbrook Palmer Park Exit                                                                          |
+| Atherton CA PD                   | 03 N/B Middlefield @ Ravenswood                                                                         |
+| Atherton CA PD                   | 04 E/B Watkins @ El Camino                                                                              |
+| Atherton CA PD                   | 05 W/B Fair Oaks @ Middlefield                                                                          |
+| Atherton CA PD                   | 06 S/B Middlefield @ Jennings                                                                           |
+| Atherton CA PD                   | 07 N/B Alameda @ Walsh                                                                                  |
+| Atherton CA PD                   | 08 N/B Fredrick @ Ringwood                                                                              |
+| Atherton CA PD                   | 09 W/B Selby @ Oakwood                                                                                  |
+| Atherton CA PD                   | 10 W/B Alejandra @ El Camino                                                                            |
+| Atherton CA PD                   | 11 W/B Valparaiso @ El Camino                                                                           |
+| Atherton CA PD                   | 12 N/B Camino Por Los Arboles @ Valparaiso                                                              |
+| Atherton CA PD                   | 13 E/B Atherton @ Alameda                                                                               |
+| Atherton CA PD                   | 14 W/B Atherton @ El Camino                                                                             |
+| Atherton CA PD                   | 15 W/B Selby @ El Camino                                                                                |
+| Atherton CA PD                   | 16 E/B W Selby @ Selby                                                                                  |
+| Atherton CA PD                   | 17 E/B Camino Al Lago @ Alameda                                                                         |
+| Atherton CA PD                   | 17 E/B Camino Al Lago @ Alameda - original                                                              |
+| Atherton CA PD                   | 18 W/B Isabella @ El Camino                                                                             |
+| Atherton CA PD                   | 19 E/B Glenwood @ Laurel                                                                                |
+| Atherton CA PD                   | 20 E/B Britton @ Alejandra                                                                              |
+| Atherton CA PD                   | 21 N/B Emilie @ Park                                                                                    |
+| Atherton CA PD                   | 22 W/B Alejandra @ Brittany Meadows                                                                     |
+| Atherton CA PD                   | 22 W/B Alejandra @ Brittany Meadows - original                                                          |
+| Atherton CA PD                   | 23 W/B Marsh @ Middlefield                                                                              |
+| Atherton CA PD                   | 24 E/B Stockbridge @ Alameda                                                                            |
+| Atherton CA PD                   | 25 W/B Winchester @ El Camino                                                                           |
+| Atherton CA PD                   | 26 E/B MacBain @ Emile                                                                                  |
+| Atherton CA PD                   | 27 - James Ave (Inbound)                                                                                |
+| Atherton CA PD                   | 28 - Linden Ave (Inbound)                                                                               |
+| Atherton CA PD                   | 29 E/B Oak Grove @ Manzanita (Inbound)                                                                  |
+| Atherton CA PD                   | 30 W/B Oak Grove @ Encino                                                                               |
+| Atherton CA PD                   | 32 W/B Alejandra @ Brittany Meadows                                                                     |
+| Atherton CA PD                   | 33 E/B Wilburn @ El Camino                                                                              |
+| Atherton CA PD                   | 34 E/B Lloyden @ El Camino                                                                              |
+| Atherton CA PD                   | 35 N/B Lloyden @ Fair Oaks                                                                              |
+| Atherton CA PD                   | 36 - NB ECR x Walnut (Lanes 1-2)                                                                        |
+| Atherton CA PD                   | 37 N/B El Camino @ Walnut (Lanes 2 and 3)                                                               |
+| Atherton CA PD                   | 38 S/B El Camino @ Selby (Lanes 1 and 2)                                                                |
+| Atherton CA PD                   | 39 S/B El Camino @ Selby (Lanes 2 and 3)                                                                |
+| Atherton CA PD                   | 40 W/B Stockbridge @ El Camino                                                                          |
+| Atherton CA PD                   | 42 W/B Tuscaloosa @ El Camino                                                                           |
+| Atherton CA PD                   | 43 W/B Fletcher @ Alameda                                                                               |
+| Atherton CA PD                   | 44 W/B Walsh @ Alameda                                                                                  |
+| Atherton CA PD                   | 45 W/B Atherton @ Alameda                                                                               |
+| Atherton CA PD                   | 47 E/B Polhemus @ Alameda                                                                               |
+| Atherton CA PD                   | 48 N/B Elena @ Valparaiso                                                                               |
+| Atherton CA PD                   | 49 N/B Santiago @ Valparaiso                                                                            |
+| Benicia CA PD                    | 01: Columbus Pkwy EB @ Benicia Rd                                                                       |
+| Benicia CA PD                    | 02: Columbus Pkwy WB @ Benicia Rd                                                                       |
+| Benicia CA PD                    | 03: Rose Dr NB @ 780                                                                                    |
+| Benicia CA PD                    | 04: Columbus Pkwy WB @ 780                                                                              |
+| Benicia CA PD                    | 05: Columbus Pkwy EB x 780                                                                              |
+| Benicia CA PD                    | 06: K St WB @ 780                                                                                       |
+| Benicia CA PD                    | 07: K St SB @ Military                                                                                  |
+| Benicia CA PD                    | 08: Military EB x K St                                                                                  |
+| Benicia CA PD                    | 09: Southampton Rd SB @ Devonshire                                                                      |
+| Benicia CA PD                    | 10: Southampton Rd NB x Military                                                                        |
+| Benicia CA PD                    | 11: 7th St NB @ 780                                                                                     |
+| Benicia CA PD                    | 12: 7th St SB @ 780                                                                                     |
+| Benicia CA PD                    | 13: S St EB @ 2nd St                                                                                    |
+| Benicia CA PD                    | 14: 2nd St NB @ 780                                                                                     |
+| Benicia CA PD                    | 15: 2nd St SB @ 780                                                                                     |
+| Benicia CA PD                    | 16: 5th St NB @ 780                                                                                     |
+| Benicia CA PD                    | 17: 5th St SB @ N St                                                                                    |
+| Benicia CA PD                    | 18: NB Park x Industrial                                                                                |
+| Benicia CA PD                    | 19: 3650 Park Road                                                                                      |
+| Benicia CA PD                    | 20: O St WB @ 5th St                                                                                    |
+| Benicia CA PD                    | 21: Bayshore EB @ 680                                                                                   |
+| Benicia CA PD                    | 22: Bayshore WB x 680                                                                                   |
+| Benicia CA PD                    | 23: Industrial Way EB @ 680                                                                             |
+| Benicia CA PD                    | 24: Industrial Way WB @ 680                                                                             |
+| Benicia CA PD                    | 25: Lake Herman Rd EB @ 680                                                                             |
+| Benicia CA PD                    | 26: Goodyear Rd NB @ Lake Herman                                                                        |
+| Benicia CA PD                    | 27: Goodyear Rd SB into Benicia                                                                         |
+| Benicia CA PD                    | 28: 2nd St SB @ Lake Herman                                                                             |
+| Benicia CA PD                    | 29: Lake Herman WB @ 2nd St                                                                             |
+| Benicia CA PD                    | 30: Reservoir Rd SB @ Lake Herman                                                                       |
+| Benicia CA PD                    | 31: Rose Dr WB @ 2nd St                                                                                 |
+| Benicia CA PD                    | 32: 5th St NB @ Military                                                                                |
+| Benicia CA PD                    | 33: 5th St SB @ Military                                                                                |
+| Benicia CA PD                    | 34: Military EB @ 5th St                                                                                |
+| Benicia CA PD                    | 35: Military WB @ 5th St                                                                                |
+| Benicia CA PD                    | 36: Military EB @ 2nd St                                                                                |
+| Benicia CA PD                    | 37: Military WB @ 2nd St                                                                                |
+| Benicia CA PD                    | 38: 1st NB @ K St                                                                                       |
+| Benicia CA PD                    | 39: 1st St SB @ Military                                                                                |
+| Benicia CA PD                    | 40: 1st St NB @ J St                                                                                    |
+| Benicia CA PD                    | 41: 1st St SB @ J St                                                                                    |
+| Benicia CA PD                    | 42: 1st NB @ H St                                                                                       |
+| Benicia CA PD                    | 43: 1st St SB @ H St                                                                                    |
+| Benicia CA PD                    | 44: Military WB @ 7th St                                                                                |
+| Benicia CA PD                    | 45: Military EB @ 7th St                                                                                |
+| Brisbane CA PD                   | #01 Bayshore Blvd @ Geneva Ave - NB                                                                     |
+| Brisbane CA PD                   | #02 Bayshore Blvd @ Main St - SB                                                                        |
+| Brisbane CA PD                   | #03 Bayshore Blvd @ San Bruno Ave - SB                                                                  |
+| Brisbane CA PD                   | #04 Bayshore Blvd @ San Bruno Ave - NB - Original                                                       |
+| Brisbane CA PD                   | #04 Bayshore Blvd @ San Bruno Ave - NB - Relocation                                                     |
+| Brisbane CA PD                   | #05 Guadalupe Canyon Pkwy @ Carter St - EB                                                              |
+| Brisbane CA PD                   | #06 Guadalupe Canyon Pkwy @ Carter St - WB                                                              |
+| Brisbane CA PD                   | #07 Tunnel Ave @ Beatty Ave - NB                                                                        |
+| Brisbane CA PD                   | #08 Tunnel Ave @ Beatty Ave - SB                                                                        |
+| Brisbane CA PD                   | #09 Lagoon Rd @ Sierra Point Pkwy - WB                                                                  |
+| Brisbane CA PD                   | #10 Lagoon Rd @ Sierra Point Pkwy - EB                                                                  |
+| Brisbane CA PD                   | #11 Sierra Point Pkwy @ Marina Blvd - NB                                                                |
+| Brisbane CA PD                   | #12 Sierra Point Pkwy @ Marina Blvd - SB                                                                |
+| Brisbane CA PD                   | #13 Falcon Flex                                                                                         |
+| Burlingame CA PD                 | #01 Trousdale Dr @ Hunt Dr - EB                                                                         |
+| Burlingame CA PD                 | #02 Margarita Ave @ Skyline Blvd - EB                                                                   |
+| Burlingame CA PD                 | #03 Broadway @ El Camino Real - EB                                                                      |
+| Burlingame CA PD                 | #05 California Dr @ Peninsula Ave - NB                                                                  |
+| Burlingame CA PD                 | #08 California Dr @ Burlingame Ave - SB                                                                 |
+| Burlingame CA PD                 | #09 California Dr @ Murchison Ave - SB                                                                  |
+| Burlingame CA PD                 | #10 Rollins Rd @ N Humboldt St - NB                                                                     |
+| Burlingame CA PD                 | #11 Rollins Rd @ Broadway - SB - Original                                                               |
+| Burlingame CA PD                 | #12 Rollins Rd @ Guittard Rd - SB                                                                       |
+| Burlingame CA PD                 | #13 Airport Blvd @ Old Bayshore Hwy - EB                                                                |
+| Burlingame CA PD                 | #14 Airport Blvd @ Beach Rd - NB                                                                        |
+| Burlingame CA PD                 | #15 Old Bayshore Hwy @ Cowan Rd - SB                                                                    |
+| Burlingame CA PD                 | #16 Broadway @ Rollins Rd - WB (Lanes 1,2)                                                              |
+| Burlingame CA PD                 | #17 Broadway @ Rollins Rd - WB (Lanes 2,3)                                                              |
+| Campbell CA PD                   | #01 WB Hamilton Ave @ NB Hwy 17 On ramp                                                                 |
+| Campbell CA PD                   | #02 EB E Hamilton Ave @ Salmar Ave                                                                      |
+| Campbell CA PD                   | #03 WB E Hamilton Ave @ SB Hwy 17 Off Ramp SB                                                           |
+| Campbell CA PD                   | #04 NB Salmar Ave @ E Hamilton Ave                                                                      |
+| Campbell CA PD                   | #05 NB Creekside Wy (Lanes 1&2) @ E Hamilton Ave                                                        |
+| Campbell CA PD                   | #06 NB Creekside Wy (Lanes 3&4) @ E Hamilton Ave                                                        |
+| Campbell CA PD                   | #07 WB E Hamilton Ave @ SB 17 Off ramp                                                                  |
+| Campbell CA PD                   | #08 EB E Hamilton Ave @ Almarida Dr                                                                     |
+| Campbell CA PD                   | #09 WB Camden Ave (Lanes 3&4) @ NB Hwy 17 On Ramp                                                       |
+| Campbell CA PD                   | #10 WB Camden Ave (Lanes 1&2)  @ Erin Wy                                                                |
+| Campbell CA PD                   | #11 NB San Tomas Expy @ Hwy 17 Off Ramp                                                                 |
+| Campbell CA PD                   | #12 SB San Tomas Expy @ Hwy 17                                                                          |
+| Campbell CA PD                   | #13 NB White Oaks Rd @ Camden Ave                                                                       |
+| Campbell CA PD                   | #14 SB Curtner Ave @ Camden Ave                                                                         |
+| Campbell CA PD                   | #15 WB W Campbell Ave @ San Tomas Expy                                                                  |
+| Campbell CA PD                   | #16 EB Campbell Ave @ San Tomas Expy                                                                    |
+| Campbell CA PD                   | #17 NB S Bascom Av @ Fewtrell Dr                                                                        |
+| Campbell CA PD                   | #18 SB Winchester Blvd @ W Hamilton Ave                                                                 |
+| Campbell CA PD                   | #19 EB E Campbell Ave @ N 1st St                                                                        |
+| Campbell CA PD                   | #20 SB Creekside Wy @ Hwy 17 off ramp                                                                   |
+| Campbell CA PD                   | #21 EB W Hamilton Av @ Beck Dr                                                                          |
+| City of Fremont                  | #01 - Tupelo St                                                                                         |
+| City of Fremont                  | #02 - Shinn St                                                                                          |
+| City of Fremont                  | #03 – Prune Ave                                                                                         |
+| City of Fremont                  | #04 - Morrison Canyon                                                                                   |
+| City of Fremont                  | #05 - Stevenson Blvd                                                                                    |
+| City of Millbrae CA              | 01: Millbrae Ave WB @ Rollins                                                                           |
+| City of Millbrae CA              | 02: Millbrae Ave EB @ Rollins                                                                           |
+| City of Millbrae CA              | 03: El Camino Real NB @ San Benito                                                                      |
+| City of Millbrae CA              | 04: Hillcrest Blvd WB @ El Camino                                                                       |
+| City of Millbrae CA              | 05: Skyline Blvd @ Larkspur Dr                                                                          |
+| City of Millbrae CA              | 06: Larkspur Dr EB @ Skyline                                                                            |
+| City of Millbrae CA              | 07: Hillcrest EB @ Skyline                                                                              |
+| City of Millbrae CA              | 08: Millbrae Ave EB @ Skyline                                                                           |
+| City of Millbrae CA              | 09: Millbrae Ave EB@ El Camino                                                                          |
+| City of Millbrae CA              | 10: Rollins Rd SB near Adrian                                                                           |
+| City of Millbrae CA              | 11: El Camino NB @ Millbrae (right lane)                                                                |
+| City of Millbrae CA              | 12: El Camino NB @ Millbrae (left/center lane)                                                          |
+| City of Millbrae CA              | 13: El Camino SB @ Park Pl                                                                              |
+| City of Millbrae CA              | 14: El Camino SB @ Park Pl                                                                              |
+| City of Millbrae CA              | 15: Millbrae Ave EB @ HWY 101                                                                           |
+| City of Millbrae CA              | 16: Richmond Dr WB @ Magnolia                                                                           |
+| City of Millbrae CA              | 17: Millbrae Ave WB @ El Camino                                                                         |
+| City of Millbrae CA              | 18: Broadway NB @ Millbrae Ave                                                                          |
+| City of Millbrae CA              | 19: Broadway SB @ Silva Ave                                                                             |
+| City of Millbrae CA              | 20: Magnolia Ave NB @ Murchison Dr                                                                      |
+| City of Millbrae CA              | 21: Park Blvd EB @ Santa Teresa Way                                                                     |
+| City of Millbrae CA              | 22: Broadway NB @ Hillcrest                                                                             |
+| City of Millbrae CA              | 23: Hillcrest Blvd EB @ El Camino                                                                       |
+| Colma CA PD                      | #01 Serramonte Blvd (WB)                                                                                |
+| Colma CA PD                      | #02 Serramonte Blvd (WB)                                                                                |
+| Colma CA PD                      | 01: Junipero Serra SB @ Colma Blvd                                                                      |
+| Colma CA PD                      | 02: Junipero Serra NB @ Serra Center                                                                    |
+| Colma CA PD                      | 03: 1500 Hillside Blvd NB @ F St                                                                        |
+| Colma CA PD                      | 04: EB Serramonte Blvd  @ EB Junipero Serra                                                             |
+| Contra Costa CA SO Alamo P5      | 01 - Roundhill Dr WB @ Stone Valley Rd                                                                  |
+| Contra Costa CA SO Alamo P5      | 02: Roundhill Rd NB @ Stone Valley                                                                      |
+| Contra Costa CA SO Alamo P5      | 03: St Paul Dr NB @ Stone Valley                                                                        |
+| Contra Costa CA SO Alamo P5      | 04: Roundhill EB @ Las Quebradas                                                                        |
+| Contra Costa CA SO Alamo P5      | 05: Bolla Ave EB @ St Paul Dr                                                                           |
+| Contra Costa CA SO Alamo P5      | 06: Roundhill Dr EB @ Stone Valley                                                                      |
+| Danville CA PD                   | #03 SB DanvilleBlvd/Camille Ave                                                                         |
+| Danville CA PD                   | #04 - SB El Pintado/La Gonda                                                                            |
+| Danville CA PD                   | #05 NB El Pintado/680                                                                                   |
+| Danville CA PD                   | #06 - NB Danville / El Cerro                                                                            |
+| Danville CA PD                   | #07 - SB Danville/El Cerro                                                                              |
+| Danville CA PD                   | #08 - SB La Gonda/El Cerro                                                                              |
+| Danville CA PD                   | #09 - WB El Cerro/680                                                                                   |
+| Danville CA PD                   | #10 - SB W El Pintado/El Cerro                                                                          |
+| Danville CA PD                   | #11 EB El Cerro/680                                                                                     |
+| Danville CA PD                   | #12 - EB Diablo/El Cerro                                                                                |
+| Danville CA PD                   | #13 - WB Diablo/Green Valley                                                                            |
+| Danville CA PD                   | #14 - NB Green Valley/Diablo                                                                            |
+| Danville CA PD                   | #15 - EB Diablo/Green Valley                                                                            |
+| Danville CA PD                   | #16 - SB Green Valley/Stone Valley                                                                      |
+| Danville CA PD                   | #17 - Diablo WB/680                                                                                     |
+| Danville CA PD                   | #18 - EB Diablo/Via Hermosa                                                                             |
+| Danville CA PD                   | #19 - WB Sycamore Valley/SRVB                                                                           |
+| Danville CA PD                   | #20 - NB SRVB/Sycamore Valley                                                                           |
+| Danville CA PD                   | #21 - SB SRVB/Sycamore Valley                                                                           |
+| Danville CA PD                   | #22 - EB Sycamore Valley/Camino Ramon                                                                   |
+| Danville CA PD                   | #23 - SB Camino Ramon/Sycamore Valley                                                                   |
+| Danville CA PD                   | #24 - Park and Ride                                                                                     |
+| Danville CA PD                   | #25 EB Camino Tass/Sycamore Valley                                                                      |
+| Danville CA PD                   | #26 - WB Sycamore Valley/Camino Tass                                                                    |
+| Danville CA PD                   | #27 - NB Old Camino Tass/Sycamore Valley                                                                |
+| Danville CA PD                   | #28 - NB SRVB/Ridgeland                                                                                 |
+| Danville CA PD                   | #29 - NB Camino Ramon/Fostoria                                                                          |
+| Danville CA PD                   | #30 - EB Fostoria/Camino Ramon                                                                          |
+| Danville CA PD                   | #31 - NB El Captain/Crow Canyon                                                                         |
+| Danville CA PD                   | #32 - EB Camino Tassajara/Crow Canyon                                                                   |
+| Danville CA PD                   | #33 - Crow Canyon NB/Diablo Vista                                                                       |
+| Danville CA PD                   | #34 - Camino Tassajara WB/Crow Canyon                                                                   |
+| Danville CA PD                   | #35 - SB Blackhawk/Silver Oak                                                                           |
+| Danville CA PD                   | #36 - WB Camino Tass/Lawrence                                                                           |
+| Danville CA PD                   | #37 - WB Camino Tass/Highland                                                                           |
+| Danville CA PD                   | #38: Crow Canyon NB at Reedland Cir                                                                     |
+| Danville CA PD                   | Danville Demo #2                                                                                        |
+| Dixon CA PD                      | #13 EB Vaughn Rd @ Pedrick Rd                                                                           |
+| Dixon CA PD                      | #14 SB Porter Rd @ S Lincoln St                                                                         |
+| Dixon CA PD                      | #15 S 1st St @ Parkway Blvd                                                                             |
+| Dixon CA PD                      | #16 WB Vaughn Rd @ Pedrick Rd                                                                           |
+| Dixon CA PD                      | #17 NB Porter Rd @ S Lincoln St                                                                         |
+| Dixon CA PD                      | #18 N 1st St @ Parkway Blvd                                                                             |
+| Dixon CA PD                      | #19 Stratford Ave @ N 1st St - WB                                                                       |
+| Dixon CA PD                      | #20 Stratford Ave @ N 1st street EB                                                                     |
+| Dixon CA PD                      | #20 Stratford Ave @ N 1st street EB - original                                                          |
+| Dixon CA PD                      | #21 Pitt School Rd @ Porter Rd - SB                                                                     |
+| Dixon CA PD                      | 01: A St EB x HWY 80                                                                                    |
+| Dixon CA PD                      | 02: A St WB @ HWY 80                                                                                    |
+| Dixon CA PD                      | 03: Stratford Ave EB @ HWY 80                                                                           |
+| Dixon CA PD                      | 04: Stratford WB @ Commercial Way                                                                       |
+| Dixon CA PD                      | 04: Stratford WB @ Commercial Way - original                                                            |
+| Dixon CA PD                      | 05: Pitt School Rd SB @ Stratford                                                                       |
+| Dixon CA PD                      | 06: Pitt School Rd NB @ Stratford                                                                       |
+| Dixon CA PD                      | 07: 1st St NB @ Dorset                                                                                  |
+| Dixon CA PD                      | 08: 1st SB @ HWY 80                                                                                     |
+| Dixon CA PD                      | 09: 1st NB @ A St                                                                                       |
+| Dixon CA PD                      | 10: 1st SB @ A St                                                                                       |
+| Dixon CA PD                      | 11: A St EB @ 1st St                                                                                    |
+| Dixon CA PD                      | 12: A St WB @ 1st St                                                                                    |
+| Fairfield CA PD                  | 01: Gold Hill Rd WB x 680                                                                               |
+| Fairfield CA PD                  | 02: Red Top EB x McGary Rd                                                                              |
+| Fairfield CA PD                  | 03: Lopes Rd SB @ Cordelia                                                                              |
+| Fairfield CA PD                  | 04: Lopes NB on Southside                                                                               |
+| Fairfield CA PD                  | 05: Beck X W Texas                                                                                      |
+| Fairfield CA PD                  | 06: W Texas X Beck                                                                                      |
+| Fairfield CA PD                  | 07: N Texas NB @ Empire                                                                                 |
+| Fairfield CA PD                  | 08: Travis EB @ 80                                                                                      |
+| Fairfield CA PD                  | 09: Airbase EB @ Heath                                                                                  |
+| Fairfield CA PD                  | 10: N Texas NB @ Air Base                                                                               |
+| Fairfield CA PD                  | 11: N Texas SB @ Air Base                                                                               |
+| Fairfield CA PD                  | 12: E Tabor EB @ N Texas                                                                                |
+| Fairfield CA PD                  | 13: N Texas SB @ Manuel Campos                                                                          |
+| Fairfield CA PD                  | 14: Beck NB @ Woolner                                                                                   |
+| Fairfield CA PD                  | 15: Travis EB @ 80 Lane 2&3                                                                             |
+| Fairfield CA PD                  | 16: Hilborn SB @ Lyon                                                                                   |
+| Fairfield CA PD                  | 17: Hilborn NB x Waterman                                                                               |
+| Fairfield CA PD                  | 18: Waterman WB x Hilborn                                                                               |
+| Fairfield CA PD                  | 19: Heath Drive SB X Peach Tree                                                                         |
+| Fairfield CA PD                  | 20: E Tabor WB @ Grande                                                                                 |
+| Fairfield CA PD                  | 21: E Tabor EB x Manor Pl                                                                               |
+| Fairfield CA PD                  | 22: Travis WB @ Holiday                                                                                 |
+| Fairfield CA PD                  | 23: Oliver NB x HWY 80                                                                                  |
+| Fairfield CA PD                  | 24: Oliver SB x HWY 80                                                                                  |
+| Fairfield CA PD                  | 25: Oliver NB x Rockville                                                                               |
+| Fairfield CA PD                  | 26: Jackson NB x HWY 12                                                                                 |
+| Fairfield CA PD                  | 27: Webster NB x HWY 12                                                                                 |
+| Fairfield CA PD                  | 28: Pennsylvania NB x HWY 12                                                                            |
+| Fairfield CA PD                  | 29: Beck NB x HWY 12                                                                                    |
+| Fairfield CA PD                  | 30: Beck SB x Courage                                                                                   |
+| Fairfield CA PD                  | 31: Chadbourne WB x Auto Mall                                                                           |
+| Fairfield CA PD                  | 32: Auto Mall NB x Chadbourne                                                                           |
+| Fairfield CA PD                  | 33: Neitzel Rd x HWY 80                                                                                 |
+| Fairfield CA PD                  | 34: Red Top SB x HWY 12                                                                                 |
+| Fairfield CA PD                  | 35: Suisun Valley NB X Business Center Dr                                                               |
+| Fairfield CA PD                  | 36: Pittman SB X I-80                                                                                   |
+| Fairfield CA PD                  | 37: Lopes SB x HWY 80                                                                                   |
+| Fairfield CA PD                  | 38: Green Valley NB x HWY 80                                                                            |
+| Fairfield CA PD                  | LPR001 - FTC (SB)                                                                                       |
+| Fairfield CA PD                  | LPR002 - FTC (SB)                                                                                       |
+| Fairfield CA PD                  | LPR003 - Parkway Gardens (EB)                                                                           |
+| Fairfield CA PD                  | LPR004 - Parkway Garden (WB)                                                                            |
+| Fairfield CA PD                  | LPR005 - Oliver Road PnR (NB)                                                                           |
+| Fairfield CA PD                  | LPR006 - Oliver Road PnR (SEB)                                                                          |
+| Fairfield CA PD                  | LPR007 - Grande Circle (SB)                                                                             |
+| Fairfield CA PD                  | LPR008 - Grande Circle (NB)                                                                             |
+| Fairfield CA PD                  | LPR009 - Grande Circle (East) - NB                                                                      |
+| Fairfield CA PD                  | LPR010 - Grande Circle (East) SB                                                                        |
+| Fairfield CA PD                  | LPR011 - Phoenix Drive SB                                                                               |
+| Fairfield CA PD                  | LPR012 - Phoenix Drive NB                                                                               |
+| Fairfield CA PD                  | LPR013 - Dana Drive (SB)                                                                                |
+| Fairfield CA PD                  | LPR014 - Dana Drive (NB)                                                                                |
+| Fairfield CA PD                  | LPR015 - Dana Drive (WB)                                                                                |
+| Fairfield CA PD                  | LPR016 - Dana Drive (EB)                                                                                |
+| Fairfield CA PD                  | LPR017 - Allan Witt Park (NB)                                                                           |
+| Fairfield CA PD                  | LPR018 - Allan Witt Park (SB)                                                                           |
+| Flock Safety PD                  | #01 - Howell Mill @ 14th - NB                                                                           |
+| Flock Safety PD                  | testDeviceName                                                                                          |
+| Gilroy CA PD                     | #01 Leavesley Rd @ Arroyo Cir - WB                                                                      |
+| Gilroy CA PD                     | #02 Monterey St @ Day Rd - SB                                                                           |
+| Gilroy CA PD                     | #03 E 10th St @ S/B 101 Off Ramp - WB                                                                   |
+| Gilroy CA PD                     | #04 E 6th St @ 101 Over Pass - WB                                                                       |
+| Gilroy CA PD                     | #05 Monterey @ Leavesley Rd NB                                                                          |
+| Gilroy CA PD                     | #06 Pacheco Pass Hwy @ NB 101 Off Ramp - EB                                                             |
+| Gilroy CA PD                     | #07 Pacheco Pass Hwy @ NB 101 Off Ramp - EB                                                             |
+| Gilroy CA PD                     | #08 Pacheco Pass Hwy @ Gilroy Foods - WB                                                                |
+| Gilroy CA PD                     | #09 Santa Teresa Blvd @ Day Rd - SB                                                                     |
+| Gilroy CA PD                     | #10 SR 152 @ Burchell Rd - EB                                                                           |
+| Gilroy CA PD                     | #11 No Name Uno @ St. Louise Regional Hospital - NB                                                     |
+| Gilroy CA PD                     | #12 Leavesley Rd @ 101 Off Ramp - WB                                                                    |
+| Gilroy CA PD                     | #13 Leavesley Rd @ 101 Off Ramp - WB                                                                    |
+| Gilroy CA PD                     | #14 Leavesly Rd @ NB 101 On Ramp - WB                                                                   |
+| Gilroy CA PD                     | #15 Leavesley Rd @ Arroyo Cir - EB                                                                      |
+| Gilroy CA PD                     | #16 Santa Teresa Blvd @ 1st St - NB                                                                     |
+| Gilroy CA PD                     | #17 Santa Teresa Blvd @ Rosetta Way - SB                                                                |
+| Gilroy CA PD                     | #18 Hecker Pass Rd @ Burchell Rd - WB                                                                   |
+| Gilroy CA PD                     | #19 Camino Arroyo @ Pacheco Pass - NB                                                                   |
+| Gilroy CA PD                     | #20 Camino Arroyo @ Pacheco Pass - SB                                                                   |
+| Gilroy CA PD                     | #21 E 10th St @ Monterey Rd - EB                                                                        |
+| Gilroy CA PD                     | #22 W 10th St @ Monterey Rd - WB                                                                        |
+| Gilroy CA PD                     | #23 Camino Arroyo Cir @ Gilman Rd - NB                                                                  |
+| Gilroy CA PD                     | #24 Monterey Rd @ 6th St - NB                                                                           |
+| Gilroy CA PD                     | #25 Monterey Rd @ 3rd St - SB                                                                           |
+| Gilroy CA PD                     | #26 Camino Arroyo @ Gilman - SB                                                                         |
+| Gilroy CA PD                     | #27 No Name Uno @ Cohansey Ave - SB                                                                     |
+| Gilroy CA PD                     | #28 Pacheco Pass Hwy @ Cameron Blvd - EB                                                                |
+| Gilroy CA PD                     | #29 Santa Teresa Blvd @ Day Rd - NB                                                                     |
+| Gilroy CA PD                     | #30 Monterey Rd @ SB 101 Off Ramp - NB                                                                  |
+| Gilroy CA PD                     | #31 Bolsa Rd @ Garlic Farm Dr - SB                                                                      |
+| Gilroy CA PD                     | #32 Monterey Rd @ SB 101 Off Ramp - NB                                                                  |
+| Gilroy CA PD                     | #33 Travel Park Cir @ Bolsa Rd - EB                                                                     |
+| Gilroy CA PD                     | #34 Leavesley Rd @ San Ysidro Ave - EB                                                                  |
+| Gilroy CA PD                     | #35 Leavesley Rd @ San Ysidro Ave - EB                                                                  |
+| Hayward CA PD                    | #01 EB A St @ 3rd St                                                                                    |
+| Hayward CA PD                    | #02 EB A St @ Santa Clara St                                                                            |
+| Hayward CA PD                    | #03 NB Foothill Blvd (238 On Ramp lanes) @ Cotter Way                                                   |
+| Hayward CA PD                    | #04 NB Hesperian Blvd @ S Pepsi Dr                                                                      |
+| Hayward CA PD                    | #05 EB Tennyson Rd @ E 12th St                                                                          |
+| Hayward CA PD                    | #06 WB Whipple Rd (Lane 2 and 880 On Ramp) @ Industrial Pkwy SW                                         |
+| Hayward CA PD                    | #07 SB Foothill Blvd @ A St                                                                             |
+| Hayward CA PD                    | #08 WB Santa Clara St @ W Harder Rd                                                                     |
+| Hayward CA PD                    | #09 WB W Tennyson Rd (#2 lane& 880 OR) @ Patrick Ave                                                    |
+| Hayward CA PD                    | #10 WB A St @ Hathaway Ave                                                                              |
+| Hayward CA PD                    | #11 EB W Winton Ave (#2,#3 Lanes) @ Southland Dr                                                        |
+| Hayward CA PD                    | #12 WB Industrial Pkwy W (lanes 1&2)@ Stratford Rd                                                      |
+| Hayward CA PD                    | #13 EB Industrial Pkwy (#1,#2 Lanes) @ Hopkins St                                                       |
+| Hayward CA PD                    | #14 EB W A St @ Garden Ave                                                                              |
+| Hayward CA PD                    | #15 EB W Tennyson Rd @ Calaroga Ave                                                                     |
+| Hayward CA PD                    | #16 SB Hesperian Blvd @ S Pepsi Dr                                                                      |
+| Hayward CA PD                    | #17 NB Hesperian Blvd (#1,#2 Lanes) @ Golf Course Rd                                                    |
+| Hayward CA PD                    | #18 NB Mission Blvd @ Lafayette Ave                                                                     |
+| Hayward CA PD                    | #19 EB Jackson St (lanes 2&3) @ Santa Clara St                                                          |
+| Hayward CA PD                    | #20 EB Jackson St (#1 lane) @ Santa Clara                                                               |
+| Hayward CA PD                    | #21 EB Harder Rd @ Dollar St                                                                            |
+| Hayward CA PD                    | #22 WB W A St @ Garden Ave                                                                              |
+| Hayward CA PD                    | #23 SB Mission Blvd @ Lafayette Ave                                                                     |
+| Hayward CA PD                    | #24 SB Mission Blvd @ Sunset Blvd                                                                       |
+| Hayward CA PD                    | #25 NB Mission Blvd @ A St                                                                              |
+| Hayward CA PD                    | #26 WB A St @ 3rd St                                                                                    |
+| Hayward CA PD                    | #27 NB Gading Rd @ Schafer Rd                                                                           |
+| Hayward CA PD                    | #28 NB Huntwood Ave @ Celia St                                                                          |
+| Hercules CA PD                   | 01 - SB Sycamore @ Palm Ave (from Claeys Ranch)                                                         |
+| Hercules CA PD                   | 02 - NB Sycamore Ave @ Palm Ave                                                                         |
+| Hercules CA PD                   | 03 - SB Sycamore Ave @ Lupine Rd                                                                        |
+| Hercules CA PD                   | 04 - EB Lupine @ Heather Ave                                                                            |
+| Hercules CA PD                   | 05 - EB Redwood Rd @ Chestnut Dr                                                                        |
+| Hercules CA PD                   | 06 - WB Refugio Valley Rd @ Partridge Dr                                                                |
+| Hercules CA PD                   | 07 - EB Refugio Valley Rd @ Hercules High School (near football field)                                  |
+| Hercules CA PD                   | 08 - WB Pheasant Dr @ Swallow Way (towards Ohlone Elementary)                                           |
+| Hercules CA PD                   | 09 - EB Refugio Valley Rd @ Pheasant Dr                                                                 |
+| Hercules CA PD                   | 10 - SB Turquoise Dr @ Rite Aid (towards Crystal Circle)                                                |
+| Hercules CA PD                   | 11 - WB Sycamore Ave @ Willow Ave (Clock Tower)                                                         |
+| Hercules CA PD                   | 12 - EB Sycamore Ave @ Creekside (prior to 1500 Sycamore)                                               |
+| Hercules CA PD                   | 13 - NB Willow Ave @ EB Hwy 4 On Ramp (towards BART Lot)                                                |
+| Hercules CA PD                   | 14 - SB Willow Ave @ Sycamore Ave (towards Shell Gas)                                                   |
+| Hercules CA PD                   | 15 - SB San Pablo Ave @ Hercules Ave (towards Pinole)                                                   |
+| Hercules CA PD                   | 16 - WB Sycamore Ave @ S Front St                                                                       |
+| Hercules CA PD                   | 17 - NB San Pablo Ave @ Hercules Ave (prior to Tsushima)                                                |
+| Hercules CA PD                   | 18 - WB Hercules Ave @ Titan Way                                                                        |
+| Hercules CA PD                   | 19 - SB San Pablo Ave @ John Muir Pkwy                                                                  |
+| Hercules CA PD                   | 20 - WB John Muir Pkwy @ Alfred Nobel                                                                   |
+| Hercules CA PD                   | 21 - SB San Pablo Ave @ Victoria Crescent West                                                          |
+| Hercules CA PD                   | 22 - NB San Pablo Ave @ Victoria Crescent East                                                          |
+| Hercules CA PD                   | 23 - EB Willow Ave @ Cambridge                                                                          |
+| Hercules CA PD                   | 24 - SB Canterbury @ Bristol (Foxboro)                                                                  |
+| Hercules CA PD                   | 25 - NB Willow Ave @ WB Hwy 4 Off (IFO 1231 Willow)                                                     |
+| Hillsborough CA PD               | #04 Floribunda Ave @ El Camino Real WB                                                                  |
+| Hillsborough CA PD               | #05 Forest View Ave @ Crocket Ln WB                                                                     |
+| Hillsborough CA PD               | #06 West Santa Inez @ Severn LN WB                                                                      |
+| Hillsborough CA PD               | #07 El Cerrito Ave @ Gramercy Dr WB                                                                     |
+| Hillsborough CA PD               | #08 Stonehedge Rd @ Baywood Ave NB                                                                      |
+| Hillsborough CA PD               | #09 Tournament Dr @ Yale Dr WB                                                                          |
+| Hillsborough CA PD               | #10 Tartan Trail Rd @ Lakeview Dr NB                                                                    |
+| Hillsborough CA PD               | #12 La Honda Rd @ San Raymundo Rd - WB                                                                  |
+| Hillsborough CA PD               | 01: Golf Course Dr EB @ Black Mountain Rd                                                               |
+| Hillsborough CA PD               | 02: Skyline Blvd NB @ Summit Dr                                                                         |
+| Hillsborough CA PD               | 03: Ralston Ave WB @ Eucalyptus                                                                         |
+| Hillsborough CA PD (Flex)        | Flex Camera -Ralston at Barbara, EB                                                                     |
+| Kaiser Permanente - Vallejo (CA) | #01 Main Driveway/Lot 4 Inbound                                                                         |
+| Kaiser Permanente - Vallejo (CA) | #02 ED LOT ENTRANCE INBOUND                                                                             |
+| Kaiser Permanente - Vallejo (CA) | #03 ENTRANCE UPPER LOT 7/SIDE ED/LOADING DOCK                                                           |
+| Kaiser Permanente - Vallejo (CA) | #04 INBOUND ENTRANCE CUP/UPPER LOT 8                                                                    |
+| Kaiser Permanente - Vallejo (CA) | #05 AMRS INBOUND TO PARKING LOT                                                                         |
+| Kaiser Permanente - Vallejo (CA) | #06 MAIN STREET IN FRONT OF AMRS AND FOOD BASKET                                                        |
+| Kaiser Permanente - Vallejo (CA) | #07 CALL CENTER INBOUND MAIN ENTRANCE                                                                   |
+| Kaiser Permanente - Vallejo (CA) | #08 CALL CENTER INBOUND BACK SIDE OF PROPERTY                                                           |
+| Kaiser Permanente - Vallejo (CA) | #09 CALL CENTER CAPTURES SUSPECT VEHICLES DRIVING BY ON MAIN ROAD                                       |
+| Kaiser Permanente - Vallejo (CA) | #10 - MAIN ENTRY VEHICLE TURNING TOWARDS FRONT OF PROPERTY FROM ED LOT                                  |
+| Kaiser Permanente - Vallejo (CA) | #11 MEMBERS GARAGE - INBOUND                                                                            |
+| Kaiser Permanente - Vallejo (CA) | #12 EMPLOYEE GARAGE SB - INBOUND                                                                        |
+| Kaiser Permanente - Vallejo (CA) | #13 N Camino Alto SB @ Sereno Dr                                                                        |
+| La Habra CA PD                   | #01: N Harbor Dr @ E Lambert Rd - NB                                                                    |
+| La Habra CA PD                   | #02: Harbor Blvd @ Arbolita Dr - SB                                                                     |
+| La Habra CA PD                   | #03: E La Habra Blvd @ Palm St - WB                                                                     |
+| La Habra CA PD                   | #04: W La Habra Blvd @ Valley Home Ave - EB                                                             |
+| La Habra CA PD                   | #05: S Idaho St @ W Risner Way - NB                                                                     |
+| La Habra CA PD                   | #06: Euclid St @ E Country Hills Dr - NB                                                                |
+| La Habra CA PD                   | #07: Whittier Blvd & La Bonita Park - EB                                                                |
+| Lakeport CA PD                   | #01 Lakeshore Blvd @ Beach Ln - SB                                                                      |
+| Lakeport CA PD                   | #02 Hartley St @ Anastasia Dr - SB                                                                      |
+| Lakeport CA PD                   | #03 Eleventh St @ Scotts Valley Rd - EB                                                                 |
+| Lakeport CA PD                   | #04 Martin St @ Shirley Ct - EB                                                                         |
+| Lakeport CA PD                   | #05  Lakeport Blvd @ Bevins St - EB                                                                     |
+| Lakeport CA PD                   | #06 S Main St @ Peckham Ct - NB                                                                         |
+| Lakeport CA PD                   | #07 N Forbes St @ 9th St - SB                                                                           |
+| Lakeport CA PD                   | #08 S Main St @ K St - NB                                                                               |
+| Lakeport CA PD                   | #10 School @ Lange st                                                                                   |
+| Livermore CA PD                  | #01 101 - Kitty Hawk WB at Isabel Ave                                                                   |
+| Livermore CA PD                  | #02 102 - Kitty Hawk EB at Airway Blvd                                                                  |
+| Livermore CA PD                  | #03 301 - Altamont Pass Rd WB @ I580 WB Onramp                                                          |
+| Livermore CA PD                  | #04 203 - Las Positas Rd WB @ Las Colinas Rd                                                            |
+| Livermore CA PD                  | #05 204 - Vasco Rd NB north of Garaventa Ranch                                                          |
+| Livermore CA PD                  | #06 201 - Arroyo Plaza EB at N. Livermore                                                               |
+| Livermore CA PD                  | #07 - 401 - Hw84 NB @ Vallecitos                                                                        |
+| Livermore CA PD                  | #08 202 - Las Positas EB from N. Livermore                                                              |
+| Livermore CA PD                  | #09 402 - Concannon EB from Hw84                                                                        |
+| Livermore CA PD                  | #10 103 - E Jack London Blvd EB from Hw84                                                               |
+| Livermore CA PD                  | #11 104 - Rutan SB from Airway                                                                          |
+| Livermore CA PD                  | #12 105 - Zeppelin @ Wright Brothers                                                                    |
+| Livermore CA PD                  | #13 302 - East Av WB from Vasco Rd                                                                      |
+| Livermore CA PD                  | #14 303 - Charlotte Wy NB from East Av                                                                  |
+| Livermore CA PD                  | #15 106 - WB Chestnut St from N. Livermore Ave                                                          |
+| Livermore CA PD                  | #16 107 - Chestnut St EB from N. P St                                                                   |
+| Livermore CA PD                  | Wing Test 1                                                                                             |
+| Los Alamitos PD CA               | #01 WB Katella @ Epson Way (NCL)                                                                        |
+| Los Alamitos PD CA               | #02 WB Katella @ Epson Way (SCL)                                                                        |
+| Los Alamitos PD CA               | #03 EB Katella @ Epson Way (NCL)                                                                        |
+| Los Alamitos PD CA               | #04 EB Katella @ Epson Way (SCL)                                                                        |
+| Los Alamitos PD CA               | #05 WB Katella @ Saratoga Dr (SCL)                                                                      |
+| Los Alamitos PD CA               | #06 WB Katella @ Lexington (NCL)                                                                        |
+| Los Alamitos PD CA               | #07 EB Katella @ Winners Circle (SCL)                                                                   |
+| Los Alamitos PD CA               | #08 EB Katella @ Winners Circle (NCL)                                                                   |
+| Los Alamitos PD CA               | #09 EB Cerritos @ Claremore                                                                             |
+| Los Alamitos PD CA               | #10 WB Cerritos @ Bloomfield                                                                            |
+| Los Alamitos PD CA               | #11 SB Bloomfield @ Ball                                                                                |
+| Los Alamitos PD CA               | #12 SB Los Alamitos @ Carbon Creek                                                                      |
+| Milpitas CA PD                   | 01: Ranch Dr (North Entrance)                                                                           |
+| Milpitas CA PD                   | 02: Ranch Dr (South Entrance)                                                                           |
+| Milpitas CA PD                   | 03: Ranch Dr (South Exit)                                                                               |
+| Milpitas CA PD                   | 04: Eastbound Bellew Dr                                                                                 |
+| Milpitas CA PD                   | 05: Northbound Barber Ln/ Station 4                                                                     |
+| Milpitas CA PD                   | 06: Entrance to GMBA/McCandless Dr                                                                      |
+| Milpitas CA PD                   | 07: Entrance to GMBA/ Mustang Dr                                                                        |
+| Milpitas CA PD                   | 08: Southbound N. Milpitas Bl/Wilson Wy                                                                 |
+| Milpitas CA PD                   | 09: Northbound S. Main St/Great Mall Pk                                                                 |
+| Milpitas CA PD                   | 10: Eastbound Curtis Av/Comet Dr                                                                        |
+| Milpitas CA PD                   | 11: Westbound W. Calaveras Bl/Serra Wy                                                                  |
+| Milpitas CA PD                   | 12: Southbound Piedmont Rd/ E. Calaveras Bl.                                                            |
+| Milpitas CA PD                   | 13: Westbound W. Calaveras Bl/Butler St.                                                                |
+| Milpitas CA PD                   | 14: Northbound Piedmont Rd/Landess Av                                                                   |
+| Milpitas CA PD                   | 15: Eastbound W. Calaveras Bl/Serra Wy                                                                  |
+| Milpitas CA PD                   | 16: Northbound Evans/E. Calaveras Bl                                                                    |
+| Milpitas CA PD                   | 17: Southbound S. Temple Dr/E. Calaveras Bl                                                             |
+| Milpitas CA PD                   | 18: Eastbound W. Calaveras Bl/Butler St.                                                                |
+| Milpitas CA PD                   | 19: Westbound Landess Ave/Piedmont Rd                                                                   |
+| Milpitas CA PD                   | 20: Northbound Yellowstone Ave/Landess Ave                                                              |
+| Milpitas CA PD                   | 21: SB S. Abel St N/of W. Capitol Av                                                                    |
+| Milpitas CA PD                   | 22: NB S. Main St @ Cedar Way                                                                           |
+| Milpitas CA PD                   | 23: SB S. Abel St. S/of Junipero Dr                                                                     |
+| Milpitas CA PD                   | 24: NB S. Main St. S/of Serra Wy.                                                                       |
+| Milpitas CA PD                   | 25: SB N. Abbott Av. N/of W. Calaveras Bl.                                                              |
+| Milpitas CA PD                   | 26: SB N Abbott Av @ Valley Wy.                                                                         |
+| Milpitas CA PD                   | 27: NB S. Park Victoria Dr. N/of Landess Av                                                             |
+| Milpitas CA PD                   | 28: WB Yosemite Dr. W/of Piedmont Rd.                                                                   |
+| Milpitas CA PD                   | 29: WB Jacklin Rd @ HWY I680                                                                            |
+| Milpitas CA PD                   | 30: WB E. Calaveras Bl. W/of transition road of SBI680                                                  |
+| Milpitas CA PD                   | 31: EB Dixon Landing Rd. E/of California Cir.                                                           |
+| Milpitas CA PD                   | 32: EB Jacklin Rd. E/of I680                                                                            |
+| Milpitas CA PD                   | 33: NB N. Park Victoria Dr. N/of E. Calaveras Bl.                                                       |
+| Milpitas CA PD                   | 34: SB S. Park Victoria Dr. S/of Dempsey Rd.                                                            |
+| Milpitas CA PD                   | 35: NB N. McCarthy Bl. S/of Dixon Landing Rd                                                            |
+| Morgan Hill CA PD                | #26 Hill Rd @ Diana Ave - NB                                                                            |
+| Morgan Hill CA PD                | #27 Hill Rd @ Diana Ave - SB                                                                            |
+| Morgan Hill CA PD                | #28 Watsonville Rd @ Via Corfinio - EB                                                                  |
+| Morgan Hill CA PD                | #29 Santa Teresa Blvd @ Sunshine St - NB                                                                |
+| Morgan Hill CA PD                | #30 Santa Teresa Blvd @ Sunshine St - SB                                                                |
+| Morgan Hill CA PD                | #31 Monterey Rd @ E Middle Ave - NB                                                                     |
+| Morgan Hill CA PD                | #32 Monterey Rd @ E Middle Ave - SB                                                                     |
+| Morgan Hill CA PD                | #33 Hill Rd @ Barrett Ave - NB                                                                          |
+| Morgan Hill CA PD                | #34 Hill Rd @ Barrett Ave - SB                                                                          |
+| Morgan Hill CA PD                | #35 Monterey Rd @ W Main Ave - SB                                                                       |
+| Morgan Hill CA PD                | #36 Monterey Rd @ E Main Ave - NB                                                                       |
+| Morgan Hill CA PD                | #37 Monterey Rd @ W Dunne Ave - SB                                                                      |
+| Morgan Hill CA PD                | #38 E Dunne Ave @ Monterey Rd - EB                                                                      |
+| Morgan Hill CA PD                | #39 Monterey Rd @ E 5th St - NB                                                                         |
+| Morgan Hill CA PD                | #40 Butterfield Blvd @ Tennant Ave - NB                                                                 |
+| Morgan Hill CA PD                | #41 Butterfield Blvd @ Tennant Ave - SB                                                                 |
+| Morgan Hill CA PD                | #42 Butterfield Blvd @ E Dunne Ave - NB                                                                 |
+| Morgan Hill CA PD                | #43 Butterfield Blvd @ E Dunne Ave - SB                                                                 |
+| Morgan Hill CA PD                | #44 E Dunne Ave @ Butterfield Blvd - WB                                                                 |
+| Morgan Hill CA PD                | #45 E Dunne Ave @ Butterfield Blvd - EB                                                                 |
+| Morgan Hill CA PD                | #46 Hale Ave @ Wright Ave - NB                                                                          |
+| Morgan Hill CA PD                | #47 Hale Ave @ E Main Ave - SB                                                                          |
+| Morgan Hill CA PD                | #48 Tilton Ave @ Dougherty Ave - EB                                                                     |
+| Morgan Hill CA PD                | #49 Tilton Ave @ Dougherty Ave - WB                                                                     |
+| Morgan Hill CA PD                | #50 Monterey Rd @ Manresa Ln - SB                                                                       |
+| Morgan Hill CA PD                | 01: Cochrane EB @ HWY 101                                                                               |
+| Morgan Hill CA PD                | 02: Cochrane Rd WB @ HWY 101                                                                            |
+| Morgan Hill CA PD                | 03: Dunne Ave EB @ HWY 101 (Lane 1 & 2)                                                                 |
+| Morgan Hill CA PD                | 04: Dunne Ave EB @ HWY 101 (Lane 3)                                                                     |
+| Morgan Hill CA PD                | 05: Dunne Ave WB @ HWY 101                                                                              |
+| Morgan Hill CA PD                | 06: Tennant EB @ HWY 101                                                                                |
+| Morgan Hill CA PD                | 07: Tennant Ave WB @ HWY 101                                                                            |
+| Morgan Hill CA PD                | 08: Monterey SB @ Tilton                                                                                |
+| Morgan Hill CA PD                | 09: Hale SB @ Tilton                                                                                    |
+| Morgan Hill CA PD                | 10: Llagas EB @ Teresa Ln                                                                               |
+| Morgan Hill CA PD                | 11: Dewitt NB @ Spring                                                                                  |
+| Morgan Hill CA PD                | 12: EB Edmundson @ Olympic                                                                              |
+| Morgan Hill CA PD                | 13: Monterey NB @ Butterfield                                                                           |
+| Morgan Hill CA PD                | 14: Butterfield NB @ Monterey                                                                           |
+| Morgan Hill CA PD                | 15: Butterfield SB @ Cochrane                                                                           |
+| Morgan Hill CA PD                | 16: Monterey SB @ Cochrane                                                                              |
+| Morgan Hill CA PD                | 17: Monterey NB @ Cochrane                                                                              |
+| Morgan Hill CA PD                | 18: Butterfield NB @ Maine                                                                              |
+| Morgan Hill CA PD                | 19: Butterfield SB @ Maine                                                                              |
+| Morgan Hill CA PD                | 20: Dunne EB @ Hill                                                                                     |
+| Morgan Hill CA PD                | 21: Cochrane EB @ HWY 101                                                                               |
+| Morgan Hill CA PD                | 22: Dunne EB @ HWY 101                                                                                  |
+| Morgan Hill CA PD                | 23: Tennant EB @ HWY 101                                                                                |
+| Morgan Hill CA PD                | 24: Monterey SB @ Butterfield                                                                           |
+| Morgan Hill CA PD                | 25: Monterey NB @ Burnett                                                                               |
+| NCRIC                            | #01 3rd Street and Riverside                                                                            |
+| NCRIC                            | #02 Coyote Point                                                                                        |
+| NCRIC                            | #03 Great Century Mall 2                                                                                |
+| NCRIC                            | #04 Great Century Mall                                                                                  |
+| NCRIC                            | #06 Ocean Street and Water Street                                                                       |
+| NCRIC                            | #07  Eucalyptus Drive @ Hwy 29                                                                          |
+| NCRIC                            | #08 SFIA 2                                                                                              |
+| NCRIC                            | #09 BoA SF                                                                                              |
+| NCRIC                            | #10 USB SF                                                                                              |
+| NCRIC                            | #11 American Canyon Rd @ Via Firenze                                                                    |
+| NCRIC                            | #12 Alexander Ave                                                                                       |
+| NCRIC                            | #13 NB Hwy 221 @ Anderson                                                                               |
+| NCRIC                            | #14 29 NB @ Imola 1                                                                                     |
+| NCRIC                            | #15 Napa Vallejo Hwy @ Kaiser                                                                           |
+| NCRIC                            | #16 29 SB @ Sonoma Highway 2                                                                            |
+| NCRIC                            | DEC Gonzales                                                                                            |
+| Newark CA PD                     | #01 SB Newark Blvd N of EB 84 Offramp (median)                                                          |
+| Newark CA PD                     | #02 SB Newark Blvd S of EB 84 Offramp (west curb)                                                       |
+| Newark CA PD                     | #03 EB Thornton Ave E of 84 Offramp (median)                                                            |
+| Newark CA PD                     | #04 WB Thornton Ave W of I-880 (north curb)                                                             |
+| Newark CA PD                     | #05 EB Thornton Ave W of I-880 (median)                                                                 |
+| Newark CA PD                     | #06 WB Central Ave on I-880 overpass (north curb)                                                       |
+| Newark CA PD                     | #07 WB Mowry Ave W of I-880 (north curb)                                                                |
+| Newark CA PD                     | #08 WB Mowry Ave W of I-880 (median)                                                                    |
+| Newark CA PD                     | #09 NB Cherry St N of Stevenson Blvd (median)                                                           |
+| Newark CA PD                     | #10 NB Cherry St N of Stevenson Blvd (east curb)                                                        |
+| Newark CA PD                     | #11 WB Stevenson Blvd W of Balentine Dr (north curb)                                                    |
+| Newark CA PD                     | #12 WB Stevenson Blvd W of Balentine Dr (median)                                                        |
+| Newark CA PD                     | #13 NB Balentine Dr N of Stevenson Blvd (median)                                                        |
+| Newark CA PD                     | #14 NB Newark Blvd @ Safeway entrance (median)                                                          |
+| Newark CA PD                     | #15 NB Newark Blvd @ Safeway entrance (east curb)                                                       |
+| Newark CA PD                     | #16 EB Thornton Ave E of Cedar Blvd (south curb)                                                        |
+| Newark CA PD                     | #17 EB Central on I-880 overpass (south curb)                                                           |
+| Newark CA PD                     | #18 EB Mowry Ave W of I-880 (south curb)                                                                |
+| Newark CA PD                     | #19 WB Mowry Ave E of Alpenrose (median)                                                                |
+| Newark CA PD                     | #20 WB Thornton Ave W of Gateway Blvd                                                                   |
+| Novato CA PD                     | 01: Rowland Blvd EB @ Vintage Way                                                                       |
+| Novato CA PD                     | 02: Vintage Way SB @ Rowland Blvd EB                                                                    |
+| Novato CA PD                     | 03: Rowland Blvd WB @ HWY 101 OUTBOUND (Lane 1 & 2)                                                     |
+| Novato CA PD                     | 04: Rowland Blvd WB @ HWY 101 OUTBOUND (Lane 2 & 3)                                                     |
+| Oakley CA PD                     | 01: Bridgehead Rd SB @ Wilbur                                                                           |
+| Oakley CA PD                     | 02: Oakley Rd EB @ Calle De Oro                                                                         |
+| Oakley CA PD                     | 03: Ohara NB @ Neroly                                                                                   |
+| Oakley CA PD                     | 04: Main St NB @ Delta                                                                                  |
+| Oakley CA PD                     | 10: Cypress WB @ Knightsen                                                                              |
+| Ontario CA PD                    | #01 - NB Benson Ave & W Mission                                                                         |
+| Ontario CA PD                    | #01 N Lemon Ave @ E D St - SB                                                                           |
+| Ontario CA PD                    | #02 - SB Benson & W Mission                                                                             |
+| Ontario CA PD                    | #02 E C St @ Euclid - EB                                                                                |
+| Ontario CA PD                    | #03 - EB Holt & Laurel (Lane 1-2)                                                                       |
+| Ontario CA PD                    | #03 N Lemon Ave @ E B St - NB                                                                           |
+| Ontario CA PD                    | #04 - WB Holt & Lemon Ave (Lane 1-2)                                                                    |
+| Ontario CA PD                    | #04 Westwind Community Center @ E Riverside Dr - NB                                                     |
+| Ontario CA PD                    | #05 - WB Holt & Lemon (Lane 3)                                                                          |
+| Ontario CA PD                    | #06 - NB Euclid Ave & B St (Lane 1-2)                                                                   |
+| Ontario CA PD                    | #07 - NB Euclid & B St (Lane 3)                                                                         |
+| Ontario CA PD                    | #08 - SB Euclid & B St (Lane 1-2)                                                                       |
+| Ontario CA PD                    | #09 - SB Euclid & B St (Lane 3)                                                                         |
+| Ontario CA PD                    | #10 - EB Mission & Benson                                                                               |
+| Ontario CA PD                    | #11 - WB Mission & Benson                                                                               |
+| Ontario CA PD                    | #12 - SB Gurnee Ave x Fourth St (Lanes 1-2)                                                             |
+| Ontario CA PD                    | #13 - Gurnee Ave x Fourth St (Lane 3)                                                                   |
+| Ontario CA PD                    | #14 - SB Franklin Ave (Lane 1-2)                                                                        |
+| Ontario CA PD                    | #15 - NB Ontario Mills Dr & Fourth Street (Lanes 1-2)                                                   |
+| Ontario CA PD                    | #16 - NB Ontario Mills Dr & Fourth Street (Lane 3)                                                      |
+| Ontario CA PD                    | #17 - NB Rochester Ave                                                                                  |
+| Ontario CA PD                    | #18 - NB S Ontario Mills Dr & Ontario Mills Pkwy (Lane 1-2)                                             |
+| Ontario CA PD                    | #19 - Ontario Mills Dr & Ontario Mills Pkwy (Lane 3)                                                    |
+| Ontario CA PD                    | #20 - NB Franklin Ave & Ontario Mills                                                                   |
+| Ontario CA PD                    | #21 - EB Mall Dr & N Miliken (Lane 1-2)                                                                 |
+| Ontario CA PD                    | #22 - EB Mall Dr & N Miliken Ave (Lane 3)                                                               |
+| Ontario CA PD                    | #23 - EB Concours St & N Miliken Ave (Lane 1-2) - Relocation                                            |
+| Ontario CA PD                    | #24 -NB Mills Circle N/O Concours St (Lanes 1-2)                                                        |
+| Ontario CA PD                    | #25 - Euclid and Park southbound traffic                                                                |
+| Ontario CA PD                    | #26 – S San Antonio NO El Morado                                                                        |
+| Ontario CA PD                    | #27 - WB Terminal Way OIA                                                                               |
+| Ontario CA PD                    | #28- SB S W Way (Value Lot) OIA                                                                         |
+| Ontario CA PD                    | #29 - NB S W Way x E Terminal Way OIA                                                                   |
+| Ontario CA PD                    | #30 - WB Terminal Way (Lot 2) OIA                                                                       |
+| Ontario CA PD                    | #31 - WB Terminal Way (past Lot 2 Entry) OIA                                                            |
+| Ontario CA PD                    | #32 - Terminal Way x E Airport (Exit) OIA                                                               |
+| Ontario CA PD                    | #33 - SB E Terminal Way x E Airport (Entry) OIA                                                         |
+| Ontario CA PD                    | #34 - NB S E Way (Permit Lot) OIA                                                                       |
+| Ontario CA PD                    | #35 - SB S E Way (Lot 4) OIA                                                                            |
+| Ontario CA PD                    | #36 -John Bangs Dr (Rental Car) OIA                                                                     |
+| Ontario CA PD                    | #37 - NB E Terminal Way (exit) OIA                                                                      |
+| Ontario CA PD                    | #38 - WB Terminal Way x E Terminal Way OIA                                                              |
+| Ontario CA PD                    | #39 - WB Terminal Way (Lot 6) OIA                                                                       |
+| Ontario CA PD                    | #40 - EB Mission @ Grove (Lanes 2-3)                                                                    |
+| Ontario CA PD                    | #41 - EB Mission @ Grove (Lane 1)                                                                       |
+| Ontario CA PD                    | #42 - NB Grove @ Mission (Lanes 1-2)                                                                    |
+| Ontario CA PD                    | #43 - NB Grove @ Mission (Lanes 2-3)                                                                    |
+| Ontario CA PD                    | #44 - WB Mission @ Grove                                                                                |
+| Ontario CA PD                    | #45 - SB Grove @ Mission (Lanes 1-2)                                                                    |
+| Ontario CA PD                    | #46 - SB Grove @ Mission (Lanes 2-3)                                                                    |
+| Ontario CA PD                    | #47 - EB Holt @ Vineyard                                                                                |
+| Ontario CA PD                    | #48 - NB Vineyard @ Holt (Lanes 2-3)                                                                    |
+| Ontario CA PD                    | #49 - NB Vinyard @ Holt (Lanes 1-2)                                                                     |
+| Ontario CA PD                    | #50 - WB Holt @ Vineyard                                                                                |
+| Ontario CA PD                    | #51 - SB Vineyard @ Holt (Lane 1-2)                                                                     |
+| Ontario CA PD                    | #52 - SB Vineyard @ Holt (Lanes 2-3)                                                                    |
+| Ontario CA PD                    | #53 - WB Philadelphia @ Grove                                                                           |
+| Ontario CA PD                    | #54 - EB Philadelphia @ Grove                                                                           |
+| Ontario CA PD                    | #55 - NB Euclid @ Mission                                                                               |
+| Ontario CA PD                    | #56 - EB Mission @ Euclid                                                                               |
+| Ontario CA PD                    | #57 - SB Euclid @ Mission                                                                               |
+| Ontario CA PD                    | #58 - WB Mission @ Euclid                                                                               |
+| Ontario CA PD                    | #59 - NB Grove @ 4th                                                                                    |
+| Ontario CA PD                    | #60 - EB 4th @ Grove                                                                                    |
+| Ontario CA PD                    | #61 - SB Grove @ 4th                                                                                    |
+| Ontario CA PD                    | #62 - WB 4th @ Grove                                                                                    |
+| Ontario CA PD                    | #63 - NB Haven @ Jurupa (Lanes 2-3)                                                                     |
+| Ontario CA PD                    | #64 - EB Jurupa @ Haven (Lanes 2-3)                                                                     |
+| Ontario CA PD                    | #65 - EB Jurupa @ Haven (Lanes 1-2)                                                                     |
+| Ontario CA PD                    | #66 - SB Haven @ Jurupa (Lanes 1-2)                                                                     |
+| Ontario CA PD                    | #67 - SB Haven @ Jurupa (Lanes 2-3)                                                                     |
+| Ontario CA PD                    | #68 - WB Jurupa @ Haven                                                                                 |
+| Ontario CA PD                    | #69 - NB Hamner @ Ontario Ranch LN1 - Original                                                          |
+| Ontario CA PD                    | #70 - WB Ontario Ranch @ Hamner                                                                         |
+| Ontario CA PD                    | #71 - NB Archibald @ Merrill                                                                            |
+| Ontario CA PD                    | #72 - NB Mountain @ Holt                                                                                |
+| Ontario CA PD                    | #73 - EB Holt @ Mountain                                                                                |
+| Ontario CA PD                    | #74 - SB Mountain @ Holt LN 1&2                                                                         |
+| Ontario CA PD                    | #75 - SB Mountain @ Holt (Lane 3 -Turn Lane)                                                            |
+| Ontario CA PD                    | #76 - WB Holt @ Mountain                                                                                |
+| Ontario CA PD                    | #77 - EB 8th @ Vineyard                                                                                 |
+| Ontario CA PD                    | #78 - SB Vineyard @ 8th                                                                                 |
+| Ontario CA PD                    | #79 - WB-8th @ Vinyard                                                                                  |
+| Ontario CA PD                    | #80 - NB Hamner @ Ontario Ranch                                                                         |
+| Ontario CA PD                    | Anthony Munoz Entrance                                                                                  |
+| Ontario CA PD                    | MUC - N. Employee PL Cam West View                                                                      |
+| Ontario CA PD                    | MUC - S. Employee PL West View                                                                          |
+| Ontario CA PD                    | MUC - S. PL Fleet Camera West View                                                                      |
+| Ontario CA PD                    | NB Palm @ Emporia(Code Enforcement)                                                                     |
+| Ontario CA PD                    | Revenue - S. Employee PL West View                                                                      |
+| Ontario CA PD                    | SB Palm @ Transit (Code Enforcement)                                                                    |
+| Orinda CA PD                     | 01: Camino Pablo WB @ Santa Maria                                                                       |
+| Orinda CA PD                     | 02: Camino Sobrante NB @ Camino Pablo                                                                   |
+| Orinda CA PD                     | 03: Santa Maria Way NB @ Camino Pablo                                                                   |
+| Orinda CA PD                     | 04: Brookwood NB @ Camino Pablo                                                                         |
+| Orinda CA PD                     | 05: Moraga Way WB @ Northwood Dr                                                                        |
+| Orinda CA PD                     | 06: Moraga Way EB @ Camino Encinas                                                                      |
+| Piedmont CA PD                   | #04 Blair Ave EB at Harbord Dr                                                                          |
+| Piedmont CA PD                   | #05 Blair Ave WB at Blair Pl                                                                            |
+| Piedmont CA PD                   | #1 SB Linda at Kingston                                                                                 |
+| Piedmont CA PD                   | #2 NB Linda at Kingston                                                                                 |
+| Piedmont CA PD                   | #3 EB Kingston at Monte Cresta                                                                          |
+| Piedmont CA PD                   | 01: Oakland @ Olive - Inbound                                                                           |
+| Piedmont CA PD                   | 02: Grand @ Wildwood - Inbound                                                                          |
+| Piedmont CA PD                   | 03: Wildwood @ Grand - Inbound                                                                          |
+| Piedmont CA PD                   | 04: Sylvan - Inbound                                                                                    |
+| Piedmont CA PD                   | 05: Boulevard @ Crofton - Inbound                                                                       |
+| Piedmont CA PD                   | 06: Ronada Ave SB - Outbound                                                                            |
+| Piedmont CA PD                   | 07: Boulevard @ Warfield - Inbound                                                                      |
+| Piedmont CA PD                   | 08: Warfield @ Boulevard - Inbound                                                                      |
+| Piedmont CA PD                   | 09: Winsor - Inbound                                                                                    |
+| Piedmont CA PD                   | 10: Harvard @ Ranleigh - Inbound                                                                        |
+| Piedmont CA PD                   | 11: Portsmouth @ Annerley - Inbound                                                                     |
+| Piedmont CA PD                   | 12: Annerley @ Portsmouth - Inbound                                                                     |
+| Piedmont CA PD                   | 13: Harvard @ Oakmont - Inbound                                                                         |
+| Piedmont CA PD                   | 14 (Adtl at #2): Grand @ Wildwood - Outbound                                                            |
+| Piedmont CA PD                   | 15: Portal @ Florada - Inbound                                                                          |
+| Piedmont CA PD                   | 16: Crocker @ Ashmount - Inbound                                                                        |
+| Piedmont CA PD                   | 17: Ashmount @ Clarenton - Inbound                                                                      |
+| Piedmont CA PD                   | 18: Sunnyhills - Inbound                                                                                |
+| Piedmont CA PD                   | 19: Trestle Glen @ Valant - Inbound                                                                     |
+| Piedmont CA PD                   | 20: Trestle Glen Rd @ Park Blvd - Inbound                                                               |
+| Piedmont CA PD                   | 21: St James @ Park - Inbound                                                                           |
+| Piedmont CA PD                   | 22: Estates @ Park - Inbound                                                                            |
+| Piedmont CA PD                   | 23: Estates @ Somerset - Inbound                                                                        |
+| Piedmont CA PD                   | 24: Somerset @ Estates - Inbound                                                                        |
+| Piedmont CA PD                   | 25: La Salle @ Tyson Cir - Inbound                                                                      |
+| Piedmont CA PD                   | 26: Moraga @ Maxwelton - Inbound                                                                        |
+| Piedmont CA PD                   | 27: Moraga @ Maxwelton - Outbound                                                                       |
+| Piedmont CA PD                   | 28: Maxwelton @ ECL - Inbound                                                                           |
+| Piedmont CA PD                   | 29: Moraga @ Ramona - Inbound                                                                           |
+| Piedmont CA PD                   | 30: Ronada @ Parkside - Inbound                                                                         |
+| Piedmont CA PD                   | 31: Grand @ Rose - Inbound                                                                              |
+| Piedmont CA PD                   | 32: Rose @ Echo - Inbound                                                                               |
+| Piedmont CA PD                   | 33 (Adt at #19): Valant Pl NB @ Trestle Glen Rd                                                         |
+| Piedmont CA PD                   | 34 (Adtl at #22): Estates @ Park Outbound                                                               |
+| Pleasanton CA PD                 | #01 Canyon Wy @ Stoneridge Mall Rd - WB                                                                 |
+| Pleasanton CA PD                 | #02 Stoneridge Mall Rd @ Canyon Wy - SB                                                                 |
+| Pleasanton CA PD                 | #03 Stoneridge Mall Rd @ Canyon Wy- NB                                                                  |
+| Pleasanton CA PD                 | #04 Happy Valley Rd/ Callippe EB                                                                        |
+| Salinas CA PD                    | #02 Acosta Plaza SB @ Garner                                                                            |
+| Salinas CA PD                    | 01: Acosta Plaze NB @ N Sanborn                                                                         |
+| Salinas CA PD                    | 03: Rider Ave SB @ Las Casitas Dr                                                                       |
+| Salinas CA PD                    | 04: Monterey St NB towards East Market St                                                               |
+| Salinas CA PD                    | 05: Towt St NB @ Garner                                                                                 |
+| Salinas CA PD                    | 06: Del Monte Ave WB @ Towt St                                                                          |
+| Salinas CA PD                    | 07: Rider Ave NB @ Del Monte Ave                                                                        |
+| Salinas CA PD                    | 08: E Market St EB @ Kern St                                                                            |
+| Salinas CA PD                    | 09: E. Alisal EB @ Kings                                                                                |
+| Salinas CA PD                    | 10: E Market St EB @ Poplar St                                                                          |
+| Salinas CA PD                    | 11: Market Way WB @ E Market St                                                                         |
+| Salinas CA PD                    | 12: S Sanborn Rd NB @ Mayfair Dr                                                                        |
+| Salinas CA PD                    | 13: N Sanborn Rd NB @ Circle Dr                                                                         |
+| Salinas CA PD                    | 14: E Market St WB @ Sanborn Rd                                                                         |
+| Salinas CA PD                    | 15: Sanborn Rd SB @ Parkway Rd                                                                          |
+| Salinas CA PD                    | 16: E Alisal St WB @ Sanborn Rd                                                                         |
+| Salinas CA PD                    | 17: Towt St NB @ Del Monte Ave                                                                          |
+| Salinas CA PD                    | 18: E Lake St SB @ E Rossi St                                                                           |
+| Salinas CA PD                    | 20: Garner Ave WB @ Towt St                                                                             |
+| San Bruno CA PD                  | 01: N/B ECR at Noor Av (#1 & #2 Lanes)                                                                  |
+| San Bruno CA PD                  | 02: N/B ECR at Noor Av (#2 & #3 Lanes)                                                                  |
+| San Bruno CA PD                  | 03: S/B ECR prior to I380 (#1 & #2 Lanes)                                                               |
+| San Bruno CA PD                  | 04: S/B ECR prior to I380 (#3 & #4 Lanes)                                                               |
+| San Bruno CA PD                  | 05: N/B ECR prior to I380 (#3 & E/B I380 ramp)                                                          |
+| San Bruno CA PD                  | 06: N/B ECR prior to I380 (#1 & #2 Lanes)                                                               |
+| San Bruno CA PD                  | 07: W/B San Bruno Av prior to 6th Av                                                                    |
+| San Bruno CA PD                  | 08: E/B San Bruno Av at 7th Av                                                                          |
+| San Bruno CA PD                  | 09: N/B Cherry Av at San Bruno Av                                                                       |
+| San Bruno CA PD                  | 10: S/B Cherry Av at Sneath Ln                                                                          |
+| San Bruno CA PD                  | 11: E/B Sneath Ln - east of Cherry Av                                                                   |
+| San Bruno CA PD                  | 12: W/B Sneath Ln east of I280 (GGNC Main Entrance)                                                     |
+| San Bruno CA PD                  | 13: Rollingwood Dr at Sneath Ln (rear plate is northbound Rollingwood)                                  |
+| San Bruno CA PD                  | 14: E/B & W/B Sneath at Quail Point Ln (Rear plate is W/B)                                              |
+| San Bruno CA PD                  | 17: W/B San Bruno Ave west of Cherry Ave                                                                |
+| San Bruno CA PD                  | 18: E/B San Bruno Ave prior to Cherry Av                                                                |
+| San Bruno CA PD                  | 19: W/B San Bruno Ave prior to lower Crestmoor Dr                                                       |
+| San Bruno CA PD                  | 20: E/B San Bruno Ave east of SR35                                                                      |
+| San Bruno CA PD                  | Trailer Camera 01                                                                                       |
+| San Bruno CA PD                  | Trailer Camera 02                                                                                       |
+| San Joaquin County CA SO         | 01 NB Mackville Rd @ E Jahant Rd                                                                        |
+| San Joaquin County CA SO         | 02 WB Route 4 @ Escalon-Bellota Rd                                                                      |
+| San Joaquin County CA SO         | 03 EB Section at Oro Ave                                                                                |
+| San Joaquin County CA SO         | 04 WB Section at Oro Ave                                                                                |
+| San Joaquin County CA SO         | 05 NB 99 Frontage at Morada                                                                             |
+| San Joaquin County CA SO         | 06 SB 99 Frontage Rd at Morada                                                                          |
+| San Joaquin County CA SO         | 07 SB Ryde Ave at Alpine                                                                                |
+| San Joaquin County CA SO         | 08 Wb Cherokee at Teepee Dr                                                                             |
+| San Joaquin County CA SO         | 09 EB Country Club Blvd at Mission                                                                      |
+| San Joaquin County CA SO         | 10 EB Downing at Mourfield Ave                                                                          |
+| San Joaquin County CA SO         | 11 EB French Camp Rd At S Airport                                                                       |
+| San Joaquin County CA SO         | 12 NB Lower Sacramento at Indiana                                                                       |
+| San Joaquin County CA SO         | 13 SB Lower Sacramento Rd at Collier                                                                    |
+| San Joaquin County CA SO         | 14 EB E Main St at Oro                                                                                  |
+| San Joaquin County CA SO         | 15 SB S Tracy at Howard                                                                                 |
+| San Joaquin County CA SO         | 16 EB Route 4 @ Escalon-Bellota Rd                                                                      |
+| San Joaquin County CA SO         | 17 EB W Walnut Grove at Thornton                                                                        |
+| San Joaquin County CA SO         | 18 WB Waterloo at Broadway                                                                              |
+| San Joaquin County CA SO         | 19 WB E McAllen at N. Wilson Way                                                                        |
+| San Joaquin County CA SO         | 20 NB Woodbridgge at Mokelumne                                                                          |
+| San Joaquin County CA SO         | 21 NB N Filbert at Waterloo                                                                             |
+| San Joaquin County CA SO         | 22 EB W Benjamin Holt at Gettysburg                                                                     |
+| San Joaquin County CA SO         | 23 SB Michael Canlis at Harty                                                                           |
+| San Joaquin County CA SO         | 24 NB Michael Canlis at Harty                                                                           |
+| San Joaquin County CA SO         | 25 NB Fresno at Scotts                                                                                  |
+| San Mateo CA PD                  | 01 - W/B Peninsula @ Bayshore Bl (Towards Woodlake Shopping Ctr) (front plate read - E/B traffic)       |
+| San Mateo CA PD                  | 02 - E/B Peninsula @ Bayshore Av (towards N/B Hwy 101 & Coyote Pt)                                      |
+| San Mateo CA PD                  | 03 - W/B Poplar @ Amphlett Bl (S/B Hwy 101 OFF-Ramp)                                                    |
+| San Mateo CA PD                  | 04 - E/B Poplar @ Amphlett Bl (S/B Hwy 101 ON-Ramp)                                                     |
+| San Mateo CA PD                  | 05 - E/B 4th Av @ Humboldt St (Lanes 1 & 2) (Leaving Downtown San Mateo)                                |
+| San Mateo CA PD                  | 06 - W/B 3rd Av @ Humboldt St (S/B Hwy 101 OFF-ramp)                                                    |
+| San Mateo CA PD                  | 07 - W/B 3rd Av @ Humboldt St (Hwy 101 Overpass)                                                        |
+| San Mateo CA PD                  | 08 - W/B Hillsdale @ Saratoga Av (towards Hillsdale Mall)                                               |
+| San Mateo CA PD                  | 09 - E/B Hillsdale @ Saratoga Av (towards Hwy 101) (Leaving Franklin Templeton/Roblox HQ) (Lanes 2 & 3) |
+| San Mateo CA PD                  | 10 - S/B Norfolk @ Fashion Island Bl  (Parkside Shopping Ctr/Tile HQ)                                   |
+| San Mateo CA PD                  | 11 - N/B Norfolk @ Hillsdale (LT turn lanes) (Leaving Marina Plaza - Los Prados)                        |
+| San Mateo CA PD                  | 12 - N/B Norfolk @ 3rd Av (Leaving Shoreview Shopping Ctr Area)                                         |
+| San Mateo CA PD                  | 13 - S/B Norfolk @ 3rd Av (Leaving North Shoreview)                                                     |
+| San Mateo CA PD                  | 14 - S/B Lindburgh @ 3rd Av (towards Hwy 101)                                                           |
+| San Mateo CA PD                  | 15 - W/B Kehoe @ Dix St (Towards N/B 101 ON-ramp) (front plate read - E/B traffic)                      |
+| San Mateo CA PD                  | 16 - N/B El Camino @ Hwy 92 (Lanes 2 & 3)                                                               |
+| San Mateo CA PD                  | 17 - S/B El Camino @ Hwy 92 (Lanes 2 & 3) (IFO Borel Square Shopping Ctr)                               |
+| San Mateo CA PD                  | 18 - W/B Concar @ Delaware St (towards W/B Hwy 92) (front plate read - E/B traffic)                     |
+| San Mateo CA PD                  | 19 - E/B Hwy 92 ON-Ramp @ Delaware St                                                                   |
+| San Mateo CA PD                  | 20 - E/B 28th Av @ Monterey St (Radar Trailer #51)                                                      |
+| San Mateo CA PD                  | 21 - N/B Edinburgh @ Avila Rd (Radar Trailer #55)                                                       |
+| San Mateo CA PD                  | 22 - S/B Norfolk @ La Selva St (CMB Trailer #50)                                                        |
+| San Mateo CA PD                  | 23 - E/B Fashion Is. @ Bridgepointe Cir (towards Bridgepointe Shopping Ctr/SONY PlayStation HQ)         |
+| San Mateo CA PD                  | 24 - W/B Fashion Is. @ Bridgepointe Cir (Leaving Bridgepointe Shopping Ctr)                             |
+| San Mateo CA PD                  | 25 - N/B Mariners Is. @ Winward Wy (E/B Hwy 92 OFF-ramp)                                                |
+| San Mateo CA PD                  | 26 - E/B 4th Av to S/B Hwy 101 ON-ramp (Leaving Downtown San Mateo)                                     |
+| San Mateo CA PD                  | 27 - N/B Alameda @  Hwy 92 (towards Hwy 92 ON-ramps)                                                    |
+| San Mateo CA PD                  | 28 - S/B Alameda @ Hwy 92 (towards Hwy 92 ON-ramps)                                                     |
+| San Mateo CA PD                  | 29 - W/B 3rd Av @ Seal Point Park (Towards Norfolk St) (CMB Trailer #53)                                |
+| San Mateo CA PD                  | 30 -  Out of Service (Radar Trailer #56)                                                                |
+| San Mateo CA PD                  | 31 - N/B El Camino @ 5th Ave (IFO Central Park) (Radar Trailer #54)                                     |
+| San Mateo County CA SO           | #05 - Trailer 05 Montara State Beach                                                                    |
+| San Mateo County CA SO           | #06 Trailer aka T10 @MLB SUB                                                                            |
+| San Mateo County CA SO           | #07 Trailer aka T20 @ Alpine and Ladera                                                                 |
+| San Mateo County CA SO           | 08: Middlefield Rd EB @ Fifth Ave                                                                       |
+| San Mateo County CA SO           | 09: Fifth Ave EB @ Middlefield                                                                          |
+| San Mateo County CA SO           | 10: Middlefield NB @ Fifth                                                                              |
+| San Mateo County CA SO           | 11: Fifth Ave SB @ Middlefield Rd                                                                       |
+| San Mateo County CA SO           | VTTF Trailer 1 Camera 1 - Schwerin St, DCY                                                              |
+| San Mateo County CA SO           | VTTF Trailer 1 Camera 2 - Schwerin St, DCY                                                              |
+| San Mateo County CA SO           | VTTF Trailer 2 Camera 3  -  REI Brittan/Industrial, San Carlos                                          |
+| San Mateo County CA SO           | VTTF Trailer 2 Camera 4  -  REI Brittan/Industrial, San Carlos                                          |
+| San Mateo County CA SO           | relocation for 11                                                                                       |
+| San Ramon CA PD                  | #46 Wing Live - Albion Arts Center                                                                      |
+| San Ramon CA PD                  | 01 - Market Pl (SB) @ Bollinger Canyon Rd                                                               |
+| San Ramon CA PD                  | 02 - Alcosta (SB) @ Bollinger Canyon Rd                                                                 |
+| San Ramon CA PD                  | 03 - Alcosta (NB) @ Canyon Woods                                                                        |
+| San Ramon CA PD                  | 04 - Park & Ride (SB) @ Bollinger                                                                       |
+| San Ramon CA PD                  | 05 - entering Bollinger Crossing (Chevron) from SRVB                                                    |
+| San Ramon CA PD                  | 06 - SBRB-SB @ Barnwood                                                                                 |
+| San Ramon CA PD                  | 07 - Westside Dr (WB) @ SRVB                                                                            |
+| San Ramon CA PD                  | 08 - SRVB (SB) @ Gateway Center                                                                         |
+| San Ramon CA PD                  | 09 - 680 Alcosta Off Ramp @ (WB) into Gateway Centre                                                    |
+| San Ramon CA PD                  | 10 - Village Pkwy - NB                                                                                  |
+| San Ramon CA PD                  | 11 - Stagecoach (NB) @ City Limits                                                                      |
+| San Ramon CA PD                  | 12 - Shops @ BR off Bishop Dr (Target)                                                                  |
+| San Ramon CA PD                  | 13 - Shops @ BR off Sunset                                                                              |
+| San Ramon CA PD                  | 14 - Alcosta SB From Crow Canyon                                                                        |
+| San Ramon CA PD                  | 15 - City Center-Sunset Entry                                                                           |
+| San Ramon CA PD                  | 16 - Dougherty Rd NB @ Bollinger Canyon                                                                 |
+| San Ramon CA PD                  | 17 - Bollinger Canyon WB @ Gale Ranch                                                                   |
+| San Ramon CA PD                  | 18 - N Wedgwood (SB) @ Gale Ranch                                                                       |
+| San Ramon CA PD                  | 19 - Crow Canyon Pl SB @ Crow Canyon Rd                                                                 |
+| San Ramon CA PD                  | 20 - Camino Ramon SB @ Crow Canyon                                                                      |
+| San Ramon CA PD                  | 21 - Camino Ramon NB @ Bollinger Canyon                                                                 |
+| San Ramon CA PD                  | 22 - Crow Canyon Pl NB @ Crow Canyon Rd                                                                 |
+| San Ramon CA PD                  | 23 - Crow Canyon Pl SB @ Fostoria Way                                                                   |
+| San Ramon CA PD                  | 24 - Camino Ramon NB @ Crow Canyon                                                                      |
+| San Ramon CA PD                  | 25 - SRVB SB @ Crow Canyon Rd                                                                           |
+| San Ramon CA PD                  | 26 - Crow Canyon Rd EB @ City Limits                                                                    |
+| San Ramon CA PD                  | 27 - SRVB SB @ City Limits                                                                              |
+| San Ramon CA PD                  | 28 - Norris Canyon Rd EB @ City Limits                                                                  |
+| San Ramon CA PD                  | 29 - E Branch Pkwy EB @ Bollinger Canyon                                                                |
+| San Ramon CA PD                  | 30 - Windemere Pkwy EB @ Bollinger Canyon                                                               |
+| San Ramon CA PD                  | 31 - Albion Rd EB @ Bollinger Canyon                                                                    |
+| San Ramon CA PD                  | 32 - SRVB NB @ Bollinger Canyon                                                                         |
+| San Ramon CA PD                  | 33 - Alcosta (NB) @ Bollinger Canyon RD                                                                 |
+| San Ramon CA PD                  | 34 - Crow Canyon Rd WB @ SRVB                                                                           |
+| San Ramon CA PD                  | 35 - Bollinger WB @ SRVB                                                                                |
+| San Ramon CA PD                  | 36: WB Windemere Parkway @ Camino Tassajara                                                             |
+| San Ramon CA PD                  | 37: NB Dougherty Rd @ City Limits (near Austin Creek)                                                   |
+| San Ramon CA PD                  | 38: NB Dougherty Rd @ City Limits (near Austin Creek)                                                   |
+| San Ramon CA PD                  | 39: EB Alcosta between 680/Davona                                                                       |
+| San Ramon CA PD                  | 40: NB SRVB @ Alcosta 680 exit                                                                          |
+| San Ramon CA PD                  | 41: W/B Crow Canyon Rd @ City Limits from Blackhawk                                                     |
+| San Ramon CA PD                  | 42: N/B SRVB @ Crow Canyon Rd                                                                           |
+| San Ramon CA PD                  | 43: EB Crow Canyon @ Alcosta                                                                            |
+| San Ramon CA PD                  | 44: E/B Bollinger @ Alcosta                                                                             |
+| San Ramon CA PD                  | 45: N/B Bollinger Canyon Rd. @ Deerwood                                                                 |
+| Santa Clara CA PD                | 01: NB Saratoga Avenue @ San Tomas Expressway                                                           |
+| Santa Clara CA PD                | 02: WB Mission College @ Mercado                                                                        |
+| Santa Clara CA PD                | 03: SB Lafayette St @ Martin.                                                                           |
+| Santa Clara CA PD                | 04: EB Monroe St @ Los Padres Blvd                                                                      |
+| Santa Clara CA PD                | 05: WB Monroe St @ Los Padres Blvd                                                                      |
+| Santa Clara CA PD                | 06:  NB Scott Blvd @ Monroe                                                                             |
+| Santa Clara CA PD                | 07: SB Scott Blvd @Monroe                                                                               |
+| Santa Clara CA PD                | 08: SB Monroe @ El Camino                                                                               |
+| Santa Clara CA PD                | 09: NB Winchester Blvd @ Stevens Creek                                                                  |
+| Santa Clara CA PD                | 10: NB Kiely Boulevard @ Stevens Creek Boulevard                                                        |
+| Santa Clara CA PD                | 11: EB Monroe St @ Lawrence Expy                                                                        |
+| Santa Clara CA PD                | 12: NB Lafayette @ Comstock                                                                             |
+| Santa Clara CA PD                | 13: EB El Camino Real @ San Tomas Expy                                                                  |
+| Santa Clara CA PD                | 14: WB The Alameda @ Portola                                                                            |
+| Santa Clara CA PD                | 15: EB Homestead Rd @ Lawrence Expy                                                                     |
+| Seal Beach CA PD                 | College Park West                                                                                       |
+| The Presidio Trust CA PD         | #03 15th Ave @ Wedemeyer St - SB                                                                        |
+| The Presidio Trust CA PD         | #08 Presidio Blvd @ Pacific Ave - SB                                                                    |
+| The Presidio Trust CA PD         | #09 Lombard St @ Ruger St - WB                                                                          |
+| The Presidio Trust CA PD         | #14 Girard Rd @ 101 - NB                                                                                |
+| Tracy CA PD                      | #01 Grant Line Rd @ Byron Rd - WB                                                                       |
+| Tracy CA PD                      | #02 Grant Line Rd @  Naglee Rd - EB                                                                     |
+| Tracy CA PD                      | #03 Naglee Rd @ Grant Line Rd - SB                                                                      |
+| Tracy CA PD                      | #04 Naglee Rd @ Grant Line Rd - NB                                                                      |
+| Tracy CA PD                      | #05 Pavilion Pkwy @ Naglee Rd - SB                                                                      |
+| Tracy CA PD                      | #06 Naglee Rd @ Pavilion Pkwy - SB                                                                      |
+| Tracy CA PD                      | #07 Byron Rd @ S Lammers Rd - WB                                                                        |
+| Tracy CA PD                      | #08 Byron Rd @ Lankershire Dr - EB                                                                      |
+| Tracy CA PD                      | #09 Eleventh St @ S Lammers Rd - WB                                                                     |
+| Tracy CA PD                      | #10 Eleventh St @ S Lammers Rd - EB                                                                     |
+| Tracy CA PD                      | #11 S Lammers Rd @ Fabian Rd - NB                                                                       |
+| Tracy CA PD                      | #12 S Lammers Rd @ Eleventh St - SB                                                                     |
+| Tracy CA PD                      | #13 Valpico Rd @ Corral Hollow Rd - EB                                                                  |
+| Tracy CA PD                      | #14 Corral Hollow Rd @ W Linne Rd - NB                                                                  |
+| Tracy CA PD                      | #15 W Linne Rd @ Corral Hollow Rd - EB                                                                  |
+| Tracy CA PD                      | #16 Corral Hollow Rd @ Tracy Hills Dr - NB                                                              |
+| Tracy CA PD                      | #17 Tracy Blvd @ W Linne Rd - NB                                                                        |
+| Tracy CA PD                      | #18 S MacArthur Dr @ Vine Ln - NB                                                                       |
+| Tracy CA PD                      | #19 Valpico Rd @ S Chrisman Rd - WB                                                                     |
+| Tracy CA PD                      | #20 S Chrisman @ Valpico Rd - NB                                                                        |
+| Tracy CA PD                      | #21 Coral Hollow Rd @ Grant Line Rd - NB                                                                |
+| Tracy CA PD                      | #22 Grant Line Rd @ Coral Hollow Rd - EB                                                                |
+| Tracy CA PD                      | #23 Grant Line Rd (Turn & #1 Lane ) @ 205 On Ramp - EB                                                  |
+| Tracy CA PD                      | #24 Grant Line Rd (Lanes 3, On Ramp) @ Joe Pombo - WB                                                   |
+| Tracy CA PD                      | #25 Corral Hollow Rd @ W Kavanagh Ave - SB                                                              |
+| Tracy CA PD                      | #26 N MacArthur Dr @ Eleventh St - NB                                                                   |
+| Tracy CA PD                      | #27 Grant Line Rd @ Corral Hollow Rd - WB                                                               |
+| Tracy CA PD                      | #28 Corral Hollow Rd (Lanes 1, 2) @ Grant Line Rd - SB                                                  |
+| Tracy CA PD                      | #29 Corral Hollow Rd (Lanes 2, 3) @ Grant Line Rd - SB                                                  |
+| Tracy CA PD                      | #30 N Tracy Blvd @ W Clover Rd - NB                                                                     |
+| Tracy CA PD                      | #31 N Tracy Blvd @ W Clover Rd - SB - Relocation                                                        |
+| Tracy CA PD                      | #32 N MacArthur Dr @ 205 Off Ramp - SB                                                                  |
+| Tracy CA PD                      | #33 N MacArthur Dr @  E Pescadero Ave - NB                                                              |
+| Tracy CA PD                      | #34 Grant Line Rd (Lanes 2, 3)@ N Chrisman Rd - EB                                                      |
+| Tracy CA PD                      | #35 Grant Line Rd (Lanes 1, 2) @ N Chrisman Rd - EB                                                     |
+| Tracy CA PD                      | #36 Grant Line Rd (Lanes 2, 3)@ N Chrisman Rd - WB                                                      |
+| Tracy CA PD                      | #37 Grant Line Rd (Lanes 1, 2) @ N Chrisman Rd - WB                                                     |
+| Tracy CA PD                      | #38 N Tracy Blvd @ Eleventh St - NB                                                                     |
+| Tracy CA PD                      | #39 Eleventh St @ N Tracy Blvd - EB                                                                     |
+| Tracy CA PD                      | #40 S Tracy Blvd @ Eleventh St - SB                                                                     |
+| Tracy CA PD                      | #41 Eleventh St @ N Tracy Blvd - WB                                                                     |
+| Tracy CA PD                      | #42 W Schulte Rd @ S MacArthur Dr - WB                                                                  |
+| Tracy CA PD                      | #43 W Schulte Rd @ S MacArthur Dr - EB                                                                  |
+| Tracy CA PD                      | #44 Grant Line Rd @ S Lammers Rd - EB                                                                   |
+| Tracy CA PD                      | #45 Eleventh St Bridge - EB                                                                             |
+| Tracy CA PD                      | #46 Naglee Rd @ 205 Off Ramp - NB                                                                       |
+| Vacaville CA PD                  |  Davis NB at Hume (toward Overcrosing) (Stream)                                                         |
+| Vacaville CA PD                  | #01 - Leisure Town Rd @ Alamo Rd - NB                                                                   |
+| Vacaville CA PD                  | #01 Peabody Rd NB to Southwood Dr                                                                       |
+| Vacaville CA PD                  | #02 Peabody Rd SB to Southwood Dr                                                                       |
+| Vacaville CA PD                  | #03 Alamo Dr WB from Peabody Rd                                                                         |
+| Vacaville CA PD                  | #04 Alamo Dr EB from Peabody Rd                                                                         |
+| Vacaville CA PD                  | #05 Alamo Dr EB to Peabody Rd                                                                           |
+| Vacaville CA PD                  | #06 Alamo Dr WB from Tulare                                                                             |
+| Vacaville CA PD                  | #07 Alamo Dr EB to Farmington Dr                                                                        |
+| Vacaville CA PD                  | #08 Alamo Dr WB from Needham Dr                                                                         |
+| Vacaville CA PD                  | #09 Nut Tree Rd SB from Alamo Dr                                                                        |
+| Vacaville CA PD                  | #10 Nut Tree Rd NB from Alamo Dr                                                                        |
+| Vacaville CA PD                  | #11 Nut Tree Rd SB to Fairview Dr                                                                       |
+| Vacaville CA PD                  | #12 Alamo Dr EB to Bedford Way                                                                          |
+| Vacaville CA PD                  | #13 Elmira Rd @ Leisure Town Rd - WB                                                                    |
+| Vacaville CA PD                  | #14 Elmira Rd EB from Leisure Town Rd                                                                   |
+| Vacaville CA PD                  | #15 Leisure Town Rd SB from Elmira Rd                                                                   |
+| Vacaville CA PD                  | #16 Leisure Town Rd NB from Elmira Rd                                                                   |
+| Vacaville CA PD                  | #17 Leisure Town Rd SB from Orange Dr                                                                   |
+| Vacaville CA PD                  | #18 Leisure Town Rd NB to Orange                                                                        |
+| Vacaville CA PD                  | #19 Orange Dr WB from Leisure Town Rd                                                                   |
+| Vacaville CA PD                  | #20 Vaca Valley Pkwy NB from Crescent Dr                                                                |
+| Vacaville CA PD                  | #21 Leisure Town Rd (1,2) SB to Orange Dr                                                               |
+| Vacaville CA PD                  | #22 Leisure Town Rd (2,3) NB @ 80 - EB                                                                  |
+| Vacaville CA PD                  | #23 Leisure Town Rd (2,3) SB @ 80 WB                                                                    |
+| Vacaville CA PD                  | #24 Crescent Dr @ Vaca Valley Pkwy - NB                                                                 |
+| Vacaville CA PD                  | #25 Vaca Valley Pkwy @ New Horizons Wy - EB                                                             |
+| Vacaville CA PD                  | #26 Vaca Valley Pkwy NB to 505 NB                                                                       |
+| Vacaville CA PD                  | #27 Vaca Valley Pkwy NB from 505 BB                                                                     |
+| Vacaville CA PD                  | #28 Vaca Valley Pkwy SB to 505 SB                                                                       |
+| Vacaville CA PD                  | #29 E Monte Vista Ave @ Vaca Valley Pkwy - SB                                                           |
+| Vacaville CA PD                  | #30 Vaca Valley Pkwy SB to E Monte Vista Ave                                                            |
+| Vacaville CA PD                  | #31 Vaca Valley Pkwy NB to Eubanks                                                                      |
+| Vacaville CA PD                  | #32 Browns Valley Rd SB to Tipperary Dr                                                                 |
+| Vacaville CA PD                  | #33 Browns Valley Rd NB to Vaca Valley Pkwy                                                             |
+| Vacaville CA PD                  | #34 Brown St SB from Browns Valley Pkwy                                                                 |
+| Vacaville CA PD                  | #35 Browns Valley Pkwy SB from Brown St                                                                 |
+| Vacaville CA PD                  | #36 Browns Valley Pkwy NB from Brown St                                                                 |
+| Vacaville CA PD                  | #37 N Orchard Ave SB from Granada Ln                                                                    |
+| Vacaville CA PD                  | #38 N Orchard Ave NB from Crestview Dr                                                                  |
+| Vacaville CA PD                  | #39 Dobbins St NB to Fruitvale Rd                                                                       |
+| Vacaville CA PD                  | #40 Gibson Canyon Rd SB to Fruitvale Rd                                                                 |
+| Vacaville CA PD                  | #41 Markham Ave NB from E Monte Vista Ave                                                               |
+| Vacaville CA PD                  | #42 E Monte Vista Ave WB from Markham Ave                                                               |
+| Vacaville CA PD                  | #43 E Monte Vista Ave @ Markham Ave - EB                                                                |
+| Vacaville CA PD                  | #44 Alamo Dr NB from Merchant St                                                                        |
+| Vacaville CA PD                  | #45 Elmira Rd EB from Peabody Rd                                                                        |
+| Vacaville CA PD                  | #46 Elmira Rd WB from Allison Dr                                                                        |
+| Vacaville CA PD                  | #47 Allison Dr NB from Elmira Rd                                                                        |
+| Vacaville CA PD                  | #48 E Monte Vista Ave WB from Allison Dr                                                                |
+| Vacaville CA PD                  | #49 Nut Tree Rd SB to Burton Dr                                                                         |
+| Vacaville CA PD                  | #50 Nut Tree Rd NB from Portsmouth Ave                                                                  |
+| Vacaville CA PD                  | #51 Elmira Rd WB from Nut Tree Rd                                                                       |
+| Vacaville CA PD                  | #52 Nut Tree Rd SB from Elmira Rd                                                                       |
+| Vacaville CA PD                  | #53 Elmira Rd EB from Nut Tree Rd                                                                       |
+| Vacaville CA PD                  | #55 Nut Tree Rd NB from Marshall                                                                        |
+| Vacaville CA PD                  | #56 Foxboro Pkwy EB from Peabody Rd                                                                     |
+| Vacaville CA PD                  | #57 Alamo Dr NB to Davis St                                                                             |
+| Vacaville CA PD                  | #58 Alamo Dr SM from Beythe Ln                                                                          |
+| Vacaville CA PD                  | #59 Peabody Rd SB to Hume Wy                                                                            |
+| Vacaville CA PD                  | #60 Ulatis Dr EB from Nut Tree Rd                                                                       |
+| Vacaville CA PD                  | #61 Vaca Valley Pkwy WB from Browns Valley Rd                                                           |
+| Vacaville CA PD                  | #62 Wrentham Dr NB to Vaca Valley Pkwy                                                                  |
+| Vacaville CA PD                  | Alamo / Butcher Overview (Stream)                                                                       |
+| Vacaville CA PD                  | Alamo / Butcher from I80                                                                                |
+| Vacaville CA PD                  | Alamo / Merchant Overview (Stream)                                                                      |
+| Vacaville CA PD                  | Alamo Butcher from Merchant OC                                                                          |
+| Vacaville CA PD                  | Alamo Butcher toward On Ramp                                                                            |
+| Vacaville CA PD                  | Alamo Off Ramp from WB 80 2                                                                             |
+| Vacaville CA PD                  | Alamo On Ramp to WB 80                                                                                  |
+| Vacaville CA PD                  | Alamo SB from El Camino to Merchant (Stream)                                                            |
+| Vacaville CA PD                  | Alamo Toward Leisure Town from Vanden                                                                   |
+| Vacaville CA PD                  | Alamo Toward Vanden from Meadowlark                                                                     |
+| Vacaville CA PD                  | Allison / Nut Tree Pkwy Overview (Stream)                                                               |
+| Vacaville CA PD                  | Allison Dr. SB to Ulatis Dr.                                                                            |
+| Vacaville CA PD                  | Allison Overcross Entrance to I80 EB                                                                    |
+| Vacaville CA PD                  | Browns Valley SB to EMV - 80 WB On Ramp                                                                 |
+| Vacaville CA PD                  | Cliffside Off Ramp from I80 EB                                                                          |
+| Vacaville CA PD                  | Cliffside On Ramp to I80 EB                                                                             |
+| Vacaville CA PD                  | Davis / Bella Vista Overview (Stream)                                                                   |
+| Vacaville CA PD                  | Davis / Hickory Off Ramp from WB 80 (Cloud)                                                             |
+| Vacaville CA PD                  | Davis / Hickory on Ramp to WB 80                                                                        |
+| Vacaville CA PD                  | Davis NB / Bella Vista to EB 80 On Ramp RW doors                                                        |
+| Vacaville CA PD                  | Davis NB at Hume                                                                                        |
+| Vacaville CA PD                  | Davis NB from Hickory to Downtown                                                                       |
+| Vacaville CA PD                  | Davis NB to EB 80 On Ramp (RW doors) (Stream)                                                           |
+| Vacaville CA PD                  | Davis SB From Bella Vista To Marshall                                                                   |
+| Vacaville CA PD                  | Davis – Hickory Overview (Stream)                                                                       |
+| Vacaville CA PD                  | Davis/Bella Vista WB to EB I80 (Sonic)                                                                  |
+| Vacaville CA PD                  | Depot NB to EMV (Stream)                                                                                |
+| Vacaville CA PD                  | Depot SB to Mason (Stream)                                                                              |
+| Vacaville CA PD                  | E. Monte Vista EB to Nut tree Rd LPR                                                                    |
+| Vacaville CA PD                  | E. Monte Vista to 80 eastbound from Nut Tree Road (lowes)                                               |
+| Vacaville CA PD                  | EB E Monte Vista to Browns Valley I80 On ramp (Panda)                                                   |
+| Vacaville CA PD                  | EB Merchant from Alamo Dr to S. Orchard                                                                 |
+| Vacaville CA PD                  | EB Nut Tree from Allison                                                                                |
+| Vacaville CA PD                  | EMV EB from I80 Off Ramp (Boudin)                                                                       |
+| Vacaville CA PD                  | EMV EB to Allison                                                                                       |
+| Vacaville CA PD                  | EMV WB to Allison                                                                                       |
+| Vacaville CA PD                  | EMV WB toward 80 WB on ramp (Panera)                                                                    |
+| Vacaville CA PD                  | EMV on Ramp to I80 WB (Bestbuy) LPR                                                                     |
+| Vacaville CA PD                  | EMV – Allison Overview (Stream)                                                                         |
+| Vacaville CA PD                  | EMV – Browns Valley Overview (Stream)                                                                   |
+| Vacaville CA PD                  | EMV – Nut Tree Rd Overview (Stream)                                                                     |
+| Vacaville CA PD                  | Hume to NB Davis (Stream)                                                                               |
+| Vacaville CA PD                  | Leisure Town to Fry from Chateau                                                                        |
+| Vacaville CA PD                  | Mason / Depot Overview (Stream)                                                                         |
+| Vacaville CA PD                  | Mason EB to Elmira Overcross (Stream)                                                                   |
+| Vacaville CA PD                  | Mason EB to SB Peabody (Stream)                                                                         |
+| Vacaville CA PD                  | Mason WB at McClellan (Stream)                                                                          |
+| Vacaville CA PD                  | Mason on Ramp to WB 80 (Stream)                                                                         |
+| Vacaville CA PD                  | NB Allison at Nut Tree Parkway                                                                          |
+| Vacaville CA PD                  | NB Peabody Rd at Prison toVV                                                                            |
+| Vacaville CA PD                  | Nut Tree Pkwy @ Nut Tree Road (Overview)                                                                |
+| Vacaville CA PD                  | Nut Tree Pkwy EB to SB Nut Tree Rd                                                                      |
+| Vacaville CA PD                  | Nut Tree Pkwy WB from Nut Tree Rd                                                                       |
+| Vacaville CA PD                  | Nut Tree Road South bound to E. Monte Vista from nut tree village                                       |
+| Vacaville CA PD                  | Orange Dr EB from Outlets Right (Nike) LPR                                                              |
+| Vacaville CA PD                  | Orange Dr EB to 505 from  outlets (Nike)                                                                |
+| Vacaville CA PD                  | Orange Dr EB to Lawrence / 80 (edward earl)                                                             |
+| Vacaville CA PD                  | Orange Dr WB from Lawrence                                                                              |
+| Vacaville CA PD                  | Orange Dr – Lawrence Overview (Stream)                                                                  |
+| Vacaville CA PD                  | Orange WB from 505 Right lane Chevron                                                                   |
+| Vacaville CA PD                  | Orange WB from 505 left lane  Chevron                                                                   |
+| Vacaville CA PD                  | Peabody – Alamo (Stream)                                                                                |
+| Vacaville CA PD                  | Peabody – Cliffside Overview (Stream)                                                                   |
+| Vacaville CA PD                  | SB Alamo Dr at Merchant from El Camino Ave                                                              |
+| Vacaville CA PD                  | SB Peabody from Prison to FFLD                                                                          |
+| Vacaville CA PD                  | Vanden to Fairfield SB                                                                                  |
+| Vacaville CA PD                  | Vanden to Vacaville NB                                                                                  |
+| Vacaville CA PD                  | WB EMV at murrillos                                                                                     |
+| Vacaville CA PD                  | WB Merchant to NB Alamo Dr                                                                              |
+| Vacaville CA PD                  | WB Merchant to SB Alamo Dr                                                                              |
+| Vacaville CA PD                  | WB Merchant to SB Alamo Dr (Cloud)                                                                      |
+| Vacaville CA PD                  | WB Nut Tree to NB Allison/I 80 on ramp                                                                  |
+| Vacaville CA PD                  | WB Nut Tree to SB Allison                                                                               |
+| Vacaville CA PD                  | xStream active -Davis / Hickory Off Ramp from WB 80 2                                                   |
+| Vallejo CA PD                    | #01 Mini Dr EB at Broadway                                                                              |
+| Vallejo CA PD                    | #02 Mini Dr WB at Broadway                                                                              |
+| Vallejo CA PD                    | #03 Fairgrounds Dr NB at Route 37                                                                       |
+| Vallejo CA PD                    | #04 Fairgrounds Dr SB at Gateway Dr                                                                     |
+| Vallejo CA PD                    | #05 Flosden Rd SB at Fairgrounds Dr                                                                     |
+| Vallejo CA PD                    | #06 Flosden Rd NB at Corcoran Ave                                                                       |
+| Vallejo CA PD                    | #07 Mini Dr SB at Violet Dr                                                                             |
+| Vallejo CA PD                    | #08 Mini Dr NB at Violet Dr                                                                             |
+| Vallejo CA PD                    | #09 Sage St. SB at Griffin Dr.                                                                          |
+| Vallejo CA PD                    | #10 Sage St. NB at Griffin Dr.                                                                          |
+| Vallejo CA PD                    | #11 Tennessee @ Mare Island Way WB                                                                      |
+| Vallejo CA PD                    | #12 Mare Island Way SB x Tennessee                                                                      |
+| Vallejo CA PD                    | #14 Railroad Ave SB x Mare Island Causeway                                                              |
+| Vallejo CA PD                    | #15 Walnut Ave SB x Mare Island Causeway                                                                |
+| Vallejo CA PD                    | #16 Azuar Dr SB x Flagship                                                                              |
+| Vallejo CA PD                    | #17 Walnut Ave SB x Independence                                                                        |
+| Vallejo CA PD                    | #18 Walnut Ave SB x 7th St                                                                              |
+| Vallejo CA PD                    | #19 Flagship Dr SB x Sargo Ave                                                                          |
+| Vallejo CA PD                    | #20 Azuar Dr SB x 13th St                                                                               |
+| Vallejo CA PD                    | #21 Mini @ Sonoma - WB                                                                                  |
+| Vallejo CA PD                    | #22 - Meadows @ Sonoma - WB                                                                             |
+| Vallejo CA PD                    | #23 - Corcoran @ Fairgrounds - WB                                                                       |
+| Vallejo CA PD                    | #24 - Broadway @ Hogan - SB                                                                             |
+| Vallejo CA PD                    | #25 - Sonoma @ Ifland - SB                                                                              |
+| Vallejo CA PD                    | #26 - Sacramento @ 37 - EB                                                                              |
+| Vallejo CA PD                    | #27 - Wilson @ 37 - SB                                                                                  |
+| Vallejo CA PD                    | #28 - Columbus @ Benicia - SB                                                                           |
+| Vallejo CA PD                    | #29 - Benicia @ Columbus - WB                                                                           |
+| Vallejo CA PD                    | #30 - Glen Cove @ 780 - NB                                                                              |
+| Vallejo CA PD                    | #31 - Georgia @ Rollingwood - WB                                                                        |
+| Vallejo CA PD                    | #32 - Sonoma @ Sequoia - NB                                                                             |
+| Vallejo CA PD                    | #33 - Sonoma @ Sequoia - SB                                                                             |
+| Vallejo CA PD                    | #34 - Georgia @ Santa Clara - WB                                                                        |
+| Vallejo CA PD                    | #35 - 5th @ Lemon - NB                                                                                  |
+| Vallejo CA PD                    | #36 - Grant @ Lemon - NB                                                                                |
+| Vallejo CA PD                    | #37 - Sonoma @ Solano - NB                                                                              |
+| Vallejo CA PD                    | #38 - Magazine @ Pine - WB                                                                              |
+| Vallejo CA PD                    | #39 - Magazine @ Lincoln East - EB                                                                      |
+| Vallejo CA PD                    | #40 - Lemon @ Cypress - NB                                                                              |
+| Vallejo CA PD                    | #41 - Lemon @ Curtola - SB                                                                              |
+| Vallejo CA PD                    | #42 - Curtola @ Lemon - WB                                                                              |
+| Vallejo CA PD                    | #43 - Georgia @ 14th - WB                                                                               |
+| Vallejo CA PD                    | #44 - Georgia @ Steffan - EB                                                                            |
+| Vallejo CA PD                    | #45 - 80 WB OFF to Solano                                                                               |
+| Vallejo CA PD                    | #46 - Solano @ Mariposa - WB                                                                            |
+| Vallejo CA PD                    | #47 - Solano @ Miller - EB                                                                              |
+| Vallejo CA PD                    | #48 - Tennessee @ Mariposa - WB                                                                         |
+| Vallejo CA PD                    | #49 - Tennessee @ Humboldt - EB                                                                         |
+| Vallejo CA PD                    | #50 - Admiral @ Henry - NB                                                                              |
+| Vallejo CA PD                    | #51 - Redwood @ Fairgrounds - WB                                                                        |
+| Vallejo CA PD                    | #52 - Fairgrounds @ Redwood - NB                                                                        |
+| Vallejo CA PD                    | #53 - Redwood @ Admiral Callaghan - EB                                                                  |
+| Vallejo CA PD                    | #54 - Valle Vista @ Fairgrounds - WB                                                                    |
+| Vallejo CA PD                    | #55 - Admiral Callaghan @ Rotary - NB                                                                   |
+| Vallejo CA PD                    | #56 - Mare Island @ Maine - NB                                                                          |
+| Vallejo CA PD                    | #57 - Santa Clara @ Georgia - SB                                                                        |
+| Vallejo CA PD                    | #58 - Maine @ Marin - WB                                                                                |
+| Vallejo CA PD                    | #59 - York @ Marin - WB                                                                                 |
+| Vallejo CA PD                    | #60 - Sacramento @ Georgia - SB                                                                         |
+| Vallejo CA PD                    | #61 Hiddenbrooke Pkwy (Outbound)                                                                        |
+| Vallejo CA PD                    | #61 NB Admiral Callaghan at Columbus                                                                    |
+| Vallejo CA PD                    | #62 SB Admiral Callaghan Ln @ Columbus                                                                  |
+| Vallejo CA PD                    | #63- Tennessee St @ Broadway EB                                                                         |
+| Vallejo CA PD                    | #64- Nebraska St @ Broadway EB                                                                          |
+| Vallejo CA PD                    | #65- Georgia St @ Monterey EB                                                                           |
+| Vallejo CA PD                    | #68- Tennessee St @ Tuolumne St WB                                                                      |
+| Vallejo CA PD                    | #70- Redwood ST WB @ Tuolumne St                                                                        |
+| Vallejo CA PD                    | #71- Nebraska St WB @ Tuolumne St                                                                       |
+| Vallejo CA PD                    | #72- Sereno Dr WB @ Tuolumne St                                                                         |
+| Vallejo CA PD                    | #73- Tuolumne ST EB @ Broadway                                                                          |
+| Vallejo CA PD                    | #74- Oakwood Ave SB @ Redwood Pkwy                                                                      |
+| Vallejo CA PD                    | #75- N Ascot Pkwy SB @ Columbus Pkwy                                                                    |
+| Vallejo CA PD                    | #76- Redwood Pkwy SB @ Columbus Pkwy                                                                    |
+| Vallejo CA PD                    | #77- Benicia Rd EB @ Laurel St                                                                          |
+| Vallejo CA PD                    | #79- Magazine St SB @ Laurel St                                                                         |
+| Vallejo CA PD                    | #80- Fulton Ave EB @ Magazine St                                                                        |
+| Vallejo CA PD                    | #82- Georgia St EB @ Mare Island Way                                                                    |
+| Vallejo CA PD                    | #83- Tennessee St EB @ Sacramento St                                                                    |
+| Vallejo CA PD                    | #84- Turner Pkwy NB @ N Ascot Pkwy                                                                      |
+| Vallejo CA PD                    | #86- Springs Rd WB @ Columbus Pkwy                                                                      |
+| Vallejo CA PD                    | #88- Broadway SB @ Redwood St                                                                           |
+| Vallejo CA PD                    | #89- Florida St WB @ Tuolumne St                                                                        |
+| Vallejo CA PD                    | #90- Ascot Pkwy WB @ Columbus Pkwy                                                                      |
+| Vallejo CA PD                    | #92- Solano Ave EB @ 14th St                                                                            |
+| Vallejo CA PD                    | #93 Lincoln @ Magazine - SB                                                                             |
+| Vallejo CA PD                    | #94 Lincoln @ Pueblo Way - NB                                                                           |
+| Vallejo CA PD                    | #96 Farragut @ Mare Island                                                                              |
+| Vallejo CA PD                    | #97 Hiddenbrook @ McGary - Inbound                                                                      |
+| Vallejo CA PD (Flex)             | 101: Falcon Flex 1                                                                                      |
+| Vallejo CA PD (Flex)             | 102: Falcon Flex 2                                                                                      |
++----------------------------------+---------------------------------------------------------------------------------------------------------+
+SELECT 1183

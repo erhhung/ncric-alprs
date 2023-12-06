@@ -1,0 +1,103 @@
+ubuntu@alprsdev-indexer:~$ curl -s -H "Authorization: Bearer $jwt" http://datastore:8080/datastore/entity-sets | lj
+ubuntu@alprsdev-indexer:~$ cat << 'EOF' | curl -s -d @- -H "Authorization: Bearer $jwt" -H "Content-Type: application/json" http://datastore:8080/datastore/entity-sets | jq
+> [
+>   {
+>     "entityTypeId": "3c6dad54-c4b4-4dfb-bd8b-d8dd56e342ec",
+>     "name": "NCRICVehicleRecordsAndersonCityPD",
+>     "title": "Anderson City PD",
+>     "organizationId": "1446ff84-7112-42ec-828d-f181f45e4d20",
+>     "contacts": [
+>       "devops@astrometrics.us"
+>     ],
+>     "flags": []
+>   },
+>   {
+>     "entityTypeId": "3c6dad54-c4b4-4dfb-bd8b-d8dd56e342ec",
+>     "name": "NCRICVehicleRecordsFairfieldPD",
+>     "title": "Fairfield PD",
+>     "organizationId": "1446ff84-7112-42ec-828d-f181f45e4d20",
+>     "contacts": [
+>       "devops@astrometrics.us"
+>     ],
+>     "flags": []
+>   },
+>   {
+>     "entityTypeId": "3c6dad54-c4b4-4dfb-bd8b-d8dd56e342ec",
+>     "name": "NCRICVehicleRecordsSalinasPD",
+>     "title": "Salinas PD",
+>     "organizationId": "1446ff84-7112-42ec-828d-f181f45e4d20",
+>     "contacts": [
+>       "devops@astrometrics.us"
+>     ],
+>     "flags": []
+>   },
+>   {
+>     "entityTypeId": "3c6dad54-c4b4-4dfb-bd8b-d8dd56e342ec",
+>     "name": "NCRICVehicleRecordsMillbraePD",
+>     "title": "Millbrae PD",
+>     "organizationId": "1446ff84-7112-42ec-828d-f181f45e4d20",
+>     "contacts": [
+>       "devops@astrometrics.us"
+>     ],
+>     "flags": []
+>   }
+> ]
+> EOF
+{
+  "NCRICVehicleRecordsMillbraePD": "348310d5-a5bc-42df-b3b8-3aeafe20f12a",
+  "NCRICVehicleRecordsFairfieldPD": "042fb866-b8a3-4b16-a1f1-0a03497329d4",
+  "NCRICVehicleRecordsSalinasPD": "9cff2082-cc92-46e7-a1e7-dd33c32ba99b",
+  "NCRICVehicleRecordsAndersonCityPD": "c6f1e371-0676-49bf-bc15-5531760e26aa"
+}
+
+ubuntu@alprsprod-indexer:~$ curl -s -H "Authorization: Bearer $jwt" http://datastore:8080/datastore/entity-sets | lj
+ubuntu@alprsprod-indexer:~$ cat << 'EOF' | curl -s -d @- -H "Authorization: Bearer $jwt" -H "Content-Type: application/json" http://datastore:8080/datastore/entity-sets | jq
+> [
+>   {
+>     "entityTypeId": "3c6dad54-c4b4-4dfb-bd8b-d8dd56e342ec",
+>     "name": "NCRICVehicleRecordsAndersonCityPD",
+>     "title": "Anderson City PD",
+>     "organizationId": "1446ff84-7112-42ec-828d-f181f45e4d20",
+>     "contacts": [
+>       "devops@astrometrics.us"
+>     ],
+>     "flags": []
+>   },
+>   {
+>     "entityTypeId": "3c6dad54-c4b4-4dfb-bd8b-d8dd56e342ec",
+>     "name": "NCRICVehicleRecordsFairfieldPD",
+>     "title": "Fairfield PD",
+>     "organizationId": "1446ff84-7112-42ec-828d-f181f45e4d20",
+>     "contacts": [
+>       "devops@astrometrics.us"
+>     ],
+>     "flags": []
+>   },
+>   {
+>     "entityTypeId": "3c6dad54-c4b4-4dfb-bd8b-d8dd56e342ec",
+>     "name": "NCRICVehicleRecordsSalinasPD",
+>     "title": "Salinas PD",
+>     "organizationId": "1446ff84-7112-42ec-828d-f181f45e4d20",
+>     "contacts": [
+>       "devops@astrometrics.us"
+>     ],
+>     "flags": []
+>   },
+>   {
+>     "entityTypeId": "3c6dad54-c4b4-4dfb-bd8b-d8dd56e342ec",
+>     "name": "NCRICVehicleRecordsMillbraePD",
+>     "title": "Millbrae PD",
+>     "organizationId": "1446ff84-7112-42ec-828d-f181f45e4d20",
+>     "contacts": [
+>       "devops@astrometrics.us"
+>     ],
+>     "flags": []
+>   }
+> ]
+> EOF
+{
+  "NCRICVehicleRecordsMillbraePD": "07c9b6a5-0182-4b30-b358-2164167d0915",
+  "NCRICVehicleRecordsFairfieldPD": "2441446a-67cd-4715-9b7e-c18f0ba44ea7",
+  "NCRICVehicleRecordsSalinasPD": "cbf6dc97-c99f-4bb8-9ef3-20976f4d1b71",
+  "NCRICVehicleRecordsAndersonCityPD": "bd26cc5a-a2aa-4b7c-8b23-3a03f7b88b58"
+}
