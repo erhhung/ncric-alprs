@@ -150,11 +150,11 @@ variable "eks_node_count" {
 
   validation {
     condition = (
-      var.eks_node_count.minimum >= 1 &&
+      var.eks_node_count.minimum >= 0 &&
       var.eks_node_count.desired >= var.eks_node_count.minimum &&
       var.eks_node_count.desired <= var.eks_node_count.maximum &&
     var.eks_node_count.maximum <= 10)
-    error_message = "Node group size must be between 1 and 10."
+    error_message = "Node group size must be between 0 and 10."
   }
 }
 
