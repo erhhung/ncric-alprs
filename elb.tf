@@ -52,7 +52,13 @@ resource "aws_lb_target_group" "api" {
   }
 }
 
-# see datastore.tf for the aws_lb_target_group_attachment.api resource.
+# link the ELB to the Datastore instance, which is the API server
+
+# https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/lb_target_group_attachment
+resource "aws_lb_target_group_attachment" "api" {
+  target_group_arn = aws_lb_target_group.api.arn
+  target_id        = module.datastore_server.instance_id
+}
 
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/lb_listener
 resource "aws_lb_listener" "api_https" {

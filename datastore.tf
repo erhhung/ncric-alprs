@@ -90,12 +90,6 @@ module "datastore_config" {
   })
 }
 
-# https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/lb_target_group_attachment
-resource "aws_lb_target_group_attachment" "api" {
-  target_group_arn = aws_lb_target_group.api.arn
-  target_id        = module.datastore_server.instance_id
-}
-
 output "datastore_instance_id" {
   value = module.datastore_server.instance_id
 }
