@@ -17,6 +17,11 @@ provider "aws" {
 provider "kubernetes" {
   host                   = local.eks.endpoint
   cluster_ca_certificate = local.eks.ca_cert
+  ignore_labels          = [
+    "app\\.kubernetes\\.io\\/.*",
+    "helm\\.sh\\/.*",
+    "k8s-app",
+  ]
 
   exec {
     api_version = "client.authentication.k8s.io/v1beta1"
