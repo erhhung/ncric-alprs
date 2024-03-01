@@ -26,6 +26,9 @@ aws_provider = {
   region  = "us-west-2"
 }
 
+# class B VPC prefix
+vpc_ip_prefix = "10.0"
+
 buckets = {
   webapp = "alprs-webapp-dev"
   config = "alprs-config-dev"
@@ -109,6 +112,9 @@ eks_node_count = {
 # prevent unintentional
 # instance terminations
 lock_ami_versions = false
+
+# save $ if unused
+cf_enabled = true
 
 # restrict access to US
 geo_restriction = false

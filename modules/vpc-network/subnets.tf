@@ -12,6 +12,8 @@ locals {
   subnet_names    = [for subnet in local.subnets : subnet.name]
   public_subnets  = [for i, _ in var.subnet_cidrs.public : "public${i + 1}"]
   private_subnets = [for i, _ in var.subnet_cidrs.private : "private${i + 1}"]
+  # NAT gateway in second AZ is not used!
+  nat_subnets = [local.private_subnets[0]]
 }
 
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/subnet
@@ -35,14 +37,14 @@ resource "aws_subnet" "subnets" {
 
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/eip
 resource "aws_eip" "nats" {
-  for_each   = toset(local.private_subnets)
+  for_each   = toset(local.nat_subnets)
   depends_on = [aws_internet_gateway.main]
   domain     = "vpc"
 }
 
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/nat_gateway
 resource "aws_nat_gateway" "nats" {
-  for_each = { for i, name in local.private_subnets :
+  for_each = { for i, name in local.nat_subnets :
     name => element(local.public_subnets, i)
   }
 

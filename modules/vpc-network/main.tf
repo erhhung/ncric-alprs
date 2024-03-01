@@ -25,3 +25,15 @@ resource "aws_internet_gateway" "main" {
     Name = "${var.vpc_name} IGW"
   }
 }
+
+# https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/vpc_endpoint
+resource "aws_vpc_endpoint" "s3" {
+  vpc_endpoint_type = "Gateway"
+  vpc_id            = aws_vpc.main.id
+  service_name      = "com.amazonaws.${local.region}.s3"
+  route_table_ids   = [for rt in aws_route_table.tables : rt.id]
+
+  tags = {
+    Name = "${var.vpc_name} VPC S3 Endpoint"
+  }
+}

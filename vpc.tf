@@ -1,7 +1,14 @@
 locals {
   subnet_cidrs = {
-    public  = ["10.0.10.0/24", "10.0.11.0/24"]
-    private = ["10.0.20.0/24", "10.0.21.0/24"]
+    public = [
+      "${var.vpc_ip_prefix}.10.0/24",
+      "${var.vpc_ip_prefix}.11.0/24",
+    ]
+    private = [
+      # should use /20 for 4091 hosts
+      "${var.vpc_ip_prefix}.20.0/24",
+      "${var.vpc_ip_prefix}.21.0/24",
+    ]
   }
   # convert host numbers (last octet) to full IP addresses
   private_ips = { for host, ip in var.private_ips : host =>
@@ -41,7 +48,7 @@ module "private_ssh_sg" {
   source = "./modules/security-group"
 
   name        = "private-ssh-sg"
-  description = "Allow SSH from instances"
+  description = "Allow SSH between instances"
   vpc_id      = module.main_vpc.vpc_id
 
   rules = {

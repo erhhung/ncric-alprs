@@ -20,7 +20,7 @@ resource "aws_cloudfront_distribution" "app" {
   depends_on = [module.app_cert]
   provider   = aws.cloudfront
 
-  enabled             = true
+  enabled             = var.cf_enabled
   comment             = "AstroMetrics ${var.env} frontend"
   aliases             = [local.app_domain]
   default_root_object = "index.html"

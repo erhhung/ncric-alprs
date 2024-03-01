@@ -37,6 +37,12 @@ variable "aws_provider" {
   })
 }
 
+variable "vpc_ip_prefix" {
+  description = "VPC IP address prefix"
+  type        = string
+  default     = "10.0"
+}
+
 variable "buckets" {
   description = "S3 bucket names"
   type = object({
@@ -162,6 +168,12 @@ variable "lock_ami_versions" {
   description = "Prevent unintentional AMI upgrades"
   type        = bool
   default     = false
+}
+
+variable "cf_enabled" {
+  description = "Enable CloudFront distribution"
+  type        = bool
+  default     = true
 }
 
 variable "geo_restriction" {
