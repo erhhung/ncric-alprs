@@ -45,8 +45,31 @@ locals {
   }
 
   default_tags = {
-    Environment = var.env
     Owner       = "MaiVERIC"
     Project     = "ALPRS"
+    Environment = var.env
+  }
+}
+
+# https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/resourcegroups_group
+# https://docs.aws.amazon.com/ARG/latest/userguide/gettingstarted-query.html
+resource "aws_resourcegroups_group" "alprs" {
+  name = "alprs-resources-${var.env}"
+
+  resource_query {
+    query = <<JSON
+{
+  "ResourceTypeFilters": [
+    "AWS::AllSupported"
+  ],
+  "TagFilters": [{
+    "Key": "Project",
+    "Values": ["ALPRS"]
+  },{
+    "Key": "Environment",
+    "Values": ["${var.env}"]
+  }]
+}
+JSON
   }
 }
