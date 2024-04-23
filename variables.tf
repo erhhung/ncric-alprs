@@ -77,6 +77,11 @@ variable "instance_types" {
   }
 }
 
+variable "worker_max_spot_price" {
+  description = "Maximum spot price for worker nodes"
+  type        = number
+}
+
 variable "root_volume_sizes" {
   description = "Root volume sizes in GiB"
   type = object({

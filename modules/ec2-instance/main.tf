@@ -31,6 +31,22 @@ resource "aws_instance" "host" {
   # aws ec2 modify-instance-attribute --instance-id i-XXX --no-disable-api-termination
   disable_api_termination = false
 
+  dynamic "instance_market_options" {
+    # launch as spot instance if max_spot_price is > 0
+    for_each = toset(var.max_spot_price > 0 ? [""] : [])
+
+    content {
+      market_type = "spot"
+
+      # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/instance#spot-options
+      spot_options {
+        spot_instance_type             = "persistent"
+        instance_interruption_behavior = "stop" # Graviton does not support hibernation
+        max_price                      = var.max_spot_price
+      }
+    }
+  }
+
   tags = {
     Name = var.instance_name
   }

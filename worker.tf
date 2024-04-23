@@ -39,8 +39,8 @@ locals {
         path = "worker/scripts/${lookup(scripts, "dest", "")}${path}"
         file = "${scripts.path}/${path}"
     }]], {
-      path = "worker/.bash_aliases"
-      file = "${path.module}/worker/.bash_aliases"
+    path = "worker/.bash_aliases"
+    file = "${path.module}/worker/.bash_aliases"
     }, {
     path = "worker/cwagent.json"
     data = data.external.worker_cwagent_json.result.json
@@ -65,12 +65,12 @@ ${templatefile("${path.module}/worker/boot.tftpl", {
     EKS_ROLE_ARN   = aws_iam_role.eks_admin.arn
     # public key is created in keys.tf
     rundeck_key = "${chomp(tls_private_key.rundeck_worker.public_key_openssh)} rundeck@${local.app_domain}"
-})}
+  })}
 ${file("${path.module}/shared/boot.sh")}
 ${file("${path.module}/worker/install.sh")}
 ${file("${path.module}/shared/epilog.sh")}
 EOF
-  }])
+}])
 }
 
 module "worker_user_data" {
@@ -93,6 +93,7 @@ ${file("${path.module}/shared/s3boot.sh")}
 EOT
 }
 
+# launch worker node as spot instance
 module "worker_node" {
   source = "./modules/ec2-instance"
 
@@ -103,6 +104,7 @@ module "worker_node" {
   ami_id           = local.applied_amis["ubuntu_20arm"].id
   instance_type    = var.instance_types["worker"]
   instance_name    = local.hosts["worker"]
+  max_spot_price   = var.worker_max_spot_price
   root_volume_size = var.root_volume_sizes["worker"]
   subnet_id        = module.main_vpc.subnet_ids["private1"]
   private_ip       = local.private_ips["worker"]

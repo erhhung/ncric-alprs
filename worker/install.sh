@@ -28,7 +28,7 @@ upgrade_pip() {
 install_go() (
   cd /usr/local
   hash go 2> /dev/null && exit
-  VERSION=1.20.5 ARCH=arm64
+  VERSION=1.22.2 ARCH=arm64
   rm -rf go; curl -sL https://go.dev/dl/go${VERSION}.linux-$ARCH.tar.gz | tar -xz
   sed -i  's|:/usr/games:/usr/local/games||'       /etc/environment
   sed -Ei 's|^(PATH=".+)"$|\1:/usr/local/go/bin"|' /etc/environment
@@ -46,7 +46,7 @@ EOF
 install_delta() (
   cd /tmp
   hash delta 2> /dev/null && exit
-  VERSION=0.12.0 ARCH=arm64
+  VERSION=0.17.0 ARCH=arm64
   wget -q https://github.com/dandavison/delta/releases/download/$VERSION/git-delta_${VERSION}_$ARCH.deb
   eval_with_retry "wait_apt_get && dpkg -iE git-delta_${VERSION}_$ARCH.deb"
   rm git-delta*
@@ -61,20 +61,23 @@ install_docker() (
 install_kube() (
   case `whoami` in
     root)
-      cd /usr/local/bin
-      K8S_VER=$(curl -sL https://dl.k8s.io/release/stable.txt)
-      wget -q https://dl.k8s.io/release/$K8S_VER/bin/linux/arm64/kubectl
-      chmod +x kubectl
-
-      KCLR_REPO="kubecolor/kubecolor"
-      KCLR_VER=$(curl -sH "Authorization: Bearer $GITHUB_TOKEN" \
-        https://api.github.com/repos/$KCLR_REPO/releases/latest | \
-        jq -r .tag_name)
-      KCLR_TGZ="$KCLR_VER/kubecolor_${KCLR_VER/v/}_Linux_arm64.tar.gz"
-      curl -sL https://github.com/$KCLR_REPO/releases/download/$KCLR_TGZ | tar -xz
-      chown root:root kubecolor
-      ;;
+      cd /usr/local/bin; (
+        hash kubectl 2> /dev/null && exit
+        K8S_VER=$(curl -sL https://dl.k8s.io/release/stable.txt)
+        wget -q https://dl.k8s.io/release/$K8S_VER/bin/linux/arm64/kubectl
+        chmod +x kubectl
+      ) && (
+        hash kubecolor 2> /dev/null && exit
+        KCLR_REPO="kubecolor/kubecolor"
+        KCLR_VER=$(curl -sH "Authorization: Bearer $GITHUB_TOKEN" \
+          https://api.github.com/repos/$KCLR_REPO/releases/latest | \
+          jq -r .tag_name)
+        KCLR_TGZ="$KCLR_VER/kubecolor_${KCLR_VER/v/}_Linux_arm64.tar.gz"
+        curl -sL https://github.com/$KCLR_REPO/releases/download/$KCLR_TGZ | tar -xz
+        chown root:root kubecolor
+      ) ;;
     $DEFAULT_USER)
+      kubectl config get-contexts -o name | grep -q alprs && exit
       cluster=$(aws eks list-clusters \
                   --query 'clusters[?@==`alprs`]' \
                   --output text)
@@ -92,7 +95,8 @@ install_kube() (
 
 install_k9s() (
   . /etc/environment; export PATH
-  hash go 2> /dev/null || exit $?
+  hash k9s 2> /dev/null && exit
+  hash go  2> /dev/null || exit $?
   export GOPATH=/usr/local/go
   export GOCACHE=/tmp/cache/go
   mkdir -p $GOCACHE
@@ -103,20 +107,27 @@ install_k9s() (
   rm -rf k9s
 )
 
-install_helm() (
-  curl -sSL https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash -
-  helm plugin install https://github.com/databus23/helm-diff
+install_helm() {
+  hash helm 2> /dev/null || \
+    curl -sSL https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash -
+  (( $? )) && return 1
+  (
+    helm plugin list | grep -q diff && exit
+    helm plugin install https://github.com/databus23/helm-diff
+  ) && (
+    helm plugin list | grep -q ssm && exit
+    SSM_REPO="codacy/helm-ssm"
+    SSM_VER=$(curl -sH "Authorization: Bearer $GITHUB_TOKEN" \
+      https://api.github.com/repos/$SSM_REPO/releases/latest | \
+      jq -r .tag_name)
 
-  SSM_REPO="codacy/helm-ssm"
-  SSM_VER=$(curl -sH "Authorization: Bearer $GITHUB_TOKEN" \
-    https://api.github.com/repos/$SSM_REPO/releases/latest | \
-    jq -r .tag_name)
-  # helm plugin install doesn't install binary on linux-arm64
-  helm plugin install https://github.com/$SSM_REPO || exit $?
-  cd ~/.local/share/helm/plugins/helm-ssm
-  SSM_TGZ="$SSM_VER/helm-ssm-linux-arm.tgz"
-  curl -sL https://github.com/$SSM_REPO/releases/download/$SSM_TGZ | tar -xz
-)
+    # helm plugin install doesn't install binary on linux-arm64
+    helm plugin install https://github.com/$SSM_REPO || exit $?
+    cd ~/.local/share/helm/plugins/helm-ssm
+    SSM_TGZ="$SSM_VER/helm-ssm-linux-arm.tgz"
+    curl -sL https://github.com/$SSM_REPO/releases/download/$SSM_TGZ | tar -xz
+  )
+}
 
 install_pgcli() {
   pip3 install pgcli

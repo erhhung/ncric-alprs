@@ -13,6 +13,14 @@ variable "instance_type" {
   }
 }
 
+# launch as spot instance
+# if max_spot_price is > 0
+variable "max_spot_price" {
+  description = "Maximum spot price"
+  type        = number
+  default     = 0
+}
+
 variable "ami_id" {
   description = "EC2 AMI ID"
   type        = string
